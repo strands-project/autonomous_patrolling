@@ -1,9 +1,6 @@
 <launch>
-        <node pkg="joy" type="joy_node" name="joystick"/>
-        <node pkg="rumblepad_control" type="rumble_control" name="rumble_control" output="screen">
-		<param name="scale_angular" value="1.0" type="double"/>
-	        <param name="scale_linear" value="1.0" type="double"/>
-	</node>
+        
+	<include file="$(find rumblepad_control)/launch/rumblepad_control.launch"/>
 
 	<node name="map_server" pkg="map_server" type="map_server" args="$(find map_saver)/maps/map.yaml"/>
 
