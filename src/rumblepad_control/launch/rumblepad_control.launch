@@ -1,4 +1,8 @@
 <launch>
         <node pkg="joy" type="joy_node" name="joystick"/>
-        <node pkg="rumblepad_control" type="rumble_control" name="joystick_control"/>
+        <node pkg="rumblepad_control" type="rumble_control" name="joystick_control" output="screen">
+		<param name="scale_angular" value="10.0" type="double"/>
+	        <param name="scale_linear" value="10.0" type="double"/>
+	</node>
+	
 </launch>

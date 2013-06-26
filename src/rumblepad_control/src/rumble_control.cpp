@@ -1,8 +1,11 @@
-#include "ros/ros.h"
-#include "sensor_msgs/Joy.h"
-#include "geometry_msgs/Twist.h"
+#include <ros/ros.h>
+#include <sensor_msgs/Joy.h>
+#include <geometry_msgs/Twist.h>
+#include <ros/console.h>
 
 ros::Publisher pub;
+double l_scale_, a_scale_;
+  
 
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
@@ -11,8 +14,12 @@ void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
   //ROS_INFO("I heard: [%s]", msg->data.c_str());
   geometry_msgs::Twist t;
-  t.linear.x = 0.1f * msg->axes[1];
-  t.angular.z = 0.3f * msg->axes[2];
+  t.linear.x = fabs(msg->axes[1]) > 0.1 ? l_scale_ * msg->axes[1] : 0.0;
+  t.angular.z = fabs(msg->axes[0]) > 0.1 ? a_scale_ * msg->axes[0] : 0.0;
+  if(msg->buttons[5] || msg->buttons[4]) {
+    t.linear.x = 0.0;
+    t.angular.z = 0.0;
+  }
   pub.publish(t);
 }
 
@@ -36,6 +43,9 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n;
+  n.param("scale_angular", a_scale_, 1.1);
+  n.param("scale_linear", l_scale_, 1.1);
+
 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages
@@ -54,6 +64,7 @@ int main(int argc, char **argv)
    */
   ros::Subscriber sub = n.subscribe("joy", 1000, controlCallback);
   pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+	
 
   /**
    * ros::spin() will enter a loop, pumping callbacks.  With this version, all
