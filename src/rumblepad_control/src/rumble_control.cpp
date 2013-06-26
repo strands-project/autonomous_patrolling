@@ -14,9 +14,10 @@ void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
   //ROS_INFO("I heard: [%s]", msg->data.c_str());
   geometry_msgs::Twist t;
-  t.linear.x = fabs(msg->axes[1]) > 0.1 ? l_scale_ * msg->axes[1] : 0.0;
-  t.angular.z = fabs(msg->axes[0]) > 0.1 ? a_scale_ * msg->axes[0] : 0.0;
-  if(msg->buttons[5] || msg->buttons[4]) {
+  if(msg->buttons[4]) {
+    t.linear.x = l_scale_ * msg->axes[1];
+    t.angular.z = a_scale_ * msg->axes[0];
+  } else {
     t.linear.x = 0.0;
     t.angular.z = 0.0;
   }
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
    * The first NodeHandle constructed will fully initialize this node, and the last
    * NodeHandle destructed will close down the node.
    */
-  ros::NodeHandle n;
+  ros::NodeHandle n("rumble_control");
   n.param("scale_angular", a_scale_, 1.1);
   n.param("scale_linear", l_scale_, 1.1);
 
@@ -62,8 +63,8 @@ int main(int argc, char **argv)
    * is the number of messages that will be buffered up before beginning to throw
    * away the oldest ones.
    */
-  ros::Subscriber sub = n.subscribe("joy", 1000, controlCallback);
-  pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+  ros::Subscriber sub = n.subscribe("/joy", 1000, controlCallback);
+  pub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 1000);
 	
 
   /**
