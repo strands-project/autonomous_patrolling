@@ -1,8 +1,11 @@
 <launch>
-        <node pkg="joy" type="joy_node" name="joystick"/>
+        <node pkg="joy" type="joy_node" name="joystick">
+		<param name="dev" value="/dev/input/js1" type="string"/>
+		<param name="autorepeat_rate" value="10.0" type="double"/>
+	</node>
         <node pkg="rumblepad_control" type="rumble_control" name="rumble_control" output="screen">
-		<param name="scale_angular" value="1.0" type="double"/>
-	        <param name="scale_linear" value="1.0" type="double"/>
+		<param name="scale_angular" value=".7" type="double"/>
+	        <param name="scale_linear" value=".7" type="double"/>
 	</node>
 	
 </launch>
