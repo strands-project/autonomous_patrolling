@@ -1,0 +1,10 @@
+<launch>
+        <node pkg="joy" type="joy_node" name="joystick"/>
+        <node pkg="rumblepad_control" type="rumble_control" name="rumble_control" output="screen">
+		<param name="scale_angular" value="1.0" type="double"/>
+	        <param name="scale_linear" value="1.0" type="double"/>
+	</node>
+	<node pkg="map_saver" type="joy_map_saver" name="joy_map_saver">
+		<param name="map_name" value="$(find map_saver)/maps/map" type="string"/>
+	</node>
+</launch>
