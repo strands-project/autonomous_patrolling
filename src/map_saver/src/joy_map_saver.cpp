@@ -43,6 +43,13 @@ int main(int argc, char **argv)
   ros::NodeHandle n("joy_map_saver");
   n.param("map_name", map_name, std::string("~/map"));
 
+
+  char buff[20];
+  time_t now = time(NULL);
+  strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
+  map_name += std::string(buff);
+
+
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages
    * on a given topic.  This invokes a call to the ROS
