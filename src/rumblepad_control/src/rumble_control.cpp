@@ -9,6 +9,8 @@ double l_scale_, a_scale_;
 
 geometry_msgs::Twist t;
 
+bool interrupt_broadcasting;
+
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
  */
@@ -18,11 +20,16 @@ void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
   if(msg->buttons[4]) {
     t.linear.x = 0.9*t.linear.x + 0.1*l_scale_ * msg->axes[1];
     t.angular.z = 0.5*t.angular.z + 0.5*a_scale_ * msg->axes[0];
+    interrupt_broadcasting = false;
+    pub.publish(t);
   } else {
     t.linear.x = 0.0;
     t.angular.z = 0.0;
+    if(interrupt_broadcasting == false){
+       interrupt_broadcasting = true;
+       pub.publish(t);
+    }
   }
-  pub.publish(t);
 }
 
 int main(int argc, char **argv)
@@ -47,7 +54,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n("rumble_control");
   n.param("scale_angular", a_scale_, 1.1);
   n.param("scale_linear", l_scale_, 1.1);
-
+  interrupt_broadcasting = false;
 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages
