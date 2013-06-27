@@ -30,14 +30,14 @@ class HeadJoy():
 		print joy.axes[3:4] 
 
 		# update value from axes
-		self.currentPan += joy.axes[3]*PAN_INCREMENT
-		self.currentTilt += joy.axes[4]*TILT_INCREMENT
+		self.currentPan += joy.axes[3] * self.PAN_INCREMENT
+		self.currentTilt += joy.axes[4] * self.TILT_INCREMENT
 	
 		# threshold value
-		self.currentPan = self.currentPan if self.currentPan < MAX_PAN else MAX_PAN
-		self.currentPan = self.currentPan if self.currentPan > MIN_PAN else MIN_PAN
-		self.currentTilt = self.currentTilt if self.currentTilt < MAX_TILT else MAX_TILT
-		self.currentTilt = self.currentTilt if self.currentTilt > MIN_TILT else MIN_TILT
+		self.currentPan = self.currentPan if self.currentPan < self.MAX_PAN else self.MAX_PAN
+		self.currentPan = self.currentPan if self.currentPan > self.MIN_PAN else self.MIN_PAN
+		self.currentTilt = self.currentTilt if self.currentTilt < self.MAX_TILT else self.MAX_TILT
+		self.currentTilt = self.currentTilt if self.currentTilt > self.MIN_TILT else self.MIN_TILT
 
 		# publish
 		pub.publish(command)
