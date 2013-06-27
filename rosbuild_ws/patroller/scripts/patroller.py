@@ -136,14 +136,14 @@ class PointReader(smach.State):
 def main():
 
 
-    rospy.init_node('smach_nav')
+    rospy.init_node('patroller')
 
     frame_id="/map"
 
 
-    file_name='/home/computing/autonomous_patrolling/src/waypoint_recorder/waypoints/waypoints.csv'
+    #file_name='/home/computing/autonomous_patrolling/src/waypoint_recorder/waypoints/waypoints.csv'
 
-
+    file_name=rospy.get_param("/patroller/waypoints")
 
     # Create a SMACH state machine
     sm = smach.StateMachine(['succeeded','aborted','preempted'])

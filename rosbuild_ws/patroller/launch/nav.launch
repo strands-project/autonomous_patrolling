@@ -22,4 +22,12 @@
       <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
       <rosparam file="$(find patroller)/patroller_move_base/dwa_planner_ros.yaml" command="load" />
     </node>
+
+
+    <node name="patroller" pkg="patroller" type="patroller.py">
+	 <param name="waypoints" value="$(find waypoint_recorder)/waypoints/waypoints.csv" />
+    </node>	
+
+
+
 </launch>
