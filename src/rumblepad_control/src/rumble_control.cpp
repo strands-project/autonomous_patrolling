@@ -16,8 +16,8 @@ void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
   //ROS_INFO("I heard: [%s]", msg->data.c_str());
   if(msg->buttons[4]) {
-    t.linear.x = 0.5 * (t.linear.x + l_scale_ * msg->axes[1]);
-    t.angular.z = 0.5 * (t.angular.z + a_scale_ * msg->axes[0]);
+    t.linear.x = 0.9*t.linear.x + 0.1*l_scale_ * msg->axes[1];
+    t.angular.z = 0.5*t.angular.z + 0.5*a_scale_ * msg->axes[0];
   } else {
     t.linear.x = 0.0;
     t.angular.z = 0.0;
