@@ -22,6 +22,6 @@
 
 
 	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder">
-		<param name="csv_name" value="$(find waypoint_recorder)/waypoints/waypoints.csv" type="string"/>
+		<param name="csv_name" value="$(find waypoint_recorder)/waypoints/waypoints" type="string"/>
 	</node>
 </launch>

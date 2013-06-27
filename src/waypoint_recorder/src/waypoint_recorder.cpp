@@ -4,6 +4,8 @@
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <ros/console.h>
 
+#include <ctime>
+
 ros::Publisher pub;
   
 bool save_pose;
@@ -60,7 +62,12 @@ int main(int argc, char **argv)
    */
   ros::NodeHandle n("waypoint_recorder");
   n.param("csv_name", csv_name, std::string("~/waypoints.csv"));
-  pFile = fopen (csv_name.c_str(),"w");
+  char buff[20];
+  time_t now = time(NULL);
+  strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
+  csv_name += std::string(buff);
+  csv_name += ".csv";
+  pFile = fopen (csv_name.c_str(),"a");
 
 
   /**
