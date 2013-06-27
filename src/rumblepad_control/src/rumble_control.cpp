@@ -7,16 +7,17 @@ ros::Publisher pub;
 double l_scale_, a_scale_;
   
 
+geometry_msgs::Twist t;
+
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
  */
 void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
   //ROS_INFO("I heard: [%s]", msg->data.c_str());
-  geometry_msgs::Twist t;
   if(msg->buttons[4]) {
-    t.linear.x = l_scale_ * msg->axes[1];
-    t.angular.z = a_scale_ * msg->axes[0];
+    t.linear.x = 0.5 * (t.linear.x + l_scale_ * msg->axes[1]);
+    t.angular.z = 0.5 * (t.angular.z + a_scale_ * msg->axes[0]);
   } else {
     t.linear.x = 0.0;
     t.angular.z = 0.0;
