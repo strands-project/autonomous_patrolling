@@ -1,4 +1,4 @@
-image: /home/alex/STRANDS/autonomous_patrolling/src/map_saver/maps/map.pgm
+image: /localhome/demo/cdondrup/autonomous_patrolling/src/map_saver/maps/map.pgm
 resolution: 0.050000
 origin: [-100.000000, -100.000000, 0.000000]
 negate: 0
