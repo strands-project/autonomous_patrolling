@@ -1,3 +1,16 @@
+### Setting up the workspace
+* Clone the github repository: `git clone https://github.com/strands-project/autonomous_patrolling.git`
+* Setting up the catkin workspace
+  * Change to the root directory of the repository: `cd autonomous_patrolling`
+  * Run `catkin_make` (Catkin_make builds all binary files and creates environment variables like the setup.bash)
+  * Troubleshooting: It might complain about missing include directories. If this is the case, go to the specified folder and create an empty include directory.
+* Setting up the rosbuild workspace  
+  * Change to the rosbuild_ws directory, located in the root directory of the repository: `cd rosbuild_ws`
+  * Run `rosws init . ../devel` (This sets up the initial rosbuild workspace on top of the catkin workspace.)
+  * Run `rosws set patroller` (This adds the patroller project to our rosbuild workspace.)
+  * Run `rosws update` (This updates the setup files.) 
+* To use both workspaces, you have to source the `setup.bash` or `setup.zsh` located in the **rosbuild_ws** in every terminal you open. This will setup both the rosbuild AND the catkin worksapce. 
+
 ### Saving a map
 Prior to autonomous patrolling, a map has to be created from the space that should be patrolled. To do this, execute the following steps:
 * Connect a joypad to the machine. 
@@ -22,9 +35,6 @@ After the map has been created, save some points within the map. The robot uses 
 * Run the mapsaver: `roslaunch waypoint_recorder waypoint_recorder.launch` 
 * [Robot only] Start up the laser. 
 * Press the (A) button to save a point to a file. Press the (B) button to finish mapping. The resulting csv file can be specified in the waypoint_recorder launch file. 
-
- 
-
 
 
 ### Saving a map using the simple Strands tutorial deprecated
