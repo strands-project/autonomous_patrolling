@@ -1,4 +1,9 @@
 build/
 devel/
+lib/
+bin/
 *~
 .*
+src/map_saver/maps/*
+src/waypoint_recorder/waypoints/*
+

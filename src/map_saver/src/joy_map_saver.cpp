@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
   char buff[20];
   time_t now = time(NULL);
-  strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
+  strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
   map_name += std::string(buff);
 
 
