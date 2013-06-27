@@ -4,7 +4,22 @@
 
 	<node name="map_server" pkg="map_server" type="map_server" args="$(find map_saver)/maps/map.yaml"/>
 
-    	<node name="amcl" pkg="amcl" type="amcl" />
+    	<node name="amcl" pkg="amcl" type="amcl">
+	  <!-- default value for odom_alpha parameters: 0.2 -->
+    		<!--Specifies the expected noise in odometry's rotation estimate from the rotational component of the robot's motion. -->
+		<param name="odom_alpha1" value="0.2" type="double"/>
+
+    		<!--Specifies the expected noise in odometry's rotation estimate from translational component of the robot's motion. -->
+		<param name="odom_alpha2" value="0.2" type="double"/>
+
+    		<!--Specifies the expected noise in odometry's translation estimate from the translational component of the robot's motion. -->
+		<param name="odom_alpha3" value="0.2" type="double"/>
+
+    		<!--Specifies the expected noise in odometry's translation estimate from the rotational component of the robot's motion.  -->
+		<param name="odom_alpha4" value="0.2" type="double"/>
+
+	</node>
+
 
 	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder">
 		<param name="csv_name" value="$(find waypoint_recorder)/waypoints/waypoints.csv" type="string"/>
