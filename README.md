@@ -9,7 +9,7 @@
   * Run `rosws init . ../devel` (This sets up the initial rosbuild workspace on top of the catkin workspace.)
   * Run `rosws set patroller` (This adds the patroller project to our rosbuild workspace.)
   * Run `rosws update` (This updates the setup files.) 
-* To use both workspaces, you have to source the `setup.bash` or `setup.zsh` located in the **rosbuild_ws** in every terminal you open. This will setup both the rosbuild AND the catkin worksapce. 
+* To use packages from either of both workspaces, you have to source the `setup.bash` or `setup.zsh` located in the **rosbuild_ws** in every terminal you open. This will setup both the rosbuild AND the catkin worksapce. 
 
 ### Saving a map
 Prior to autonomous patrolling, a map has to be created from the space that should be patrolled. To do this, execute the following steps:
@@ -29,15 +29,29 @@ After the map has been created, save some points within the map. The robot uses 
 * The map which is used for localization is specified in the map_saver package in the map directory (maps.pgm and maps.yaml). If another map should be used, this should be set in the waypoint_recorder launch file. 
 * Connect a joypad to the machine. 
 * Make sure `roscore` is running.
+* [Robot only] Make sure the laser is setup correctly and broadcasting to the `/scan` topic. 
 * [Simulation only] Start the strands simulator: `rosrun strands_sim simulator.sh`
 * [Simulation only] Configure ROS to use the robot in morse: `roslaunch strands_morse_2dnav robot.launch`
-* (Optional) Start rviz to visualize the map creation: `rosrun rviz rviz`
-* Run the mapsaver: `roslaunch waypoint_recorder waypoint_recorder.launch` 
-* [Robot only] Start up the laser. 
+* (Optional) Start rviz to visualize the map: `rosrun rviz rviz`
+* Run the waypoint recorder: `roslaunch waypoint_recorder waypoint_recorder.launch` 
 * Press the (A) button to save a point to a file. Press the (B) button to finish mapping. The resulting csv file can be specified in the waypoint_recorder launch file. 
 
+### Starting the patrolling
+When a list of points has been stored, these can be patrolled by the robot. 
+* Make sure `roscore` is running.
+* [Robot only] Make sure the laser is setup correctly and broadcasting to the `/scan` topic. 
+* [Simulation only] Start the strands simulator: `rosrun strands_sim simulator.sh`
+* [Simulation only] Configure ROS to use the robot in morse: `roslaunch strands_morse_2dnav robot.launch`
+* Start rviz to visualize the map and to give the robot an initial localization: `rosrun rviz rviz`
+* Run the patroller: `roslaunch patroller nav.launch`
+* Give the robot an initial localization in rviz. 
 
-### Saving a map using the simple Strands tutorial deprecated
+### General notes
+* Do not switch the button at the top of the controller! This causes the keys to be mapped in a different way. It should always be in the "X" position. 
+* To build the projects in the catkin workspace use `catkin_make`.
+* To build the projects in the rosbuild worksapce use `rosmake <package_name>`.
+
+### Saving a map using the simple Strands tutorial (deprecated)
 * roscore
 * rosrun strands_sim simulator.sh
 * roslaunch strands_morse_2dnav robot.launch
