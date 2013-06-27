@@ -7,10 +7,10 @@ from sensor_msgs.msg import JointState, Joy
 class HeadJoy():
 	"A class to command the Scitos head from a joystick"
 
-	PAN_INCREMENT=5
-	TILT_INCREMENT=2
-	MAX_PAN=90
-	MIN_PAN=-90
+	PAN_INCREMENT=2
+	TILT_INCREMENT=1
+	MAX_PAN=80
+	MIN_PAN=-80
 	MAX_TILT=10
 	MIN_TILT=-10
 
@@ -27,7 +27,7 @@ class HeadJoy():
 
 	def callback(self, joy): 
 		rospy.logdebug(rospy.get_name() + ": I heard %s" % joy) 
-		print joy.axes[3:4] 
+		print joy.axes[3:5] 
 
 		# update value from axes
 		self.currentPan += joy.axes[3] * self.PAN_INCREMENT
@@ -38,9 +38,12 @@ class HeadJoy():
 		self.currentPan = self.currentPan if self.currentPan > self.MIN_PAN else self.MIN_PAN
 		self.currentTilt = self.currentTilt if self.currentTilt < self.MAX_TILT else self.MAX_TILT
 		self.currentTilt = self.currentTilt if self.currentTilt > self.MIN_TILT else self.MIN_TILT
+		
+		#update command
+		self.command.position=[self.currentPan, self.currentTilt] 
 
 		# publish
-		pub.publish(command)
+		self.pub.publish(self.command)
 
 if __name__ == '__main__':
     head_joy = HeadJoy()
