@@ -130,7 +130,7 @@ class Talker(smach.State):
             outcomes    = ['success', 'failure'],         
         )
 
-	self.pub = rospy.Publisher('talker', String)
+	self.pub = rospy.Publisher('/say', String)
 
     def execute(self,userdata):
 
