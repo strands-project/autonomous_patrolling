@@ -1,0 +1,10 @@
+<launch>
+
+
+    <node name="patroller" pkg="patroller" type="talking_patroller.py">
+	 <param name="waypoints" value="$(find waypoint_recorder)/waypoints/waypoints.csv" />
+    </node>	
+
+
+
+</launch>
