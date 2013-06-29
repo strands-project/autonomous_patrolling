@@ -2,6 +2,7 @@
 * Clone the github repository: `git clone https://github.com/strands-project/autonomous_patrolling.git`
 * Setting up the catkin workspace
   * Change to the root directory of the repository: `cd autonomous_patrolling`
+  * To enable the new emergency stop and motor reset ability the scitos_mira package has to be installed and sourced before making the autonomous_patrolling package: `source <path_to_workspace>/scitos_mira/devel/setup.bash`
   * Run `catkin_make` (Catkin_make builds all binary files and creates environment variables like the setup.bash)
   * Troubleshooting: It might complain about missing include directories. If this is the case, go to the specified folder and create an empty include directory.
 * Setting up the rosbuild workspace  
