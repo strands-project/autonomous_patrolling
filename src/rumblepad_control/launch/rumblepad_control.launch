@@ -7,5 +7,6 @@
 		<param name="scale_angular" value=".7" type="double"/>
 	        <param name="scale_linear" value=".7" type="double"/>
 	</node>
-	
+        <node pkg="rumblepad_control" type="head_joy.py" name="rumble_head_control" />
+        <node pkg="rumblepad_control" type="eye_joy.py" name="rumble_eye_control" />
 </launch>
