@@ -2,8 +2,15 @@
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/Twist.h>
 #include <ros/console.h>
+#include <scitos_msgs/EnableMotors.h>
+#include <scitos_msgs/ResetMotorStop.h>
+#include <scitos_msgs/EmergencyStop.h>
 
 ros::Publisher pub;
+ros::ServiceClient enable_client, reset_client, emergency_client;
+scitos_msgs::EnableMotors enable_srv;
+scitos_msgs::ResetMotorStop reset_srv;
+scitos_msgs::EmergencyStop emergency_srv;
 double l_scale_, a_scale_;
   
 
@@ -16,7 +23,7 @@ bool interrupt_broadcasting;
  */
 void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
-  //ROS_INFO("I heard: [%s]", msg->data.c_str());
+  //steer robot while holding dead man switch
   if(msg->buttons[4]) {
     t.linear.x = 0.9*t.linear.x + 0.1*l_scale_ * msg->axes[1];
     t.angular.z = 0.5*t.angular.z + 0.5*a_scale_ * msg->axes[0];
@@ -28,6 +35,33 @@ void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
     if(interrupt_broadcasting == false){
        interrupt_broadcasting = true;
        pub.publish(t);
+    }
+  }
+  //enable motors after bump and/or freerun
+  if(msg->buttons[7]) {
+    enable_srv.request.enable = true;
+    if (!enable_client.call(enable_srv))
+    {
+      ROS_ERROR("Failed to call service /enable_motors");
+    }
+    if (!reset_client.call(reset_srv))
+    {
+      ROS_ERROR("Failed to call service /reset_motorstop");
+    }
+  }
+  //disable motors to move robot manually
+  if(msg->buttons[6]) {
+    enable_srv.request.enable = false;
+    if (!enable_client.call(enable_srv))
+    {
+      ROS_ERROR("Failed to call service /enable_motors");
+    }
+  }
+  //emergency stop
+  if(msg->axes[2] == -1.0) {
+    if (!emergency_client.call(emergency_srv))
+    {
+      ROS_ERROR("Failed to call service /emergency_stop");
     }
   }
 }
@@ -73,7 +107,9 @@ int main(int argc, char **argv)
    */
   ros::Subscriber sub = n.subscribe("/joy", 1000, controlCallback);
   pub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 1000);
-	
+  enable_client = n.serviceClient<scitos_msgs::EnableMotors>("/enable_motors");
+  reset_client = n.serviceClient<scitos_msgs::ResetMotorStop>("/reset_motorstop");
+  emergency_client = n.serviceClient<scitos_msgs::EmergencyStop>("/emergency_stop");	
 
   /**
    * ros::spin() will enter a loop, pumping callbacks.  With this version, all
