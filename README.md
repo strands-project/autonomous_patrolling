@@ -12,6 +12,18 @@
   * Run `rosws update` (This updates the setup files.) 
 * To use packages from either of both workspaces, you have to source the `setup.bash` or `setup.zsh` located in the **rosbuild_ws** in every terminal you open. This will setup both the rosbuild AND the catkin worksapce. 
 
+### Rumblepad control
+The rumblepad_control package is designed to work with a Logitech Wireless Gamepad F710.
+* Source the corresponding setup.bash: `source autonomous_patrolling/rosbuild_ws/setup.bash`
+* Launch the rumblepad control: `roslaunch rumblepad_control rumbelpad_control.launch`
+ * If the scitos_mira drivers are running, you should now be able to crontrol the robot using the joypad.
+* Controlling the robot (if you do not press any buttons, the rumbelpad control will not interfere with any autonomous behaviour but can be used to emergency stop the robot or reset the bumper after a crash):
+ * In order to move the robot you have to press and hold the dead man switch which is the left top shoulder button while moving the robot around.
+ * You can move the robot with the left joystick (if the mode LED on the rumbelpad is off) or with the D-Pad (if the mode LED is on). Use "Mode" button to toggle between behaviours.
+ * The lower left sholder button is the emergency stop and cuts the power to the motors if press down completely.
+ * To put the robot into freerun mode you can use the "Back" button on the pad.
+ * To re-enable the motors after an emergency stop or hitting something with the bumper you can press the "Start" button on the pad.
+
 ### Saving a map
 Prior to autonomous patrolling, a map has to be created from the space that should be patrolled. To do this, execute the following steps:
 * Connect a joypad to the machine. 
