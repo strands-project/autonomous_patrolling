@@ -5,6 +5,14 @@ project(rumblepad_control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs)
+find_package(scitos_msgs COMPONENTS scitos_msgs)
+
+if(scitos_msgs_FOUND)
+	message(STATUS "scitos_msgs found: Compiling rumblepad_control for use with robot")
+	add_definitions(-DWITH_SCITOS)
+else(scitos_msgs_FOUND)
+	message(STATUS "scitos_msgs NOT found: Compiling rumblepad_control for use with simulator")
+endif(scitos_msgs_FOUND)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -61,7 +69,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include
-  ${catkin_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS},
+  ${scitos_msgs_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -70,16 +79,14 @@ include_directories(include
 # )
 
 ## Declare a cpp executable
-# add_executable(rumblepad_control_node src/rumblepad_control_node.cpp)
+add_executable(rumble_control src/rumble_control.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(rumblepad_control_node rumblepad_control_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(rumblepad_control_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(rumble_control ${catkin_LIBRARIES} ${scitos_msgs_LIBRARIES})
 
 #############
 ## Install ##
@@ -128,6 +135,3 @@ include_directories(include
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_executable(rumble_control src/rumble_control.cpp)
-target_link_libraries(rumble_control ${catkin_LIBRARIES})
