@@ -1,6 +1,8 @@
 <launch>
 	<include file="$(find rumblepad_control)/launch/rumblepad_control.launch"/>
 
+	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" />
+
 	<node pkg="map_saver" type="joy_map_saver" name="joy_map_saver">
 		<param name="map_name" value="$(find map_saver)/maps/map" type="string"/>
 	</node>
