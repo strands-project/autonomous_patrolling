@@ -5,12 +5,12 @@
   * To enable the new emergency stop and motor reset ability the scitos_mira package has to be installed and sourced before making the autonomous_patrolling package: `source <path_to_workspace>/scitos_mira/devel/setup.bash`. If you are using the simulator and not the real robot, you do not have to source the scitos_mira package. This will prevent the emergency stop and bumper reset buttons from working. All the other functionalities will work as described.
   * Run `catkin_make` (Catkin_make builds all binary files and creates environment variables like the setup.bash)
   * Troubleshooting: It might complain about missing include directories. If this is the case, go to the specified folder and create an empty include directory.
-* Setting up the rosbuild workspace  
-  * Change to the rosbuild_ws directory, located in the root directory of the repository: `cd rosbuild_ws`
-  * Run `rosws init . ../devel` (This sets up the initial rosbuild workspace on top of the catkin workspace.)
-  * Run `rosws set patroller` (This adds the patroller project to our rosbuild workspace.)
-  * Run `rosws update` (This updates the setup files.) 
-* To use packages from either of both workspaces, you have to source the `setup.bash` or `setup.zsh` located in the **rosbuild_ws** in every terminal you open. This will setup both the rosbuild AND the catkin worksapce. 
+* Setting up the overlaying catkin workspace with catkinized versions of navigation and smach packages
+  * Follow steps 3.1--3.4 in the [workspace_overlaying tutorial](http://ros.org/wiki/catkin/Tutorials/workspace_overlaying), replacing the `wstool set ros_tutorials --git git://github.com/ros/ros_tutorials.git` command by:
+    `wstool set navigation --git https://github.com/ros-planning/navigation.git -v groovy-devel-catkinized` AND
+    `wstool set executive_smach --git https://github.com/ros/executive_smach.git -v groovy-devel`
+
+
 
 ### Rumblepad control
 The rumblepad_control package is designed to work with a Logitech Wireless Gamepad F710.
@@ -54,21 +54,16 @@ When a list of points has been stored, these can be patrolled by the robot.
 * Make sure `roscore` is running.
 * [Robot only] Make sure the laser is setup correctly and broadcasting to the `/scan` topic. 
 * [Simulation only] Start the strands simulator: `rosrun strands_sim simulator.sh`
-* [Simulation only] Configure ROS to use the robot in morse: `roslaunch strands_morse_2dnav robot.launch`
+* [Simulation only] Launch map, amcl and and move base nodes : `roslaunch waypoint_patroller nav_sim.launch`
+* [Robot only] Launch map, amcl and and move base nodes : `roslaunch waypoint_patroller nav.launch`
 * Start rviz to visualize the map and to give the robot an initial localization: `rosrun rviz rviz`
-* Run the patroller: `roslaunch patroller nav.launch`
-* Give the robot an initial localization in rviz. 
+* Run the patroller: `roslaunch waypoint_patroller patroller.launch`
+
 
 ### General notes
 * Do not switch the button at the top of the controller! This causes the keys to be mapped in a different way. It should always be in the "X" position. 
 * To build the projects in the catkin workspace use `catkin_make`.
-* To build the projects in the rosbuild worksapce use `rosmake <package_name>`.
 
-### Saving a map using the simple Strands tutorial (deprecated)
-* roscore
-* rosrun strands_sim simulator.sh
-* roslaunch strands_morse_2dnav robot.launch
-* rosrun gmapping slam_gmapping scan:=/scan _odom_frame:=/odom
-* rosrun rviz rviz -> drive around and see map
-* When map is done save it: rosrun map_server map_saver
+
+
 
