@@ -54,8 +54,7 @@ When a list of points has been stored, these can be patrolled by the robot.
 * Make sure `roscore` is running.
 * [Robot only] Make sure the laser is setup correctly and broadcasting to the `/scan` topic. 
 * [Simulation only] Start the strands simulator: `rosrun strands_sim simulator.sh`
-* [Simulation only] Launch map, amcl and and move base nodes : `roslaunch waypoint_patroller nav_sim.launch`
-* [Robot only] Launch map, amcl and and move base nodes : `roslaunch waypoint_patroller nav.launch`
+* Launch navigation nodes: `roslaunch waypoint_patroller nav.launch`
 * Start rviz to visualize the map and to give the robot an initial localization: `rosrun rviz rviz`
 * Run the patroller: `roslaunch waypoint_patroller patroller.launch`
 

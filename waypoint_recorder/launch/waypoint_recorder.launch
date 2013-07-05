@@ -2,23 +2,11 @@
         
     <include file="$(find scitos_teleop)/launch/teleop_joystick.launch"/>
 
+    <!-- launch map -->
 	<node name="map_server" pkg="map_server" type="map_server" args="$(find map_saver)/maps/map.yaml"/>
 
-    	<node name="amcl" pkg="amcl" type="amcl">
-	  <!-- default value for odom_alpha parameters: 0.2 -->
-    		<!--Specifies the expected noise in odometry's rotation estimate from the rotational component of the robot's motion. -->
-		<param name="odom_alpha1" value="0.2" type="double"/>
-
-    		<!--Specifies the expected noise in odometry's rotation estimate from translational component of the robot's motion. -->
-		<param name="odom_alpha2" value="0.2" type="double"/>
-
-    		<!--Specifies the expected noise in odometry's translation estimate from the translational component of the robot's motion. -->
-		<param name="odom_alpha3" value="0.2" type="double"/>
-
-    		<!--Specifies the expected noise in odometry's translation estimate from the rotational component of the robot's motion.  -->
-		<param name="odom_alpha4" value="0.2" type="double"/>
-
-	</node>
+    <!-- launch AMCL -->
+    <include file="$(find scitos_2d_navigation)/launch/amcl.launch"/>
 
 
 	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder">
