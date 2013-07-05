@@ -1,6 +1,6 @@
 <launch>
         
-	<include file="$(find rumblepad_control)/launch/rumblepad_control.launch"/>
+    <include file="$(find scitos_teleop)/launch/teleop_joystick.launch"/>
 
 	<node name="map_server" pkg="map_server" type="map_server" args="$(find map_saver)/maps/map.yaml"/>
 

@@ -1,5 +1,5 @@
 <launch>
-	<include file="$(find rumblepad_control)/launch/rumblepad_control.launch"/>
+	<include file="$(find scitos_teleop)/launch/teleop_joystick.launch"/>
 
 	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" />
 
