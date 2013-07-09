@@ -3,19 +3,19 @@
 #include <geometry_msgs/Twist.h>
 #include <ros/console.h>
 
-#include "map_saver/SaveMap.h"
+#include "ap_msgs/SaveMap.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 #if WITH_TELEOP
-	#include "scitos_teleop/action_buttons.h"
+	#include "scitos_apps_msgs/action_buttons.h"
 #endif
 
 std::string map_name;
 
 #if WITH_TELEOP
-	void buttonCallback(const scitos_teleop::action_buttons::ConstPtr& msg)
+	void buttonCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
 	{
 	  if(msg->A) {
 		std::string command("rosrun map_server map_saver -f ");
@@ -26,8 +26,8 @@ std::string map_name;
 	}
 #endif
 
-bool saveMap(map_saver::SaveMap::Request  &req,
-		map_saver::SaveMap::Response &res)
+bool saveMap(ap_msgs::SaveMap::Request  &req,
+		ap_msgs::SaveMap::Response &res)
 {
 	std::string command("rosrun map_server map_saver -f ");
 	command += req.file_name;

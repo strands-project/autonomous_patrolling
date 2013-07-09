@@ -4,8 +4,8 @@
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <ros/console.h>
 
-#include "waypoint_recorder/SaveWaypoint.h"
-#include "waypoint_recorder/SaveWaypointFile.h"
+#include "ap_msgs/SaveWaypoint.h"
+#include "ap_msgs/SaveWaypointFile.h"
 
 #include <ctime>
 #include <vector>
@@ -13,7 +13,7 @@
 #include <fstream>
 
 #if WITH_TELEOP
-	#include "scitos_teleop/action_buttons.h"
+	#include "scitos_apps_msgs/action_buttons.h"
 #endif
 
 ros::Publisher pub;
@@ -44,7 +44,7 @@ void saveToFile(std::string file_name) {
 }
 
 #if WITH_TELEOP
-	void controlCallback(const scitos_teleop::action_buttons::ConstPtr& msg)
+	void controlCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
 	{
 	  if(msg->A && !save_pose) {
 		  savePoint();
@@ -54,15 +54,15 @@ void saveToFile(std::string file_name) {
 	}
 #endif
 
-bool saveWaypoint(waypoint_recorder::SaveWaypoint::Request  &req,
-		waypoint_recorder::SaveWaypoint::Response &res)
+bool saveWaypoint(ap_msgs::SaveWaypoint::Request  &req,
+		ap_msgs::SaveWaypoint::Response &res)
 {
 	savePoint();
 	return true;
 }
 
-bool saveWaypointFile(waypoint_recorder::SaveWaypointFile::Request  &req,
-		waypoint_recorder::SaveWaypointFile::Response &res)
+bool saveWaypointFile(ap_msgs::SaveWaypointFile::Request  &req,
+		ap_msgs::SaveWaypointFile::Response &res)
 {
 	saveToFile(req.file_name);
 	return true;
