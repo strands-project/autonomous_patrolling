@@ -1,9 +1,7 @@
 <launch>
-	<include file="$(find scitos_teleop)/launch/teleop_joystick.launch"/>
-
 	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" />
 
-	<node pkg="map_saver" type="joy_map_saver" name="joy_map_saver">
+	<node pkg="map_saver" type="ap_map_saver" name="ap_map_saver" output="screen">
 		<param name="map_name" value="$(find map_saver)/maps/map" type="string"/>
 	</node>
 </launch>

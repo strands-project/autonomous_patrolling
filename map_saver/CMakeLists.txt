@@ -4,7 +4,15 @@ project(map_saver)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs std_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs std_msgs message_generation)
+find_package(scitos_teleop COMPONENTS scitos_teleop)
+
+if(scitos_teleop_FOUND)
+	message(STATUS "scitos_teleop found: Compiling map_saver with joystick support")
+	add_definitions(-DWITH_TELEOP)
+else(scitos_teleop_FOUND)
+	message(STATUS "scitos_teleop NOT found: Compiling map_saver without joystick support")
+endif(scitos_teleop_FOUND)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -27,17 +35,16 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs std_msgs)
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  SaveMap.srv
+)
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   sensor_msgs#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -50,7 +57,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs std_msgs)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES map_saver
-#  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs
+ CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -70,14 +77,14 @@ include_directories(include
 # )
 
 ## Declare a cpp executable
- add_executable(joy_map_saver src/joy_map_saver.cpp)
+ add_executable(ap_map_saver src/ap_map_saver.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(map_saver_node map_saver_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(joy_map_saver
+ target_link_libraries(ap_map_saver
    ${catkin_LIBRARIES}
  )
 
