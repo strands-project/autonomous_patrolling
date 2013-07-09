@@ -4,38 +4,89 @@
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <ros/console.h>
 
+#include "waypoint_recorder/SaveWaypoint.h"
+#include "waypoint_recorder/SaveWaypointFile.h"
+
 #include <ctime>
+#include <vector>
+#include <list>
+#include <fstream>
+
+#if WITH_TELEOP
+	#include "scitos_teleop/action_buttons.h"
+#endif
 
 ros::Publisher pub;
   
 bool save_pose;
 FILE * pFile;
 std::string csv_name;
+std::list<std::vector<float> > points;
 
-/**
- * This tutorial demonstrates simple receipt of messages over the ROS system.
- */
-void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
+void savePoint() {
+	ROS_INFO("Saving next position update as waypoint.");
+	save_pose = true;
+}
+
+void saveToFile(std::string file_name) {
+	ROS_INFO("Saving waypoints to: %s", file_name.c_str());
+	std::ofstream waypoint_file;
+	waypoint_file.open (file_name.c_str());
+	for (std::list<std::vector<float> >::const_iterator it = points.begin(); it != points.end(); ++it) {
+	  for(int i = 0; i < it->size(); i++) {
+		  waypoint_file << it->at(i);
+		  if(i != it->size() -1)
+			  waypoint_file << ",";
+	  }
+	  waypoint_file << "\n";
+	}
+	waypoint_file.close();
+}
+
+#if WITH_TELEOP
+	void controlCallback(const scitos_teleop::action_buttons::ConstPtr& msg)
+	{
+	  if(msg->A && !save_pose) {
+		  savePoint();
+	  } else if(msg->B) {
+		  saveToFile(csv_name);
+	  }
+	}
+#endif
+
+bool saveWaypoint(waypoint_recorder::SaveWaypoint::Request  &req,
+		waypoint_recorder::SaveWaypoint::Response &res)
 {
-  if(msg->buttons[0]) {
-    save_pose = true;
-  } else if(msg->buttons[1]) {
-    fclose (pFile);
-    ros::shutdown();
-  }
+	savePoint();
+	return true;
+}
+
+bool saveWaypointFile(waypoint_recorder::SaveWaypointFile::Request  &req,
+		waypoint_recorder::SaveWaypointFile::Response &res)
+{
+	saveToFile(req.file_name);
+	return true;
 }
 
 void amclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
 {
   if(save_pose) {
-    fprintf(pFile, "%.10f,%.10f,%.10f,%.10f,%.10f,%.10f,%.10f\n", 
-      msg->pose.pose.position.x,
-      msg->pose.pose.position.y,
-      msg->pose.pose.position.z,
-      msg->pose.pose.orientation.x,
-      msg->pose.pose.orientation.y,
-      msg->pose.pose.orientation.z,
-      msg->pose.pose.orientation.w);
+	  std::vector<float> point(7);
+      point[0] = msg->pose.pose.position.x;
+	  point[1] = msg->pose.pose.position.y;
+	  point[2] = msg->pose.pose.position.z;
+	  point[3] = msg->pose.pose.orientation.x;
+	  point[4] = msg->pose.pose.orientation.y;
+	  point[5] = msg->pose.pose.orientation.z;
+	  point[6] = msg->pose.pose.orientation.w;
+    ROS_INFO("New waypoint added at: x:%f y:%f z:%f ...", msg->pose.pose.position.x,
+    	      msg->pose.pose.position.y,
+    	      msg->pose.pose.position.z);
+    ROS_INFO("... with orientation: x:%f y:%f z:%f w:%f", msg->pose.pose.orientation.x,
+    	      msg->pose.pose.orientation.y,
+    	      msg->pose.pose.orientation.z,
+    	      msg->pose.pose.orientation.w);
+    points.push_back(point);
     save_pose = false;
   }
 }
@@ -67,7 +118,6 @@ int main(int argc, char **argv)
   strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
   csv_name += std::string(buff);
   csv_name += ".csv";
-  pFile = fopen (csv_name.c_str(),"a");
 
 
   /**
@@ -85,8 +135,12 @@ int main(int argc, char **argv)
    * is the number of messages that will be buffered up before beginning to throw
    * away the oldest ones.
    */
-  ros::Subscriber sub = n.subscribe("/joy", 1000, controlCallback);
+#if WITH_TELEOP
+  	  ros::Subscriber sub = n.subscribe("/teleop_joystick/action_buttons", 1000, controlCallback);
+#endif
   ros::Subscriber sub_amcl = n.subscribe("/amcl_pose", 1000, amclCallback);
+  ros::ServiceServer waypoint = n.advertiseService("SaveWaypoint", saveWaypoint);
+  ros::ServiceServer waypoint_file = n.advertiseService("SaveWaypointFile", saveWaypointFile);
 	
 
   /**
