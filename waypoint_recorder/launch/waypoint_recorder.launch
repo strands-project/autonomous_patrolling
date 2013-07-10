@@ -1,7 +1,5 @@
 <launch>
         
-    <include file="$(find scitos_teleop)/launch/teleop_joystick.launch"/>
-
     <!-- launch map -->
 	<node name="map_server" pkg="map_server" type="map_server" args="$(find map_saver)/maps/map.yaml"/>
 
@@ -9,7 +7,7 @@
     <include file="$(find scitos_2d_navigation)/launch/amcl.launch"/>
 
 
-	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder">
+	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder" output="screen">
 		<param name="csv_name" value="$(find waypoint_recorder)/waypoints/waypoints" type="string"/>
 	</node>
 </launch>

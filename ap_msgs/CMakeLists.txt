@@ -1,18 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(map_saver)
+project(ap_msgs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs std_msgs ap_msgs)
-find_package(scitos_apps_msgs COMPONENTS scitos_apps_msgs)
-
-if(scitos_apps_msgs_FOUND)
-	message(STATUS "scitos_apps_msgs found: Compiling waypoint_recorder with joystick support")
-	add_definitions(-DWITH_TELEOP)
-else(scitos_apps_msgs_FOUND)
-	message(STATUS "scitos_apps_msgs NOT found: Compiling waypoint_recorder without joystick support")
-endif(scitos_apps_msgs_FOUND)
+find_package(catkin REQUIRED std_msgs message_generation)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -30,15 +22,22 @@ endif(scitos_apps_msgs_FOUND)
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
-#   Message2.msg
+#   action_buttons.msg
 # )
 
 ## Generate services in the 'srv' folder
-
+add_service_files(
+  FILES
+  SaveMap.srv
+  SaveWaypoint.srv
+  SaveWaypointFile.srv
+)
 
 ## Generate added messages and services with any dependencies listed here
-
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -50,8 +49,8 @@ endif(scitos_apps_msgs_FOUND)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES map_saver
-# CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs message_runtime
+#  LIBRARIES rumblepad_control
+#  CATKIN_DEPENDS std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -61,28 +60,25 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include
-  ${catkin_INCLUDE_DIRS}
-  ${scitos_apps_msgs_INCLUDE_DIRS}
-)
+#include_directories(include
+#  ${catkin_INCLUDE_DIRS},
+#  ${scitos_msgs_INCLUDE_DIRS}
+#)
 
 ## Declare a cpp library
-# add_library(map_saver
-#   src/${PROJECT_NAME}/map_saver.cpp
+# add_library(rumblepad_control
+#   src/${PROJECT_NAME}/rumblepad_control.cpp
 # )
 
 ## Declare a cpp executable
- add_executable(ap_map_saver src/ap_map_saver.cpp)
+#add_executable(rumble_control src/rumble_control.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(map_saver_node map_saver_generate_messages_cpp)
+# add_dependencies(rumblepad_control_node rumblepad_control_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(ap_map_saver
-   ${catkin_LIBRARIES}
-   ${scitos_apps_msgs_LIBRARIES}
- )
+#target_link_libraries(rumble_control ${catkin_LIBRARIES} ${scitos_msgs_LIBRARIES})
 
 #############
 ## Install ##
@@ -99,7 +95,7 @@ include_directories(include
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS map_saver map_saver_node
+# install(TARGETS rumblepad_control rumblepad_control_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -124,7 +120,7 @@ include_directories(include
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_map_saver.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_rumblepad_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -3,22 +3,37 @@
 #include <geometry_msgs/Twist.h>
 #include <ros/console.h>
 
+#include "ap_msgs/SaveMap.h"
+
 #include <stdlib.h>
 #include <string.h>
-  
+
+#if WITH_TELEOP
+	#include "scitos_apps_msgs/action_buttons.h"
+#endif
 
 std::string map_name;
 
-/**
- * This tutorial demonstrates simple receipt of messages over the ROS system.
- */
-void controlCallback(const sensor_msgs::Joy::ConstPtr& msg)
+#if WITH_TELEOP
+	void buttonCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
+	{
+	  if(msg->A) {
+		std::string command("rosrun map_server map_saver -f ");
+		command += map_name;
+		ROS_INFO("Saving map as: %s", map_name.c_str());
+		system(command.c_str());
+	  }
+	}
+#endif
+
+bool saveMap(ap_msgs::SaveMap::Request  &req,
+		ap_msgs::SaveMap::Response &res)
 {
-  if(msg->buttons[0]) {
-    std::string command("rosrun map_server map_saver -f ");
-    command += map_name;
-    system(command.c_str());
-  }
+	std::string command("rosrun map_server map_saver -f ");
+	command += req.file_name;
+	ROS_INFO("Saving map as: %s", req.file_name.c_str());
+	system(command.c_str());
+	return true;
 }
 
 int main(int argc, char **argv)
@@ -33,14 +48,14 @@ int main(int argc, char **argv)
    * You must call one of the versions of ros::init() before using any other
    * part of the ROS system.
    */
-  ros::init(argc, argv, "joy_map_saver");
+  ros::init(argc, argv, "ap_map_saver");
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
    * The first NodeHandle constructed will fully initialize this node, and the last
    * NodeHandle destructed will close down the node.
    */
-  ros::NodeHandle n("joy_map_saver");
+  ros::NodeHandle n("ap_map_saver");
   n.param("map_name", map_name, std::string("~/map"));
 
 
@@ -65,8 +80,10 @@ int main(int argc, char **argv)
    * is the number of messages that will be buffered up before beginning to throw
    * away the oldest ones.
    */
-  ros::Subscriber sub = n.subscribe("/joy", 1000, controlCallback);
-	
+#if WITH_TELEOP
+  	  ros::Subscriber sub = n.subscribe("/teleop_joystick/action_buttons", 1000, buttonCallback);
+#endif
+  ros::ServiceServer service = n.advertiseService("SaveMap", saveMap);
 
   /**
    * ros::spin() will enter a loop, pumping callbacks.  With this version, all

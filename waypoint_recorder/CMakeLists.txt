@@ -4,7 +4,15 @@ project(waypoint_recorder)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp rospy sensor_msgs std_msgs)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp rospy sensor_msgs std_msgs ap_msgs)
+find_package(scitos_apps_msgs COMPONENTS scitos_apps_msgs)
+
+if(scitos_apps_msgs_FOUND)
+	message(STATUS "scitos_apps_msgs found: Compiling waypoint_recorder with joystick support")
+	add_definitions(-DWITH_TELEOP)
+else(scitos_apps_msgs_FOUND)
+	message(STATUS "scitos_apps_msgs NOT found: Compiling waypoint_recorder without joystick support")
+endif(scitos_apps_msgs_FOUND)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -27,17 +35,10 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp rospy sensor_msgs s
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   sensor_msgs#   std_msgs
-# )
+
 
 ###################################
 ## catkin specific configuration ##
@@ -50,7 +51,7 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp rospy sensor_msgs s
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES waypoint_recorder
-#  CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
+# CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -62,6 +63,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include
   ${catkin_INCLUDE_DIRS}
+  ${scitos_apps_msgs_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -79,6 +81,7 @@ include_directories(include
 ## Specify libraries to link a library or executable target against
  target_link_libraries(waypoint_recorder
    ${catkin_LIBRARIES}
+   ${scitos_apps_msgs_LIBRARIES}
  )
 
 #############
