@@ -12,33 +12,73 @@
 	#include "scitos_apps_msgs/action_buttons.h"
 #endif
 
+
+// #if WITH_TELEOP
+// 	void buttonCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
+// 	{
+// 	  if(msg->A) {
+// 		std::string command("rosrun map_server map_saver -f ");
+// 		command += map_name;
+// 		ROS_INFO("Saving map as: %s", map_name.c_str());
+// 		system(command.c_str());
+// 	  }
+// 	}
+// #endif
+
+
 std::string map_name;
+
+bool saveMap(std::string file_name){
+  	std::string command("rosrun map_server map_saver -f ");
+	command += file_name;
+	ROS_INFO("Saving map as: %s", file_name.c_str());
+		ROS_INFO("Saving map as: %s", command.c_str());
+
+	system(command.c_str());
+	return true;
+}
+
+
 
 #if WITH_TELEOP
 	void buttonCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
 	{
 	  if(msg->A) {
-		std::string command("rosrun map_server map_saver -f ");
-		command += map_name;
-		ROS_INFO("Saving map as: %s", map_name.c_str());
-		system(command.c_str());
+		saveMap(map_name);
 	  }
 	}
 #endif
 
-bool saveMap(ap_msgs::SaveMap::Request  &req,
-		ap_msgs::SaveMap::Response &res)
+
+bool saveMapSrv(ap_msgs::SaveMap::Request  &req, ap_msgs::SaveMap::Response &res)
 {
-	std::string command("rosrun map_server map_saver -f ");
-	command += req.file_name;
-	ROS_INFO("Saving map as: %s", req.file_name.c_str());
-	system(command.c_str());
+	saveMap(req.file_name);
 	return true;
-}
+}	
+
+
+  
 
 int main(int argc, char **argv)
 {
-  /**
+
+  //Check if map name was given as argument to the launch file, and create default map name otherwise
+  map_name=std::string(argv[1]);
+  if (!map_name.compare(std::string("default_map_name")))  {
+    ROS_WARN("No file name given for map, map will be saved with default name on home directory");
+    std::string home(getenv("HOME"));
+    home+="/";
+    char buff[20];
+    time_t now = time(NULL);
+    strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
+    map_name = std::string("~/") + std::string(buff) + std::string("map");
+  }
+
+  
+  
+  
+  
+  /**  ROS_INFO("Map name: %s", map_name.c_str());
    * The ros::init() function needs to see argc and argv so that it can perform
    * any ROS arguments and name remapping that were provided at the command line. For programmatic
    * remappings you can use a different version of init() which takes remappings
@@ -56,13 +96,9 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n("ap_map_saver");
-  n.param("map_name", map_name, std::string("~/map"));
+  
+  
 
-
-  char buff[20];
-  time_t now = time(NULL);
-  strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
-  map_name += std::string(buff);
 
 
   /**
@@ -75,7 +111,8 @@ int main(int argc, char **argv)
    * object go out of scope, this callback will automatically be unsubscribed from
    * this topic.
    *
-   * The second parameter to the subscribe() function is the size of the message
+   * The second parameter to t	ROS_INFO("Saving map as: %s", file_name.c_str());
+he subscribe() function is the size of the message
    * queue.  If messages are arriving faster than they are being processed, this
    * is the number of messages that will be buffered up before beginning to throw
    * away the oldest ones.
@@ -83,7 +120,7 @@ int main(int argc, char **argv)
 #if WITH_TELEOP
   	  ros::Subscriber sub = n.subscribe("/teleop_joystick/action_buttons", 1000, buttonCallback);
 #endif
-  ros::ServiceServer service = n.advertiseService("SaveMap", saveMap);
+  ros::ServiceServer service = n.advertiseService("SaveMap", saveMapSrv);
 
   /**
    * ros::spin() will enter a loop, pumping callbacks.  With this version, all

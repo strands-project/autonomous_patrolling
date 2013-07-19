@@ -23,6 +23,7 @@ FILE * pFile;
 std::string csv_name;
 std::list<std::vector<float> > points;
 
+
 void savePoint() {
 	ROS_INFO("Saving next position update as waypoint.");
 	save_pose = true;
@@ -93,6 +94,22 @@ void amclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
+  
+
+  //Check if waypoints name was given as argument to the launch file, and create default waypoints name otherwise
+  csv_name=std::string(argv[1]);
+  if (!csv_name.compare(std::string("default_waypoints_name")))  {
+    ROS_WARN("No file name given for waypoints, waypoints will be saved with default name on home directory");
+    char buff[20];
+    std::string home(getenv("HOME"));
+    home+="/";
+    time_t now = time(NULL);
+    strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
+    csv_name = home + std::string(buff) + std::string("waypoints.csv");
+  }
+  
+  
+  
   /**
    * The ros::init() function needs to see argc and argv so that it can perform
    * any ROS arguments and name remapping that were provided at the command line. For programmatic
@@ -112,12 +129,16 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n("waypoint_recorder");
-  n.param("csv_name", csv_name, std::string("~/waypoints.csv"));
-  char buff[20];
-  time_t now = time(NULL);
-  strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
-  csv_name += std::string(buff);
-  csv_name += ".csv";
+  
+
+  
+  
+//   n.param("csv_name", csv_name, std::string("~/waypoints.csv"));
+//   char buff[20];
+//   time_t now = time(NULL);
+//   strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
+//   csv_name += std::string(buff);
+//   csv_name += ".csv";
 
 
   /**

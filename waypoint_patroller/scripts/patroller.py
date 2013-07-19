@@ -66,7 +66,7 @@ class GoTo(smach.State):
 
 
 class PointReader(smach.State):
-    def __init__(self, file_name):
+    def __init__(self, waypoints_name):
         smach.State.__init__(self,
             outcomes    = ['goto_point'],
             output_keys=['goal_pose']
@@ -75,7 +75,7 @@ class PointReader(smach.State):
 
 
 	self.points=[]
-	with open(file_name, 'rb') as csvfile:
+	with open(waypoints_name, 'rb') as csvfile:
 	     	reader = csv.reader(csvfile, delimiter=',')
 		for row in reader:
 			current_row=[]
@@ -110,6 +110,8 @@ class PointReader(smach.State):
 	next_goal.target_pose.pose.orientation.y=current_row[4]
 	next_goal.target_pose.pose.orientation.z=current_row[5]
 	next_goal.target_pose.pose.orientation.w=current_row[6]
+	
+	rospy.loginfo(current_row[6])
 
 	self.current_point=self.current_point+1
 	if self.current_point==self.n_points:
@@ -134,19 +136,26 @@ class PointReader(smach.State):
 def main():
 
 
+
     rospy.init_node('patroller')
 
+    
+    waypoints_name=sys.argv[1]
+    if waypoints_name=="default_waypoints_name":
+      rospy.logerr("No waypoints file given")
+      return 1
+    
+    
     frame_id="/map"
 
 
-    #file_name='/home/computing/autonomous_patrolling/src/waypoint_recorder/waypoints/waypoints.csv'
 
-    file_name=rospy.get_param("/patroller/waypoints")
+    #waypoints_name=rospy.get_param("/patroller/waypoints")
 
     # Create a SMACH state machine
     sm = smach.StateMachine(['succeeded','aborted','preempted'])
     with sm:
-        smach.StateMachine.add('POINT_READER', PointReader(file_name), 
+        smach.StateMachine.add('POINT_READER', PointReader(waypoints_name), 
                                transitions={'goto_point':'GOING_TO_POINT'},
                                remapping={'goal_pose':'goal_pose'})
 

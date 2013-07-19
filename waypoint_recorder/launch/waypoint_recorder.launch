@@ -1,13 +1,16 @@
 <launch>
+
+    <!-- declare arg to be passed in -->
+    <arg name="map" default="default_map_name"/>    
+    <arg name="waypoints" default="default_waypoints_name"/> 
+
         
     <!-- launch map -->
-	<node name="map_server" pkg="map_server" type="map_server" args="$(find map_saver)/maps/map.yaml"/>
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
 
     <!-- launch AMCL -->
     <include file="$(find scitos_2d_navigation)/launch/amcl.launch"/>
 
 
-	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder" output="screen">
-		<param name="csv_name" value="$(find waypoint_recorder)/waypoints/waypoints" type="string"/>
-	</node>
+	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder" output="screen" args="$(arg waypoints)"/>
 </launch>

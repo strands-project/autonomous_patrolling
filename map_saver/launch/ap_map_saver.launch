@@ -1,7 +1,9 @@
 <launch>
+
+	<!-- declare arg to be passed in -->
+	<arg name="map" default="default_map_name"/> 
+
 	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" />
 
-	<node pkg="map_saver" type="ap_map_saver" name="ap_map_saver" output="screen">
-		<param name="map_name" value="$(find map_saver)/maps/map" type="string"/>
-	</node>
+	<node pkg="map_saver" type="ap_map_saver" name="ap_map_saver" output="screen" args="$(arg map)"/>
 </launch>
