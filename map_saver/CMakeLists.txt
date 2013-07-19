@@ -5,7 +5,7 @@ project(map_saver)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs std_msgs ap_msgs)
-find_package(scitos_apps_msgs COMPONENTS scitos_apps_msgs)
+#find_package(scitos_apps_msgs COMPONENTS scitos_apps_msgs)
 
 if(scitos_apps_msgs_FOUND)
 	message(STATUS "scitos_apps_msgs found: Compiling waypoint_recorder with joystick support")
@@ -76,7 +76,7 @@ include_directories(include
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(map_saver_node map_saver_generate_messages_cpp)
+add_dependencies(ap_map_saver ap_msgs_gencpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(ap_map_saver
