@@ -38,9 +38,9 @@ The `ap_map_saver` can also be used in conjunction with the rumblepad, where the
        
     * The optional `map` argument sets the path to save the map. This string has the same format as the one used for the `SaveMap` service. It's default value is `~/map`.
 
-run
-## The waypoint recorder
 
+    
+## The waypoint recorder
   
 
 ### Without rumblepad
