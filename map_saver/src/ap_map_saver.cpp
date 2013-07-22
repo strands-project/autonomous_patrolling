@@ -31,8 +31,7 @@ std::string map_name;
 bool saveMap(std::string file_name){
   	std::string command("rosrun map_server map_saver -f ");
 	command += file_name;
-	ROS_INFO("Saving map as: %s", file_name.c_str());
-		ROS_INFO("Saving map as: %s", command.c_str());
+	ROS_INFO("Saving map as: %s", command.c_str());
 
 	system(command.c_str());
 	return true;
@@ -62,17 +61,7 @@ bool saveMapSrv(ap_msgs::SaveMap::Request  &req, ap_msgs::SaveMap::Response &res
 int main(int argc, char **argv)
 {
 
-  //Check if map name was given as argument to the launch file, and create default map name otherwise
-  map_name=std::string(argv[1]);
-  if (!map_name.compare(std::string("default_map_name")))  {
-    ROS_WARN("No file name given for map, map will be saved with default name on home directory");
-    std::string home(getenv("HOME"));
-    home+="/";
-    char buff[20];
-    time_t now = time(NULL);
-    strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
-    map_name = std::string("~/") + std::string(buff) + std::string("map");
-  }
+
 
   
   
@@ -119,6 +108,17 @@ he subscribe() function is the size of the message
    */
 #if WITH_TELEOP
   	  ros::Subscriber sub = n.subscribe("/teleop_joystick/action_buttons", 1000, buttonCallback);
+	  //Check if map name was given as argument to the launch file, and create default map name otherwise
+	  map_name=std::string(argv[1]);
+	  if (!map_name.compare(std::string("default_map_name")))  {
+	    ROS_WARN("No file name given for map, map will be saved with default name on home directory");
+	    std::string home(getenv("HOME"));
+	    home+="/";
+	    char buff[20];
+	    time_t now = time(NULL);
+	    strftime(buff, 20, "%Y_%m_%d_%H_%M_%S", localtime(&now));
+	    map_name = std::string("~/") + std::string(buff) + std::string("map");
+	  }
 #endif
   ros::ServiceServer service = n.advertiseService("SaveMap", saveMapSrv);
 

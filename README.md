@@ -1,67 +1,111 @@
-### Setting up the workspace
-* Clone the github repository: `git clone https://github.com/strands-project/autonomous_patrolling.git`
-* Setting up the catkin workspace
-  * Change to the root directory of the repository: `cd autonomous_patrolling`
-  * To enable the new emergency stop and motor reset ability the scitos_mira package has to be installed and sourced before making the autonomous_patrolling package: `source <path_to_workspace>/scitos_mira/devel/setup.bash`. If you are using the simulator and not the real robot, you do not have to source the scitos_mira package. This will prevent the emergency stop and bumper reset buttons from working. All the other functionalities will work as described.
-  * Run `catkin_make` (Catkin_make builds all binary files and creates environment variables like the setup.bash)
-  * Troubleshooting: It might complain about missing include directories. If this is the case, go to the specified folder and create an empty include directory.
-* Setting up the overlaying catkin workspace with catkinized versions of navigation and smach packages
-  * Follow steps 3.1--3.4 in the [workspace_overlaying tutorial](http://ros.org/wiki/catkin/Tutorials/workspace_overlaying), replacing the `wstool set ros_tutorials --git git://github.com/ros/ros_tutorials.git` command by:
-    `wstool set navigation --git https://github.com/ros-planning/navigation.git -v groovy-devel-catkinized` AND
-    `wstool set executive_smach --git https://github.com/ros/executive_smach.git -v groovy-devel`
+# The autonomous patrolling package
+
+This package allows for the sequential visit of a set of pre-defined waypoints in the environment. It also has two tools for creating and saving a map, and for creating and saving a set of waypoints.
+It assumes that either a [morse simulation](https://github.com/strands-project/strands_morse) or the [scitos_bringup](https://github.com/strands-project/scitos_robot) have been launched
+
+
+## The map_saver
+
+### Without rumblepad
+
+Prior to waypoint autonomous patrolling, a map of the area to be patrolled needs to be created. For that, the `map_saver` package can be used:
+  
+      $ roslaunch map_saver ap_map_saver.launch 
+        
+        
+The `ap_map_saver` provides a `SaveMap` service, that takes as input a string of the form `"path to folder where to save the map"/map_name` (e.g., `/home/strands_user/map`) and creates the  `map_name.yaml` and `map_name.pgm` files in the selected folder.
+
+
+### With rumblepad
+  
+The `ap_map_saver` can also be used in conjunction with the rumblepad, where the user can build a map by driving the robot around and then save it. To do this:
+     
+* Before launching `ap_map_saver.launch`, launch the teleop_app:
+        
+           $ roslaunch scitos_teleop teleop_joystick.launch <js:=/dev/input/"joystick name">
+                
+* Launch the `ap_map_saver`, with an optional argument:
+        
+           $ roslaunch map_saver ap_map_saver.launch <map:="path to folder where to save the map"/map_name>
+                
+* (Optional) Start rviz to visualize the map creation: 
+     
+           $ rosrun rviz rviz
+                
+* Drive the robot around using the rumblepad
+     
+* To save the map,  press the (A) button.
+       
+    * The optional `map` argument sets the path to save the map. This string has the same format as the one used for the `SaveMap` service. It's default value is `~/map`.
+
+run
+## The waypoint recorder
+
+  
+
+### Without rumblepad
+
+Prior to waypoints autonomous patrolling, a file with the waypoints to be visited needs to be created. For that, the `waypoint_recorder` package can be used:
+  
+      $ roslaunch waypoint_recorder waypoint_recorder map:="file path to the map's .yaml file"
+        
+        
+The `waypoint_recorder` provides two services:
+  
+* A `SaveWaypoint` service, that saves the next pose published by amcl in a list.
+
+* A `SaveWaypointFile` service, that receives a string specifying the file path of the output file (e.g., `/home/strands_user/waypoints.csv`), and writes all the waypoints saved in the list to that file.
 
 
 
-### Rumblepad control
-The rumblepad_control package is designed to work with a Logitech Wireless Gamepad F710.
-* Source the corresponding setup.bash: `source autonomous_patrolling/rosbuild_ws/setup.bash`
-* Launch the rumblepad control: `roslaunch rumblepad_control rumbelpad_control.launch`
- * If the scitos_mira drivers are running, you should now be able to crontrol the robot using the joypad.
-* Controlling the robot (if you do not press any buttons, the rumbelpad control will not interfere with any autonomous behaviour but can be used to emergency stop the robot or reset the bumper after a crash):
- * In order to move the robot you have to press and hold the dead man switch which is the left top shoulder button while moving the robot around.
- * You can move the robot with the left joystick (if the mode LED on the rumbelpad is off) or with the D-Pad (if the mode LED is on). Use "Mode" button to toggle between behaviours.
- * The lower left sholder button is the emergency stop and cuts the power to the motors if press down completely.
- * To put the robot into freerun mode you can use the "Back" button on the pad.
- * To re-enable the motors after an emergency stop or hitting something with the bumper you can press the "Start" button on the pad.
-
-### Saving a map
-Prior to autonomous patrolling, a map has to be created from the space that should be patrolled. To do this, execute the following steps:
-* Connect a joypad to the machine. 
-* Make sure `roscore` is running.
-* [Simulation only] Start the strands simulator: `rosrun strands_sim simulator.sh`
-* (Optional) Test if you can move the robot with the joypad. Because the joypad sometimes has a small residual movement, we implemented a Dead man's switch. Keep the left shoulder button pressed and then move the robot with the left joystick. 
-* [Simulation only] Configure ROS to use the robot in morse: `roslaunch strands_morse_2dnav robot.launch`
-* Start the gmapping package: `rosrun gmapping slam_gmapping scan:=/scan _odom_frame:=/odom`
-* (Optional) Start rviz to visualize the map creation: `rosrun rviz rviz`
-* Run the mapsaver: `roslaunch map_saver joy_map_saver.launch` 
-* After covering the desired area with the robot, press the (A) button on the joypad to save the map to  `<map_saver_dir>/maps/maps.pgm`. The directory can also be changed in the joy_map_saver.launch file. 
 
 
-### Saving points from the map
-After the map has been created, save some points within the map. The robot uses AMCL to localize itself and the result can be stored by button presses.
-* The map which is used for localization is specified in the map_saver package in the map directory (maps.pgm and maps.yaml). If another map should be used, this should be set in the waypoint_recorder launch file. 
-* Connect a joypad to the machine. 
-* Make sure `roscore` is running.
-* [Robot only] Make sure the laser is setup correctly and broadcasting to the `/scan` topic. 
-* [Simulation only] Start the strands simulator: `rosrun strands_sim simulator.sh`
-* [Simulation only] Configure ROS to use the robot in morse: `roslaunch strands_morse_2dnav robot.launch`
-* (Optional) Start rviz to visualize the map: `rosrun rviz rviz`
-* Run the waypoint recorder: `roslaunch waypoint_recorder waypoint_recorder.launch` 
-* Press the (A) button to save a point to a file. Press the (B) button to finish mapping. The resulting csv file can be specified in the waypoint_recorder launch file. 
+### With rumblepad
+  
+The `waypoint_recorder` can also be used in conjunction with the rumblepad, where the user can  drive the robot around, create waypoints, and then save them to a file. To do this:
+     
+* Before launching `waypoint_recorder.launch`, launch the teleop_app:
+        
+           $ roslaunch scitos_teleop teleop_joystick.launch <js:=/dev/input/"joystick name">
+                
+* Launch the `waypoint_recorder`, with an optional argument:
+        
+           $ roslaunch map_saver ap_map_saver.launch map:="file path to the map's .yaml file" <waypoints:="file path to the file where waypoints shoud be saved">
+                
+* (Optional) Start rviz to check if the robot is well localized, and give it a pose estimate if needed: 
+     
+           $ rosrun rviz rviz
+                
+* Drive the robot around using the rumblepad
+     
+* To save waypoints to the list,  press the (A) button.
 
-### Starting the patrolling
-When a list of points has been stored, these can be patrolled by the robot. 
-* Make sure `roscore` is running.
-* [Robot only] Make sure the laser is setup correctly and broadcasting to the `/scan` topic. 
-* [Simulation only] Start the strands simulator: `rosrun strands_sim simulator.sh`
-* Launch navigation nodes: `roslaunch waypoint_patroller nav.launch`
-* Start rviz to visualize the map and to give the robot an initial localization: `rosrun rviz rviz`
-* Run the patroller: `roslaunch waypoint_patroller patroller.launch`
+* To save the list of waypoints to a file,  press the (B) button.
+       
+    * The optional `waypoints` argument sets the file path to save the waypoints. This string has the same format as the one used for the `SaveWaypointFile` service. It's default value is `~/waypoints.csv`.
 
 
-### General notes
-* Do not switch the button at the top of the controller! This causes the keys to be mapped in a different way. It should always be in the "X" position. 
-* To build the projects in the catkin workspace use `catkin_make`.
+
+## The waypoint patroller
+
+Aunonomously  visits a pre-defined list of points in sequence. Assumes static map and waypoints files are given as input. To run:
+
+* Launch the scitos 2d navigation:
+
+           $ roslaunch scitos_2d_navigation scitos_2d_nav.launch map:="file path to the map's .yaml file"
+           
+  * The 2d navigation is kept separated from the autonomous patroller so one can kill the patrolling process without killing the navigation related nodes.
+
+           
+* (Optional) Start rviz to check if the robot is well localized, and give it a pose estimate if needed: 
+     
+           $ rosrun rviz rviz
+           
+  
+* Launch the patroller:
+  
+           $ roslaunch waypoint_patroller patroller.launch <waypoints:="file path to the waypoints file">
+
 
 
 

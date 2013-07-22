@@ -73,7 +73,7 @@ void amclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
 {
   if(save_pose) {
 	  std::vector<float> point(7);
-      point[0] = msg->pose.pose.position.x;
+	  point[0] = msg->pose.pose.position.x;
 	  point[1] = msg->pose.pose.position.y;
 	  point[2] = msg->pose.pose.position.z;
 	  point[3] = msg->pose.pose.orientation.x;
