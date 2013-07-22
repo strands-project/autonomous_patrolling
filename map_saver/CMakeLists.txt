@@ -5,7 +5,7 @@ project(map_saver)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs std_msgs ap_msgs)
-#find_package(scitos_apps_msgs COMPONENTS scitos_apps_msgs)
+find_package(scitos_apps_msgs COMPONENTS scitos_apps_msgs)
 
 if(scitos_apps_msgs_FOUND)
 	message(STATUS "scitos_apps_msgs found: Compiling waypoint_recorder with joystick support")
