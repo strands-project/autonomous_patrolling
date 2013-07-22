@@ -76,7 +76,7 @@ include_directories(include
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(waypoint_recorder_node waypoint_recorder_generate_messages_cpp)
+add_dependencies(waypoint_recorder ap_msgs_gencpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(waypoint_recorder
