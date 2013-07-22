@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import time
-
+from random import randint
 import rospy
 import csv
 
@@ -17,6 +17,7 @@ from move_base_msgs.msg import *
 
 
 frame_id="/map"
+is_random=1;
 
 
 
@@ -100,7 +101,15 @@ class PointReader(smach.State):
 
 	next_goal = move_base_msgs.msg.MoveBaseGoal()
 
-	current_row=self.points[self.current_point]
+	if is_random:
+	  current_row=self.points[randint(0,self.n_points-1)]
+	else:
+	  current_row=self.points[self.current_point]
+	  self.current_point=self.current_point+1
+	  if self.current_point==self.n_points:
+		  self.current_point=0	
+	  
+	
 	next_goal.target_pose.header.frame_id = frame_id
 	next_goal.target_pose.header.stamp = rospy.Time.now()
 	next_goal.target_pose.pose.position.x=current_row[0]
@@ -112,9 +121,7 @@ class PointReader(smach.State):
 	next_goal.target_pose.pose.orientation.w=current_row[6]
 	
 
-	self.current_point=self.current_point+1
-	if self.current_point==self.n_points:
-		self.current_point=0
+
 
 	userdata.goal_pose=next_goal
 
@@ -144,10 +151,22 @@ def main():
       rospy.logerr("No waypoints file given. Use rosrun waypoint_patroller patroller.py [path to csv waypoints file]. If you are using a launch file, see launch/patroller.launch for an example.")
       return 1
       
-    
-      
     waypoints_name=sys.argv[1]
 
+    if len(sys.argv)>2:
+      if sys.argv[2]=="false":
+	is_random=0
+	rospy.loginfo("Executing waypoint_patroller with sequential point selection.")
+      else:
+	rospy.loginfo("Executing waypoint_patroller with random point selection.")
+    else:
+      rospy.loginfo("Executing waypoint_patroller with random point selection.")
+
+	  
+  
+	  
+	
+	
     
     
     frame_id="/map"
