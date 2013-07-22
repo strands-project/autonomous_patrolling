@@ -1,7 +1,7 @@
 <launch>
 
     <!-- declare arg to be passed in -->
-    <arg name="map" default="default_map_name"/>    
+    <arg name="map"/>    
     <arg name="waypoints" default="default_waypoints_name"/> 
 
         

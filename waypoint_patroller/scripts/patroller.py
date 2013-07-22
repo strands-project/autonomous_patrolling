@@ -111,7 +111,6 @@ class PointReader(smach.State):
 	next_goal.target_pose.pose.orientation.z=current_row[5]
 	next_goal.target_pose.pose.orientation.w=current_row[6]
 	
-	rospy.loginfo(current_row[6])
 
 	self.current_point=self.current_point+1
 	if self.current_point==self.n_points:
@@ -140,10 +139,15 @@ def main():
     rospy.init_node('patroller')
 
     
-    waypoints_name=sys.argv[1]
-    if waypoints_name=="default_waypoints_name":
-      rospy.logerr("No waypoints file given")
+    #Check if a waypoints file was given as argument
+    if len(sys.argv)<2:
+      rospy.logerr("No waypoints file given. Use rosrun waypoint_patroller patroller.py [path to csv waypoints file]. If you are using a launch file, see launch/patroller.launch for an example.")
       return 1
+      
+    
+      
+    waypoints_name=sys.argv[1]
+
     
     
     frame_id="/map"
