@@ -88,7 +88,7 @@ The `waypoint_recorder` can also be used in conjunction with the rumblepad, wher
 
 ## The waypoint patroller
 
-Aunonomously  visits a pre-defined list of points in sequence. Assumes static map and waypoints files are given as input. To run:
+Aunonomously  visits a pre-defined list of points randomly or in sequence. Assumes static map and waypoints files are given as input. To run:
 
 * Launch the scitos 2d navigation:
 
@@ -104,7 +104,9 @@ Aunonomously  visits a pre-defined list of points in sequence. Assumes static ma
   
 * Launch the patroller:
   
-           $ roslaunch waypoint_patroller patroller.launch <waypoints:="file path to the waypoints file">
+           $ roslaunch waypoint_patroller patroller.launch waypoints:="file path to the waypoints file" <randomized:="value">
+           
+   * The optional argument randomized can be true or false. Default is true. If false is given, then the points are visited sequentially
 
 
 
