@@ -10,21 +10,18 @@ from scitos_msgs.msg import MotorStatus
 from scitos_msgs.msg import BatteryState
 
 
-CHARGED_BATTERY=99
-LOW_BATTERY=15
-VERY_LOW_BATTERY=5
+CHARGED_BATTERY=95
+LOW_BATTERY=35
+VERY_LOW_BATTERY=15
 
 
 
 #true -> continue monitor
 #false -> terminate and return 'invalid'
 def bumper_cb(ud, msg):
-    if  msg.bumper_pressed:
-        n_tries=ud.n_recover_tries_in
-        ud.n_recover_tries_out=n_tries
+    if  msg.motor_stopped and not msg.free_run:
         return False
     else:
-        ud.n_recover_tries_out=0 #just to avoid warning when robot does a path without being bumped
         return True
                         
 
@@ -41,7 +38,7 @@ def battery_cb(ud, msg):
 
 
 def bumper_monitor():    
-    state=smach_ros.MonitorState("/motor_status", MotorStatus, bumper_cb,input_keys=['n_recover_tries_in'],output_keys=['n_recover_tries_out'])
+    state=smach_ros.MonitorState("/motor_status", MotorStatus, bumper_cb)
     return state
   
      
