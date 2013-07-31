@@ -14,13 +14,14 @@ from recover_states import RecoverMoveBase
 from recover_states import RecoverBumper
 
 
-        
-                
-        
+
+
+MOVE_BASE_EXEC_TIMEOUT=rospy.Duration(600.0)
+MOVE_BASE_PREEMPT_TIMEOUT=rospy.Duration(10.0)
 
 
 def child_term_cb(outcome_map):
-    if outcome_map['BUMPER_MONITOR'] == 'invalid' or outcome_map["BATTERY_MONITOR"]=="invalid" or outcome_map["MOVE_BASE_SM"]=="succeeded":
+    if outcome_map['BUMPER_MONITOR'] == 'invalid' or outcome_map["BATTERY_MONITOR"]=="invalid" or outcome_map["MOVE_BASE_SM"]=="succeeded" or outcome_map['MOVE_BASE_SM']=="failure":
         return True
     return False
 
@@ -33,6 +34,9 @@ def out_cb(outcome_map):
         return "battery_low"
     if outcome_map["MOVE_BASE_SM"]=="succeeded":
         return "succeeded"
+    if outcome_map["MOVE_BASE_SM"]=="failure":
+        return "failure"
+        
 
         
         
@@ -53,32 +57,42 @@ def move_base_goal_cb(userdata,goal):
     
 
 def move_base_result_cb(userdata,status,result):
-    if status==4: #aborted
-        userdata.fails=userdata.fails+1
+    if status==GoalStatus.ABORTED:
+        userdata.n_move_base_fails=userdata.n_move_base_fails+1
     else:
-        if status==3: #succeeded
-            userdata.fails=0    
+        if status==GoalStatus.SUCCEEDED:
+            userdata.n_move_base_fails=0
+
+            
     
-   
+
+    
+
+    
+    
 
 def move_base_sm():
     sm=smach.StateMachine(outcomes=['succeeded','failure','preempted'], input_keys=['goal_pose'])
     
     with sm:
         
-        sm.userdata.fails=0
+        sm.userdata.n_move_base_fails=0
+        
         
         smach.StateMachine.add('MOVE_BASE',
-                      smach_ros.SimpleActionState('move_base',
-                                        MoveBaseAction,
-                                        goal_cb=move_base_goal_cb,
-                                        result_cb=move_base_result_cb,
-                                        input_keys=['goal_pose','fails'],
-                                        output_keys=['fails']),
-                      transitions={'succeeded':'succeeded','aborted':'RECOVER_MOVE_BASE','preempted':'preempted'},
+                    smach_ros.SimpleActionState('move_base',
+                                      MoveBaseAction,
+                                      goal_cb=move_base_goal_cb,
+                                      result_cb=move_base_result_cb,
+                                      input_keys=['goal_pose','n_move_base_fails'],
+                                      output_keys=['n_move_base_fails'],
+                                      exec_timeout=MOVE_BASE_EXEC_TIMEOUT,
+                                      preempt_timeout=MOVE_BASE_PREEMPT_TIMEOUT
+                                      ),
+                    transitions={'succeeded':'succeeded','aborted':'RECOVER_MOVE_BASE','preempted':'preempted'},
                       #remapping={'gripper_input':'userdata_input'}
-                      )
-        smach.StateMachine.add('RECOVER_MOVE_BASE', RecoverMoveBase(),  transitions={'succeeded':'MOVE_BASE'})
+                    )
+        smach.StateMachine.add('RECOVER_MOVE_BASE', RecoverMoveBase(),  transitions={'succeeded':'MOVE_BASE','failure':'failure'})
         
     return sm
         
@@ -87,16 +101,13 @@ def navigation():
 
 
         sm=smach.StateMachine(outcomes=['succeeded','bumper_failure','move_base_failure','battery_low'], input_keys=['goal_pose','going_to_charge'])
-        sm.userdata.cur_tries = 0
-        sm.userdata.prev_tries = 0
         with sm:
                     
             monitored_move_base=smach.Concurrence(outcomes=['bumper_pressed','battery_low','succeeded','failure'],
                                                 default_outcome='failure',
                                                 child_termination_cb=child_term_cb,
                                                 outcome_cb = out_cb,
-                                                input_keys=[ 'goal_pose','going_to_charge','n_recover_tries_in'],
-                                                output_keys=['n_recover_tries_out']
+                                                input_keys=[ 'goal_pose','going_to_charge']
                                                 )
         
             with monitored_move_base:
@@ -106,10 +117,8 @@ def navigation():
                             #remapping={'gripper_input':'userdata_input'}
                             )
             
-            smach.StateMachine.add('MONITORED_MOVE_BASE',monitored_move_base,transitions={'bumper_pressed':'RECOVER_BUMPER','battery_low':'battery_low','succeeded':'succeeded','failure':'move_base_failure'},
-                                    remapping={'n_recover_tries_out':'prev_tries', 'n_recover_tries_in':'cur_tries'})
-            smach.StateMachine.add('RECOVER_BUMPER', RecoverBumper(),  transitions={'succeeded':'MONITORED_MOVE_BASE','failure':'bumper_failure'},
-                                    remapping={'n_recover_tries_in':'prev_tries', 'n_recover_tries_out':'cur_tries'})
+            smach.StateMachine.add('MONITORED_MOVE_BASE',monitored_move_base,transitions={'bumper_pressed':'RECOVER_BUMPER','battery_low':'battery_low','succeeded':'succeeded','failure':'move_base_failure'})
+            smach.StateMachine.add('RECOVER_BUMPER', RecoverBumper(),  transitions={'succeeded':'MONITORED_MOVE_BASE','failure':'bumper_failure'})
              
         return sm
           

@@ -15,7 +15,7 @@ from scitos_msgs.msg import BatteryState
 
 
 
-CHARGE_BATTERY_TRESHOLD=20
+CHARGE_BATTERY_TRESHOLD=40
 
 
 class PointChooser(smach.State):

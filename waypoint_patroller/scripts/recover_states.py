@@ -17,7 +17,7 @@ MAX_MOVE_BASE_RECOVERY_ATTEMPTS=5
 class RecoverMoveBase(smach.State):
     def __init__(self):
         smach.State.__init__(self,
-            outcomes    = ['succeeded','failure'], input_keys=['fails']
+            outcomes    = ['succeeded','failure','preempted'], input_keys=['n_move_base_fails']
         )
         self.vel_pub = rospy.Publisher('/cmd_vel', Twist)
         self._vel_cmd = Twist()
@@ -25,13 +25,13 @@ class RecoverMoveBase(smach.State):
 
 
     def execute(self,userdata):
-        if userdata.fails<MAX_MOVE_BASE_RECOVERY_ATTEMPTS:
-            for i in range(0,20): 
+        if userdata.n_move_base_fails<MAX_MOVE_BASE_RECOVERY_ATTEMPTS:
+            for i in range(0,40): 
                 self.vel_pub.publish(self._vel_cmd)
                 if self.preempt_requested():
                     self.service_preempt()
                     return 'preempted'
-                rospy.sleep(0.1)
+                rospy.sleep(0.2)
                 return 'succeeded'
         else:
             return 'failure'
@@ -42,14 +42,12 @@ class RecoverMoveBase(smach.State):
 class RecoverBumper(smach.State):
     def __init__(self):
         smach.State.__init__(self,
-            outcomes    = ['succeeded','failure'],
-            input_keys=['n_recover_tries_in'],
-            output_keys=['n_recover_tries_out']
+            outcomes    = ['succeeded','failure']
         )
         self.reset_motorstop = rospy.ServiceProxy('reset_motorstop', ResetMotorStop)
         self.is_recovered=False
-        self.motor_monitor=rospy.Subscriber("/motor_status", MotorStatus, self.bumper_cb)
-
+        self.motor_monitor=rospy.Subscriber("/motor_status", MotorStatus, self.bumper_cb)        
+        self.n_tries=0
                 
 
 
@@ -57,16 +55,15 @@ class RecoverBumper(smach.State):
         self.isRecovered=not msg.bumper_pressed
 
     def execute(self,userdata):
-        n_tries=userdata.n_recover_tries_in
-        if n_tries<MAX_BUMPER_RECOVERY_ATTEMPTS:
-            n_tries=n_tries+1
-            rospy.sleep(3*n_tries)
+        if self.n_tries<MAX_BUMPER_RECOVERY_ATTEMPTS:
+            self.n_tries=self.n_tries+1
+            rospy.sleep(3*self.n_tries)
             self.reset_motorstop()
             rospy.sleep(0.1)
             if self.isRecovered:
-                userdata.n_recover_tries_out=0
+                self.n_tries=0
             else:           
-                userdata.n_recover_tries_out=n_tries
+                self.n_tries=self.n_tries+1
             return 'succeeded'
         else:
             return 'failure'
