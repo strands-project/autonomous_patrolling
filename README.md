@@ -22,11 +22,11 @@ The `ap_map_saver` can also be used in conjunction with the rumblepad, where the
      
 * Before launching `ap_map_saver.launch`, launch the teleop_app:
         
-           $ roslaunch scitos_teleop teleop_joystick.launch <js:=/dev/input/"joystick name">
+           $ roslaunch scitos_teleop teleop_joystick.launch '<js:=/dev/input/"joystick name">'
                 
 * Launch the `ap_map_saver`, with an optional argument:
         
-           $ roslaunch map_saver ap_map_saver.launch <map:="path to folder where to save the map"/map_name>
+           $ roslaunch map_saver ap_map_saver.launch '<map:="path to folder where to save the map"/map_name>'
                 
 * (Optional) Start rviz to visualize the map creation: 
      
@@ -66,11 +66,11 @@ The `waypoint_recorder` can also be used in conjunction with the rumblepad, wher
      
 * Before launching `waypoint_recorder.launch`, launch the teleop_app:
         
-           $ roslaunch scitos_teleop teleop_joystick.launch <js:=/dev/input/"joystick name">
+           $ roslaunch scitos_teleop teleop_joystick.launch '<js:=/dev/input/"joystick name">'
                 
 * Launch the `waypoint_recorder`, with an optional argument:
         
-           $ roslaunch waypoint_recorder waypoint_recorder.launch map:="file path to the map's .yaml file" <waypoints:="file path to the file where waypoints shoud be saved">
+           $ roslaunch waypoint_recorder waypoint_recorder.launch map:="file path to the map's .yaml file" '<waypoints:="file path to the file where waypoints shoud be saved">'
                 
 * (Optional) Start rviz to check if the robot is well localized, and give it a pose estimate if needed: 
      
@@ -104,7 +104,7 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Assum
   
 * Launch the patroller:
   
-           $ roslaunch waypoint_patroller patroller.launch waypoints:="file path to the waypoints file" <randomized:="value">
+           $ roslaunch waypoint_patroller patroller.launch waypoints:="file path to the waypoints file" '<randomized:="value">'
            
    * The optional argument randomized can be true or false. Default is true. If false is given, then the points are visited sequentially
 
