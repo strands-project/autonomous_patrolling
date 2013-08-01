@@ -25,14 +25,15 @@ class RecoverMoveBase(smach.State):
 
 
     def execute(self,userdata):
-        if userdata.n_move_base_fails<MAX_MOVE_BASE_RECOVERY_ATTEMPTS:
-            for i in range(0,40): 
-                self.vel_pub.publish(self._vel_cmd)
-                if self.preempt_requested():
-                    self.service_preempt()
-                    return 'preempted'
-                rospy.sleep(0.2)
-                return 'succeeded'
+        for i in range(0,20): 
+            self.vel_pub.publish(self._vel_cmd)
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            rospy.sleep(0.2)
+                
+        if userdata.n_move_base_fails<MAX_MOVE_BASE_RECOVERY_ATTEMPTS:     
+            return 'succeeded'
         else:
             return 'failure'
         
