@@ -6,4 +6,5 @@ bin/
 .*
 src/map_saver/maps/*
 src/waypoint_recorder/waypoints/*
+*.pyc
 
