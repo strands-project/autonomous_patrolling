@@ -1,6 +1,6 @@
 # The autonomous patrolling package
 
-This package allows for the sequential visit of a set of pre-defined waypoints in the environment. It also has two tools for creating and saving a map, and for creating and saving a set of waypoints.
+This package allows for the sequential or randomized visit of a set of pre-defined waypoints in the environment, along with a charging behaviour when the battery level drops below a given treshold. It also has two tools for creating and saving a map, and for creating and saving a set of waypoints.
 It assumes that either a [morse simulation](https://github.com/strands-project/strands_morse) or the [scitos_bringup](https://github.com/strands-project/scitos_robot) have been launched
 
 
@@ -78,7 +78,7 @@ The `waypoint_recorder` can also be used in conjunction with the rumblepad, wher
                 
 * Drive the robot around using the rumblepad
      
-* To save waypoints to the list,  press the (A) button.
+* To save waypoints to the list,  press the (A) button. NOTE: The FIRST point you save should be the one in front of your charging station, so that the robot knows where to navigate when it needs to charge.
 
 * To save the list of waypoints to a file,  press the (B) button.
        
@@ -88,7 +88,7 @@ The `waypoint_recorder` can also be used in conjunction with the rumblepad, wher
 
 ## The waypoint patroller
 
-Aunonomously  visits a pre-defined list of points randomly or in sequence. Assumes static map and waypoints files are given as input. To run:
+Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes to charge when battery drops below a given treshold and after it is recharged, continues the patrolling. Assumes static map and waypoints files are given as input, and that the first point in the waypoints file is the point the robot should navigate to when it needs to charge. To run:
 
 * Launch the scitos 2d navigation:
 
@@ -101,9 +101,20 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Assum
      
            $ rosrun rviz rviz
            
+* Run the autonomous docking service:
+
+           $ rosrun scitos_docking visual_charging
+
+* Calibrate the docking:
+
+           $ rosservice call /chargingSrv calibrate 100
   
 * Launch the patroller:
   
-           $ roslaunch waypoint_patroller patroller.launch waypoints:="file path to the waypoints file" randomized:="value"
+           $ roslaunch waypoint_patroller long_term_patroller.launch waypoints:="file path to the waypoints file" <randomized:="value"> <n_it:="number of iterations">
            
    * The optional argument randomized can be true or false. Default is true. If false is given, then the points are visited sequentially
+   * The optional argument n_it specifies how many complete iterations of all the points should be done before the patroller outputs succeeded. Default is -1, which means infinite iterations
+
+
+
