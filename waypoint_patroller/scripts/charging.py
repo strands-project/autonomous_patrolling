@@ -68,7 +68,6 @@ class ChargingState(smach.State):
             outcomes    = ['invalid','valid'],            
         )
         
-        #self.reset_motorstop = rospy.ServiceProxy('reset_motorstop', ResetMotorStop)
 
 
     def execute(self,userdata):
@@ -94,8 +93,7 @@ def monitored_docking():
                                                     default_outcome='failure',
                                                     child_termination_cb=child_term_cb,
                                                     outcome_cb = out_cb,
-                                                    input_keys=['going_to_charge','n_recover_tries_in'],
-                                                    output_keys=['n_recover_tries_out'])
+                                                    input_keys=['going_to_charge'])
                                                     
     with conc:                                                
     
@@ -121,10 +119,8 @@ def dock_and_charge():
     
     with docking_sm:
         
-        smach.StateMachine.add('MONITORED_DOCK',monitored_docking(), transitions={'succeeded':'succeeded','failure':'failure','bumper_pressed':'RECOVER_BUMPER'},
-                                remapping={'n_recover_tries_out':'prev_tries', 'n_recover_tries_in':'cur_tries'})
-        smach.StateMachine.add('RECOVER_BUMPER', RecoverBumper(),  transitions={'succeeded':'MONITORED_DOCK'},
-                                remapping={'n_recover_tries_in':'prev_tries', 'n_recover_tries_out':'cur_tries'})
+        smach.StateMachine.add('MONITORED_DOCK',monitored_docking(), transitions={'succeeded':'succeeded','failure':'failure','bumper_pressed':'RECOVER_BUMPER'})
+        smach.StateMachine.add('RECOVER_BUMPER', RecoverBumper(),  transitions={'succeeded':'MONITORED_DOCK'})
         
     return docking_sm
     

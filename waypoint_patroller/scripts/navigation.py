@@ -27,7 +27,7 @@ def child_term_cb(outcome_map):
 
     
 def out_cb(outcome_map):
-    rospy.sleep(0.1)
+   # rospy.sleep(0.1)
     if outcome_map['BUMPER_MONITOR'] == 'invalid':
         return 'bumper_pressed'
     if  outcome_map["BATTERY_MONITOR"]=="invalid":
