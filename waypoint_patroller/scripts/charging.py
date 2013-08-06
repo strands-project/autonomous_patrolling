@@ -13,6 +13,10 @@ from monitor_states import battery_monitor
 from recover_states import RecoverBumper
 
 
+#This file contains the monitored docking with recovery behaviours state machine
+
+
+#Calls the docking service. will be changed to call a docking action when one is available
 class DockToChargingStation(smach.State):
     def __init__(self):
         smach.State.__init__(self,
@@ -36,7 +40,7 @@ class DockToChargingStation(smach.State):
           
   
   
-  
+#undocks. Should be changed to used the undock service (eventually action, when it is ready) instead of what is here right now  
 class UndockFromChargingStation(smach.State):
     def __init__(self):
         smach.State.__init__(self,
@@ -61,24 +65,14 @@ class UndockFromChargingStation(smach.State):
         
         
         
-#states used onnly for tests. replace by battery_monitor  
-class ChargingState(smach.State):
-    def __init__(self):
-        smach.State.__init__(self,
-            outcomes    = ['invalid','valid'],            
-        )
-        
 
 
-    def execute(self,userdata):
-        rospy.sleep(3)
-
-        return 'invalid'
-                
-  
+#outcome maps for the concurrence container
+#The cild termination callback decided when the concurrence container should be terminated, bases on the outcomes of its children. When it outputs True, the container terminates and the concurrence container outcome callback is called
 def child_term_cb(outcome_map):
     return True
- 
+
+#The concurrence container outcome callback maps the outcomes of the container's children into an outcome for the concurrence container itself    
 def out_cb(outcome_map):
     if outcome_map['BUMPER_MONITOR'] == 'invalid':
         return 'bumper_pressed'
@@ -87,6 +81,7 @@ def out_cb(outcome_map):
 
 
 
+#Docking + bumper recovery behaviour. The input key 'going_to_charge' defines the battery monitor state results. In this case, it trminates when the battery life goes above the charged battery treshold
 def monitored_docking():
     
     conc=smach.Concurrence(outcomes=['bumper_pressed','succeeded','failure'],
@@ -101,7 +96,6 @@ def monitored_docking():
         with unmonitored_dock:
             smach.StateMachine.add('DOCK_TO_CHARGING_STATION',DockToChargingStation(), transitions={'succeeded':'CHARGING','failure':'DOCK_TO_CHARGING_STATION'} )
             smach.StateMachine.add('CHARGING',battery_monitor(), transitions={'invalid':'UNDOCK_FROM_CHARGING_STATION','valid':'UNDOCK_FROM_CHARGING_STATION'} )
-           #smach.StateMachine.add('CHARGING',ChargingState(), transitions={'invalid':'UNDOCK_FROM_CHARGING_STATION','valid':'CHARGING'} ) #test: change afterwards
             smach.StateMachine.add('UNDOCK_FROM_CHARGING_STATION',UndockFromChargingStation(), transitions={'succeeded':'succeeded','failure':'UNDOCK_FROM_CHARGING_STATION'} )
             
         
@@ -112,7 +106,7 @@ def monitored_docking():
     
     
     
-    
+#adds the bumper recovery behaviour. This state needs to be on the same level as the concurrenc container that has the bumper monitor so that the monitor can be restarted after the bumper is recovered.     
 def dock_and_charge():
     
     docking_sm=smach.StateMachine(outcomes=['succeeded','failure'], input_keys=['going_to_charge'])
