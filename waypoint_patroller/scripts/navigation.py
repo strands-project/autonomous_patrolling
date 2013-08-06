@@ -14,20 +14,25 @@ from recover_states import RecoverMoveBase
 from recover_states import RecoverBumper
 
 
+#This file contains the monitored navigation with recovery behaviours state machine
+
 
 
 MOVE_BASE_EXEC_TIMEOUT=rospy.Duration(600.0)
 MOVE_BASE_PREEMPT_TIMEOUT=rospy.Duration(10.0)
 
 
+#outcome maps for the concurrence container
+#The cild termination callback decided when the concurrence container should be terminated, bases on the outcomes of its children. When it outputs True, the container terminates and the concurrence container outcome callback is called
 def child_term_cb(outcome_map):
     if outcome_map['BUMPER_MONITOR'] == 'invalid' or outcome_map["BATTERY_MONITOR"]=="invalid" or outcome_map["MOVE_BASE_SM"]=="succeeded" or outcome_map['MOVE_BASE_SM']=="failure":
         return True
     return False
 
-    
+
+#The concurrence container outcome callback maps the outcomes of the container's children into an outcome for the concurrence container itself   
 def out_cb(outcome_map):
-   # rospy.sleep(0.1)
+   # rospy.sleep(0.1) without this sleep, sometimes the concurrence container terminates before all its children terminate, and an error is printed. However, that does not affect the evolution, and I think that with the sleep sometimes the container blocks and never terminates
     if outcome_map['BUMPER_MONITOR'] == 'invalid':
         return 'bumper_pressed'
     if  outcome_map["BATTERY_MONITOR"]=="invalid":
@@ -39,7 +44,7 @@ def out_cb(outcome_map):
         
 
         
-        
+#callback that build the move_base goal, from the input data        
 def move_base_goal_cb(userdata,goal):
     
     next_goal = move_base_msgs.msg.MoveBaseGoal()            
@@ -55,7 +60,7 @@ def move_base_goal_cb(userdata,goal):
     
     return next_goal
     
-
+#called after the move_base state terminates. Increases the number of move_base fails or resets it to 0 according to the move_base result
 def move_base_result_cb(userdata,status,result):
     if status==GoalStatus.ABORTED:
         userdata.n_move_base_fails=userdata.n_move_base_fails+1
@@ -70,7 +75,7 @@ def move_base_result_cb(userdata,status,result):
 
     
     
-
+#Move base + recovery behaviour. The number of move_base fails is sent from the move_base action state to the move_base recovery state.
 def move_base_sm():
     sm=smach.StateMachine(outcomes=['succeeded','failure','preempted'], input_keys=['goal_pose'])
     
@@ -96,13 +101,15 @@ def move_base_sm():
         
     return sm
         
-        
+
+#adds the bumper and battery monitors running concurrently, and the bumper recovery as an extra state in the navigation state machine        
 def navigation(): 
 
 
         sm=smach.StateMachine(outcomes=['succeeded','bumper_failure','move_base_failure','battery_low'], input_keys=['goal_pose','going_to_charge'])
         with sm:
-                    
+            
+            #move_base state machine running in parallel with the bumper and battery monitor states. The input key 'goal_pose' is used to build the new move_base goal, and the input key 'going_to_charge' is used to define the behaviour of the battery monitor        
             monitored_move_base=smach.Concurrence(outcomes=['bumper_pressed','battery_low','succeeded','failure'],
                                                 default_outcome='failure',
                                                 child_termination_cb=child_term_cb,
@@ -116,8 +123,8 @@ def navigation():
                 smach.Concurrence.add('MOVE_BASE_SM',move_base_sm()
                             #remapping={'gripper_input':'userdata_input'}
                             )
-            
-            smach.StateMachine.add('MONITORED_MOVE_BASE',monitored_move_base,transitions={'bumper_pressed':'RECOVER_BUMPER','battery_low':'battery_low','succeeded':'succeeded','failure':'move_base_failure'})
+#adds the bumper recovery behaviour. This state needs to be on the same level as the concurrence container that has the bumper monitor so that the monitor can be restarted after the bumper is recovered.             
+             smach.StateMachine.add('MONITORED_MOVE_BASE',monitored_move_base,transitions={'bumper_pressed':'RECOVER_BUMPER','battery_low':'battery_low','succeeded':'succeeded','failure':'move_base_failure'})
             smach.StateMachine.add('RECOVER_BUMPER', RecoverBumper(),  transitions={'succeeded':'MONITORED_MOVE_BASE','failure':'bumper_failure'})
              
         return sm

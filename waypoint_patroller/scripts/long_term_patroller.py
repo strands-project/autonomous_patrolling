@@ -14,10 +14,13 @@ from charging import dock_and_charge
 from scitos_msgs.msg import BatteryState
 
 
+#This file implements the higher level state machine for long term patrolling. It uses both the navigation and the dock and charge state machines
+
 
 CHARGE_BATTERY_TRESHOLD=40
 
 
+#the point chooser state checks the battery life, and if it is greater than CHARGE_BATTERY_TRESHOLD, sends the robot to a new patrol point. Otherwise, the robot is sent to the charging station (assumed to be the first point in the waypoints file). The ordering of visitng the patrolling points is either sequential or random, depending on a command-line argument, as is the number of iterations the robot should do until the state machine terminates with success
 class PointChooser(smach.State):
     def __init__(self, waypoints_name,is_random,n_iterations):
         smach.State.__init__(self,
@@ -38,7 +41,7 @@ class PointChooser(smach.State):
                                 current_row.append(float(element))
                         self.points.append(current_row)
 
-        
+        #takes the charging station point from the lists of points read from the csv file
         self.charging_station_pos=self.points[0]
         del(self.points[0])
         
@@ -48,6 +51,8 @@ class PointChooser(smach.State):
         self.is_random=is_random
         self.n_iterations=n_iterations
         self.iterations_completed=0
+        
+        #rearranges the list of points to visit randomly
         if self.is_random:
             shuffle(self.points)
 
@@ -99,7 +104,7 @@ def main():
       rospy.logerr("No waypoints file given. Use rosrun waypoint_patroller patroller.py [path to csv waypoints file]. If you are using a launch file, see launch/patroller.launch for an example.")
       return 1
       
-    waypoints_name=sys.argv[1]
+    waypoints_name=sys.argv[1] #waypoints file is a csv file with goal poses. The first line of the file has the position in front of the charging station
 
     
     is_random=1;
