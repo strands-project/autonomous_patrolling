@@ -124,7 +124,7 @@ def navigation():
                             #remapping={'gripper_input':'userdata_input'}
                             )
 #adds the bumper recovery behaviour. This state needs to be on the same level as the concurrence container that has the bumper monitor so that the monitor can be restarted after the bumper is recovered.             
-             smach.StateMachine.add('MONITORED_MOVE_BASE',monitored_move_base,transitions={'bumper_pressed':'RECOVER_BUMPER','battery_low':'battery_low','succeeded':'succeeded','failure':'move_base_failure'})
+            smach.StateMachine.add('MONITORED_MOVE_BASE',monitored_move_base,transitions={'bumper_pressed':'RECOVER_BUMPER','battery_low':'battery_low','succeeded':'succeeded','failure':'move_base_failure'})
             smach.StateMachine.add('RECOVER_BUMPER', RecoverBumper(),  transitions={'succeeded':'MONITORED_MOVE_BASE','failure':'bumper_failure'})
              
         return sm
