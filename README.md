@@ -110,7 +110,6 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
 rosrun actionlib axclient.py /chargingServer
 ```
 Then in the `Goal` textfield complete as follows:
-
 ```
 Command: calibrate
 Timeout: 1000
