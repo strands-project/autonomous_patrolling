@@ -114,8 +114,8 @@ Then in the `Goal` textfield complete as follows:
 Command: calibrate
 Timeout: 1000
 ```
-Then press `SEND GOAL`.
-  
+Then press the `SEND GOAL` button.
+
 * Launch the patroller:
   
            $ roslaunch waypoint_patroller long_term_patroller.launch waypoints:="file path to the waypoints file" <randomized:="value"> <n_it:="number of iterations">
