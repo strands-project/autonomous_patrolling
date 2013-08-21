@@ -114,6 +114,7 @@ Then in the `Goal` textfield complete as follows:
 Command: calibrate
 Timeout: 1000
 ```
+Then press `SEND GOAL`.
   
 * Launch the patroller:
   
