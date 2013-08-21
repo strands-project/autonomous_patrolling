@@ -106,8 +106,15 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
            $ rosrun scitos_docking visual_charging
 
 * Calibrate the docking:
+```bash
+rosrun actionlib axclient.py /chargingServer
+```
+Then in the `Goal` textfield complete as follows:
 
-           $ rosservice call /chargingSrv calibrate 100
+```
+Command: calibrate
+Timeout: 1000
+```
   
 * Launch the patroller:
   
