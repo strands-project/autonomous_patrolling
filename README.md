@@ -106,9 +106,16 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
            $ rosrun scitos_docking visual_charging
 
 * Calibrate the docking:
+```bash
+rosrun actionlib axclient.py /chargingServer
+```
+Then in the `Goal` textfield complete as follows:
+```
+Command: calibrate
+Timeout: 1000
+```
+Then press the `SEND GOAL` button.
 
-           $ rosservice call /chargingSrv calibrate 100
-  
 * Launch the patroller:
   
            $ roslaunch waypoint_patroller long_term_patroller.launch waypoints:="file path to the waypoints file" <randomized:="value"> <n_it:="number of iterations">
