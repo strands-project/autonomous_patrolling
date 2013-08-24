@@ -161,7 +161,7 @@ class Visualiser(object):
         update={}
         p = feedback.pose.position
         q = feedback.pose.orientation
-        self._points_db.update({"meta.name":feedback.marker_name},{"$set":{"msg.pose":{"position":{"x":p.x,
+        self._points_db.update({"meta.name":feedback.marker_name},{"$set":{"msg":{"position":{"x":p.x,
                                                                                           "y":p.y,
                                                                                           "z":p.z},
                                                                               "orientation":{"x":q.x,
