@@ -16,8 +16,8 @@ from scitos_msgs.msg import BatteryState
 
 
 
-CHARGED_BATTERY=95
-LOW_BATTERY=35
+CHARGED_BATTERY=70
+LOW_BATTERY=65
 VERY_LOW_BATTERY=15
 
 

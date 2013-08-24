@@ -17,7 +17,7 @@ from scitos_msgs.msg import BatteryState
 #This file implements the higher level state machine for long term patrolling. It uses both the navigation and the dock and charge state machines
 
 
-CHARGE_BATTERY_TRESHOLD=40
+CHARGE_BATTERY_TRESHOLD=65
 
 
 #the point chooser state checks the battery life, and if it is greater than CHARGE_BATTERY_TRESHOLD, sends the robot to a new patrol point. Otherwise, the robot is sent to the charging station (assumed to be the first point in the waypoints file). The ordering of visitng the patrolling points is either sequential or random, depending on a command-line argument, as is the number of iterations the robot should do until the state machine terminates with success

@@ -7,6 +7,8 @@ from geometry_msgs.msg import Twist
 
 
 from scitos_apps_msgs.srv import Charging
+from scitos_apps_msgs.msg import ChargingAction, ChargingGoal
+
 
 from monitor_states import bumper_monitor
 from monitor_states import battery_monitor
@@ -94,8 +96,17 @@ def monitored_docking():
     
         unmonitored_dock=smach.StateMachine(outcomes=['succeeded','failure','preempted'],input_keys=['going_to_charge'])    
         with unmonitored_dock:
-            smach.StateMachine.add('DOCK_TO_CHARGING_STATION',DockToChargingStation(), transitions={'succeeded':'CHARGING','failure':'DOCK_TO_CHARGING_STATION'} )
+            dock_goal = ChargingGoal()
+            dock_goal.Command = "charge"
+            dock_goal.Timeout = 100
+            
+            
+            smach.StateMachine.add('DOCK_TO_CHARGING_STATION',
+                                   # DockToChargingStation(),
+                                   smach_ros.SimpleActionState('chargingServer', ChargingAction, goal=dock_goal), transitions={'succeeded':'CHARGING','aborted':'DOCK_TO_CHARGING_STATION'} )
+            
             smach.StateMachine.add('CHARGING',battery_monitor(), transitions={'invalid':'UNDOCK_FROM_CHARGING_STATION','valid':'UNDOCK_FROM_CHARGING_STATION'} )
+            
             smach.StateMachine.add('UNDOCK_FROM_CHARGING_STATION',UndockFromChargingStation(), transitions={'succeeded':'succeeded','failure':'UNDOCK_FROM_CHARGING_STATION'} )
             
         
