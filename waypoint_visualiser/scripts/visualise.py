@@ -89,7 +89,7 @@ class Visualiser(object):
 #            p.position.y=entry["pose"]["position"]["y"]
 #            p.position.z=entry["pose"]["position"]["z"]
 
-            self._create_marker(meta["name"], p)
+            self._create_marker(meta["name"], p, meta["name"])
 
         rospy.spin()
 
