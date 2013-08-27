@@ -16,14 +16,16 @@ from scitos_msgs.msg import BatteryState
 
 from dynamic_reconfigure.server import Server
 from waypoint_patroller.cfg import BatteryTresholdsConfig
+from geometry_msgs.msg import Pose
+
+import strands_datacentre as datacentre
+import strands_datacentre.util
+got_pymongo = strands_datacentre.util.check_for_pymongo()
+if got_pymongo:
+    import pymongo
 
 #ParameterStore is a singleton class that contains all the battery tresholds. It is used so we that the updated tresholds can then be read by the battery monitor in monitor_states.py
 from parameter_store import ParameterStore
-
-
-
-
-
 
 #This file implements the higher level state machine for long term patrolling. It uses both the navigation and the dock and charge state machines
 
@@ -45,21 +47,19 @@ class PointChooser(smach.State):
             output_keys=['goal_pose','going_to_charge']
         )
         
-        
-        
-
-
-        self.points=[]
-        with open(waypoints_name, 'rb') as csvfile:
-                reader = csv.reader(csvfile, delimiter=',')
-                for row in reader:
-                        current_row=[]
-                        for element in row:
-                                current_row.append(float(element))
-                        self.points.append(current_row)
+        self.points = self._get_points(waypoints_name)  #[]
+        self.point_set = waypoints_name
+#        with open(waypoints_name, 'rb') as csvfile:
+#                reader = csv.reader(csvfile, delimiter=',')
+#                for row in reader:
+#                        current_row=[]
+#                        for element in row:
+#                                current_row.append(float(element))
+#                        self.points.append(current_row)
         #takes the charging station point from the lists of points read from the csv file
-        self.charging_station_pos=self.points[0]
-        del(self.points[0])
+#        self.charging_station_pos=self.points[0]
+#        del(self.points[0])
+        self.charing_station_pos=[waypoints_name, "charging_point"]
         
         self.current_point=-1
         self.n_points=len(self.points)
@@ -76,16 +76,31 @@ class PointChooser(smach.State):
         self.battery_life=100
         self.battery_monitor=rospy.Subscriber("/battery_state", BatteryState, self.bat_cb)
 
+    """ Get a list of points in the given set """
+    def _get_points(self, point_set):
+        mongo = pymongo.MongoClient(rospy.get_param("datacentre_host"),rospy.get_param("datacentre_port"))
+        points = []
+        for point in mongo.autonomous_patrolling.waypoints.find({"meta.pointset": point_set}):
+            print point
+            if point["meta"]["name"] != "charging_point":
+                points.append([ point_set, point["meta"]["name"] ])
+        return points
+
+    """ Get a given waypoint pose """
+    def _get_point(self, point_name, point_set):
+        mongo = pymongo.MongoClient(rospy.get_param("datacentre_host"),rospy.get_param("datacentre_port"))
+        p=mongo.autonomous_patrolling.waypoints.find({"meta.name":point_name,"meta.pointset":point_set})[0]
+        meta, pose = strands_datacentre.util.document_to_msg(p, Pose)
+        return pose
+
     def bat_cb(self,msg):
         self.battery_life=msg.lifePercent
         
-        
-
     def execute(self,userdata):    
         rospy.sleep(1)
             
-        if self.battery_life>ParameterStore().LOW_BATTERY+5:
-            self.current_point=self.current_point+1
+        if self.battery_life > ParameterStore().LOW_BATTERY + 5:
+            self.current_point = self.current_point + 1
             if self.current_point==self.n_points:
                 self.iterations_completed=self.iterations_completed+1
                 if self.iterations_completed == self.n_iterations:
@@ -95,13 +110,13 @@ class PointChooser(smach.State):
                     shuffle(self.points)
                 
                      
-            current_row=self.points[self.current_point]
-
-            userdata.goal_pose=current_row
+#            current_row=self.points[self.current_point]
+            current_pt = self.points[self.current_point]
+            userdata.goal_pose = self._get_point(current_pt[1],current_pt[0]) #current_row
             userdata.going_to_charge=0
             return 'patrol'
         else:
-            userdata.goal_pose=self.charging_station_pos
+            userdata.goal_pose=self._get_point("charging_point", self.point_set)
             userdata.going_to_charge=1
             return 'go_charge'
         
@@ -113,6 +128,15 @@ def main():
 
 
     rospy.init_node('patroller')
+
+    # Check for connection to the datacentre
+    got_mongo = strands_datacentre.util.wait_for_mongo()
+    if not got_mongo:
+        sys.exit(1)
+    if not got_pymongo:
+        sys.exit(1)
+
+        
     
     #dynamic reconfiguration of battery tresholds
     srv = Server(BatteryTresholdsConfig, reconfigure_callback)

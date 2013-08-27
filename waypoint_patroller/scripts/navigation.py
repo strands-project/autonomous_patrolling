@@ -50,13 +50,14 @@ def move_base_goal_cb(userdata,goal):
     next_goal = move_base_msgs.msg.MoveBaseGoal()            
     next_goal.target_pose.header.frame_id = "/map"
     next_goal.target_pose.header.stamp = rospy.Time.now()
-    next_goal.target_pose.pose.position.x=userdata.goal_pose[0]
-    next_goal.target_pose.pose.position.y=userdata.goal_pose[1]
-    next_goal.target_pose.pose.position.z=userdata.goal_pose[2]
-    next_goal.target_pose.pose.orientation.x=userdata.goal_pose[3]
-    next_goal.target_pose.pose.orientation.y=userdata.goal_pose[4]
-    next_goal.target_pose.pose.orientation.z=userdata.goal_pose[5]
-    next_goal.target_pose.pose.orientation.w=userdata.goal_pose[6]
+    next_goal.target_pose.pose = userdata.goal_pose
+#    next_goal.target_pose.pose.position.x=userdata.goal_pose[0]
+#    next_goal.target_pose.pose.position.y=userdata.goal_pose[1]
+#    next_goal.target_pose.pose.position.z=userdata.goal_pose[2]
+#    next_goal.target_pose.pose.orientation.x=userdata.goal_pose[3]
+#    next_goal.target_pose.pose.orientation.y=userdata.goal_pose[4]
+#    next_goal.target_pose.pose.orientation.z=userdata.goal_pose[5]
+#    next_goal.target_pose.pose.orientation.w=userdata.goal_pose[6]
     
     return next_goal
     
