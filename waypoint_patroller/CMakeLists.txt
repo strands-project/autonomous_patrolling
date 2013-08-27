@@ -4,7 +4,15 @@ project(waypoint_patroller)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS actionlib actionlib_msgs move_base_msgs rospy scitos_msgs scitos_apps_msgs std_msgs)
+find_package(catkin REQUIRED COMPONENTS actionlib actionlib_msgs move_base_msgs rospy scitos_msgs scitos_apps_msgs std_msgs dynamic_reconfigure)
+
+#add dynamic reconfigure api
+find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/BatteryTresholds.cfg
+)
+
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

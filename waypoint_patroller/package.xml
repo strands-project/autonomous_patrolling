@@ -47,6 +47,7 @@
   <build_depend>scitos_msgs</build_depend>
   <build_depend>scitos_apps_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
   <run_depend>move_base_msgs</run_depend>
@@ -54,6 +55,8 @@
   <run_depend>scitos_msgs</run_depend>
   <run_depend>scitos_apps_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+  
   
 
 

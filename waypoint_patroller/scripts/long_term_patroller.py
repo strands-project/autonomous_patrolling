@@ -14,10 +14,27 @@ from charging import dock_and_charge
 from scitos_msgs.msg import BatteryState
 
 
+from dynamic_reconfigure.server import Server
+from waypoint_patroller.cfg import BatteryTresholdsConfig
+
+#ParameterStore is a singleton class that contains all the battery tresholds. It is used so we that the updated tresholds can then be read by the battery monitor in monitor_states.py
+from parameter_store import ParameterStore
+
+
+
+
+
+
 #This file implements the higher level state machine for long term patrolling. It uses both the navigation and the dock and charge state machines
 
 
-CHARGE_BATTERY_TRESHOLD=65
+#reconfigures the battery tresholds
+def reconfigure_callback(config, level):
+    ParameterStore().CHARGED_BATTERY=config.charged_battery
+    ParameterStore().LOW_BATTERY=config.low_battery
+    ParameterStore().VERY_LOW_BATTERY=config.very_low_battery
+    return config
+
 
 
 #the point chooser state checks the battery life, and if it is greater than CHARGE_BATTERY_TRESHOLD, sends the robot to a new patrol point. Otherwise, the robot is sent to the charging station (assumed to be the first point in the waypoints file). The ordering of visitng the patrolling points is either sequential or random, depending on a command-line argument, as is the number of iterations the robot should do until the state machine terminates with success
@@ -40,7 +57,6 @@ class PointChooser(smach.State):
                         for element in row:
                                 current_row.append(float(element))
                         self.points.append(current_row)
-
         #takes the charging station point from the lists of points read from the csv file
         self.charging_station_pos=self.points[0]
         del(self.points[0])
@@ -68,7 +84,7 @@ class PointChooser(smach.State):
     def execute(self,userdata):    
         rospy.sleep(1)
             
-        if self.battery_life>CHARGE_BATTERY_TRESHOLD:
+        if self.battery_life>ParameterStore().LOW_BATTERY+5:
             self.current_point=self.current_point+1
             if self.current_point==self.n_points:
                 self.iterations_completed=self.iterations_completed+1
@@ -97,6 +113,10 @@ def main():
 
 
     rospy.init_node('patroller')
+    
+    #dynamic reconfiguration of battery tresholds
+    srv = Server(BatteryTresholdsConfig, reconfigure_callback)
+
 
     
     #Check if a waypoints file was given as argument
