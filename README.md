@@ -118,10 +118,11 @@ Then press the `SEND GOAL` button.
 
 * Launch the patroller:
   
-           $ roslaunch waypoint_patroller long_term_patroller.launch waypoints:="file path to the waypoints file" <randomized:="value"> <n_it:="number of iterations">
+           $ roslaunch waypoint_patroller long_term_patroller.launch waypoints:="file path to the waypoints file" randomized:="value" n_it:="number of iterations"
            
    * The optional argument randomized can be true or false. Default is true. If false is given, then the points are visited sequentially
    * The optional argument n_it specifies how many complete iterations of all the points should be done before the patroller outputs succeeded. Default is -1, which means infinite iterations
+   * NOTE: For the robot to speak and ask for help, the user that launches this file needs to be logged in the robot's computer. This is related to [this](https://github.com/strands-project/strands_hri/issues/7)
 
 
 

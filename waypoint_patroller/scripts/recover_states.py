@@ -2,7 +2,9 @@ import rospy
 
 import smach
 import smach_ros
-
+import actionlib
+from actionlib_msgs.msg import *
+from ros_mary_tts.msg import *
 
 from scitos_msgs.srv import ResetMotorStop
 from scitos_msgs.msg import MotorStatus
@@ -13,11 +15,12 @@ from geometry_msgs.msg import Twist
 
 
 
+
 #this file has the recovery states that will be used when some failures are detected.
 #there is a recovery behaviour for move_base and another for when the bumper is pressed
 
 
-MAX_BUMPER_RECOVERY_ATTEMPTS=5
+MAX_BUMPER_RECOVERY_ATTEMPTS=10
 MAX_MOVE_BASE_RECOVERY_ATTEMPTS=5
 
 
@@ -57,27 +60,32 @@ class RecoverBumper(smach.State):
             outcomes    = ['succeeded','failure']
         )
         self.reset_motorstop = rospy.ServiceProxy('reset_motorstop', ResetMotorStop)
-        self.is_recovered=False
-        self.motor_monitor=rospy.Subscriber("/motor_status", MotorStatus, self.bumper_cb)        
-        self.n_tries=0
+        self.motor_monitor=rospy.Subscriber("/motor_status", MotorStatus, self.bumper_cb)
+        self.isRecovered=False
+        self.speaker=actionlib.SimpleActionClient('/speak', maryttsAction)
+        self.speak_goal= maryttsGoal()
+        self.speak_goal.text='My bumper is being pressed. Please release it so I can move on!'
+        self.speaker.wait_for_server()
                 
 
 
     def bumper_cb(self,msg):
-        self.isRecovered=not msg.bumper_pressed
+        self.isRecovered=not msg.motor_stopped
 
-	#restarts the motors and check to see of they really restarted. Between each failure the waiting time to try and restart the motors again increases. This state can check its own success
+    #restarts the motors and check to see of they really restarted. Between each failure the waiting time to try and restart the motors again increases. This state can check its own success
     def execute(self,userdata):
-        if self.n_tries<MAX_BUMPER_RECOVERY_ATTEMPTS:
-            self.n_tries=self.n_tries+1
-            rospy.sleep(3*self.n_tries)
+        n_tries=1
+        while True:
+            rospy.sleep(3*n_tries)
             self.reset_motorstop()
             rospy.sleep(0.1)
             if self.isRecovered:
-                self.n_tries=0
-            else:           
-                self.n_tries=self.n_tries+1
-            return 'succeeded'
-        else:
-            return 'failure'
+                return 'succeeded'
+            if n_tries>1:            
+                self.speaker.send_goal(self.speak_goal)
+                #check if action was successful
+            #if n_tries>MAX_BUMPER_RECOVERY_ATTEMPTS:
+                #log error, warn people
+            n_tries=n_tries+1
+
         

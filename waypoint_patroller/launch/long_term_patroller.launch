@@ -4,7 +4,7 @@
     <arg name="randomized" default="true"/>
     <arg name="n_it" default="-1"/>
 
-    
+     <include file="$(find ros_mary_tts)/launch/ros_mary.launch"/>
 
 
     <node name="patroller" pkg="waypoint_patroller" type="long_term_patroller.py" output="screen" args="$(arg waypoints) $(arg randomized) $(arg n_it)">
