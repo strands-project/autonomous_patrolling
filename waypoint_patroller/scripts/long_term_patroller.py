@@ -23,8 +23,6 @@ from parameter_store import ParameterStore
 
 
 
-
-
 #This file implements the higher level state machine for long term patrolling. It uses both the navigation and the dock and charge state machines
 
 
@@ -75,7 +73,12 @@ class PointChooser(smach.State):
         
         self.battery_life=100
         self.battery_monitor=rospy.Subscriber("/battery_state", BatteryState, self.bat_cb)
+        
 
+
+        
+        
+        
     def bat_cb(self,msg):
         self.battery_life=msg.lifePercent
         
@@ -146,8 +149,9 @@ def main():
             rospy.loginfo("Executing waypoint_patroller with infinite iterations")
     else:
         rospy.loginfo("Executing waypoint_patroller with infinite iterations")
-	  
-  
+
+	
+	
 	
     # Create a SMACH state machine
     long_term_patrol_sm = smach.StateMachine(outcomes=['succeeded','aborted'])

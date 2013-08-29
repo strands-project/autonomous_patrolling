@@ -7,13 +7,17 @@ from smach_ros import *
 
 from scitos_msgs.msg import MotorStatus
 from scitos_msgs.msg import BatteryState
+from ap_msgs.msg import NavStatus
 
 #ParameterStore is a singleton class that contains all the battery tresholds. It is used so that the battery_monitor can read the tresholds, which can be dynamically reconfigured by long_term_patroller.py
 from parameter_store import ParameterStore
 
 
 #this file has the monitor states that will run in parallel with other behaviours, using a smach concurrence container. These states subscribe to a given topic and remain active until their callback returns False.  When that happens they terminate and return outcome 'invalid'
-#There is a monitor for the bumper status and another for the battery life
+#Current monitors:
+#bumper status (pressed or not)
+#battery status (low, very_low or charged)
+#stuck trying to rotate on carpet
 
 
 
@@ -40,19 +44,25 @@ def battery_cb(ud, msg):
         return  msg.lifePercent>ParameterStore().LOW_BATTERY   
    
             
+def stuck_on_carpet_cb(ud,msg):
+    return not msg.carpet_stuck
 
 
-
+    
+    
 def bumper_monitor():    
     state=smach_ros.MonitorState("/motor_status", MotorStatus, bumper_cb)
     return state
   
-     
-   
+        
         
 def battery_monitor():   
     state=smach_ros.MonitorState("/battery_state", BatteryState, battery_cb,input_keys=['going_to_charge'])
     return state
     
 
+
+def stuck_on_carpet_monitor():   
+    state=smach_ros.MonitorState("/nav_status", NavStatus, stuck_on_carpet_cb)
+    return state
   
