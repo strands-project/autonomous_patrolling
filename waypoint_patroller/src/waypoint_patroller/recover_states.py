@@ -3,13 +3,9 @@ import rospy
 import smach
 import smach_ros
 
-
 from scitos_msgs.srv import ResetMotorStop
 from scitos_msgs.msg import MotorStatus
-
-
 from geometry_msgs.msg import Twist
-
 
 # this file has the recovery states that will be used when some failures are
 # detected. There is a recovery behaviour for move_base and another for when the
@@ -19,7 +15,6 @@ MAX_MOVE_BASE_RECOVERY_ATTEMPTS = 5
 
 
 class RecoverMoveBase(smach.State):
-
     def __init__(self):
         smach.State.__init__(self,
                              # we need the number of move_base fails as
@@ -53,7 +48,6 @@ class RecoverMoveBase(smach.State):
 
 
 class RecoverBumper(smach.State):
-
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'failure']

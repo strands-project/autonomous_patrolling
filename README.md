@@ -1,4 +1,6 @@
 # The autonomous patrolling package
+           
+THIS DOCUMENTATION REFERS TO VERSION 1; PLEASE WAIT FOR AN UPDATE BEFORE RUNNING
 
 This package allows for the sequential or randomized visit of a set of pre-defined waypoints in the environment, along with a charging behaviour when the battery level drops below a given treshold. It also has two tools for creating and saving a map, and for creating and saving a set of waypoints.
 It assumes that either a [morse simulation](https://github.com/strands-project/strands_morse) or the [scitos_bringup](https://github.com/strands-project/scitos_robot) have been launched

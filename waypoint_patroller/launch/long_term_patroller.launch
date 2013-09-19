@@ -1,11 +1,7 @@
 <launch>
-
     <arg name="waypoints"/>
     <arg name="randomized" default="true"/>
     <arg name="n_it" default="-1"/>
-
-    
-
 
     <node name="patroller" pkg="waypoint_patroller" type="long_term_patroller.py" output="screen" args="$(arg waypoints) $(arg randomized) $(arg n_it)">
     </node>
