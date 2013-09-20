@@ -73,10 +73,12 @@ include_directories(include
 
 ## Declare a cpp executable
  add_executable(waypoint_recorder src/waypoint_recorder.cpp)
+ add_executable(waypoint_recorder_with_pt src/waypoint_recorder_with_pt.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(waypoint_recorder ap_msgs_gencpp)
+add_dependencies(waypoint_recorder_with_pt ap_msgs_gencpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(waypoint_recorder
@@ -84,6 +86,10 @@ add_dependencies(waypoint_recorder ap_msgs_gencpp)
    ${scitos_apps_msgs_LIBRARIES}
  )
 
+ target_link_libraries(waypoint_recorder_with_pt
+   ${catkin_LIBRARIES}
+   ${scitos_apps_msgs_LIBRARIES}
+ )
 #############
 ## Install ##
 #############
