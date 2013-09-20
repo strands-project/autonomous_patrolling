@@ -42,7 +42,7 @@ def reconfigure_callback(config, level):
 class PanTilt(smach.State):
     def __init__(self):
         smach.State.__init__(self,
-            outcomes    = ['success', 'failure', 'not_defined'],
+            outcomes    = ['succeeded', 'failure', 'not_defined'],
             input_keys=['goal_pose']
 
         )
@@ -61,17 +61,30 @@ class PanTilt(smach.State):
         if rospy.is_shutdown(): # Exiting gracefully when ctrl-c is pressed
             return 'abort'
 
+	if (len(userdata.goal_pose) > 7):
+	   pose = scitos_ptu.msg.PanTiltGoal()
+           pose.target_ptu_pose = JointState()
+           pose.target_ptu_pose.position = userdata.goal_pose[7:13]
 
-#        self.ptuClient.send_goal(userdata.ptu_pose)
+	   # START LOGGING HERE
 
-#        self.ptuClient.wait_for_result()
+	   self.ptuClient.send_goal(pose)
+           self.ptuClient.wait_for_result()
+           result=self.ptuClient.get_state()
 
-#        result=self.ptuClient.get_state()
+	   # END LOGGIING HERE
 
-#        if result != GoalStatus.SUCCEEDED:
-#            return 'failure'
+           if result != GoalStatus.SUCCEEDED:
+              return 'failure'
+	   else:
+	      return 'succeeded'
+
+	else:
+            rospy.loginfo("Pan tilt action not defined for this waypoint.")
+	    return 'not_defined'
+
 	
-	print 'PanTilt state', userdata.goal_pose
+#	print 'PanTilt state', userdata.goal_pose
 
 
 #the point chooser state checks the battery life, and if it is greater than CHARGE_BATTERY_TRESHOLD, sends the robot to a new patrol point. Otherwise, the robot is sent to the charging station (assumed to be the first point in the waypoints file). The ordering of visitng the patrolling points is either sequential or random, depending on a command-line argument, as is the number of iterations the robot should do until the state machine terminates with success
@@ -199,7 +212,7 @@ def main():
         smach.StateMachine.add('PATROL_POINT', navigation(),  
                                 transitions={'succeeded':'PT_POINT', 'battery_low':'POINT_CHOOSER','bumper_failure':'aborted','move_base_failure':'POINT_CHOOSER'})
         smach.StateMachine.add('PT_POINT', PanTilt(),  
-                                transitions={'succeeded':'POINT_CHOOSER', 'failure','POINT_CHOOSER', 'not_defined','POINT_CHOOSER'})
+                                transitions={'succeeded':'POINT_CHOOSER', 'failure':'POINT_CHOOSER', 'not_defined':'POINT_CHOOSER'})
         smach.StateMachine.add('GO_TO_CHARGING_STATION', navigation(),  
                                 transitions={'succeeded':'DOCK_AND_CHARGE', 'battery_low':'GO_TO_CHARGING_STATION','bumper_failure':'aborted','move_base_failure':'aborted'})
         smach.StateMachine.add('DOCK_AND_CHARGE',dock_and_charge() , transitions={'succeeded':'POINT_CHOOSER','failure':'aborted'})
