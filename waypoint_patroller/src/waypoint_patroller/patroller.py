@@ -17,8 +17,6 @@ if got_pymongo:
     import pymongo
 
 
-from parameter_store import ParameterStore
-
 """
 The point chooser state selects which waypoint to visit next. It checks the
 battery life, and if it is greater than CHARGE_BATTERY_TRESHOLD, it selects
@@ -49,6 +47,8 @@ class PointChooser(smach.State):
                                        'succeeded'],
                              output_keys=['goal_pose', 'going_to_charge']
                              )
+        
+        self.LOW_BATTERY = 35
 
         self.points = self._get_points(waypoints_name)  # []
         self.point_set = waypoints_name
@@ -100,7 +100,7 @@ class PointChooser(smach.State):
     def execute(self, userdata):
         rospy.sleep(1)
 
-        if self.battery_life > ParameterStore().LOW_BATTERY + 5:
+        if self.battery_life > self.LOW_BATTERY + 5:
             self.current_point = self.current_point + 1
             if self.current_point == self.n_points:
                 self.iterations_completed = self.iterations_completed + 1
@@ -120,6 +120,13 @@ class PointChooser(smach.State):
                                                  self.point_set)
             userdata.going_to_charge = 1
             return 'go_charge'
+        
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        self.LOW_BATTERY = low_battery
 
 """
 A top level state machine, that implements waypoint patrolling. Waypoints are
@@ -140,29 +147,52 @@ class WaypointPatroller(smach.StateMachine):
     def __init__(self, waypoints_name, is_random, n_iterations):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'aborted'])
         
+        self._point_chooser =  PointChooser(waypoints_name,
+                                            is_random,
+                                            n_iterations)
+        self._high_level_move_base =  navigation.HighLevelMoveBase()
+        self._dock_undock = charging.BumpRecoverableDockUndockBehaviour()
+        
         with self:
             smach.StateMachine.add('POINT_CHOOSER',
-                                   PointChooser(waypoints_name,
-                                                is_random,
-                                                n_iterations),
+                                   self._point_chooser,
                                    transitions={'patrol': 'PATROL_POINT',
                                                 'go_charge': 'GO_TO_CHARGING_STATION',
                                                 'succeeded': 'succeeded'})
             smach.StateMachine.add('PATROL_POINT',
-                                   navigation.HighLevelMoveBase(),
+                                   #navigation.HighLevelMoveBase(),
+                                   self._high_level_move_base, 
                                    transitions={'succeeded': 'POINT_CHOOSER',
                                                 'battery_low': 'POINT_CHOOSER',
                                                 'bumper_failure': 'aborted',
                                                 'move_base_failure': 'POINT_CHOOSER'})
             smach.StateMachine.add('GO_TO_CHARGING_STATION',
-                                   navigation.HighLevelMoveBase(),
+                                   #navigation.HighLevelMoveBase(),
+                                   self._high_level_move_base, 
                                    transitions={'succeeded': 'DOCK_AND_CHARGE',
                                                 'battery_low': 'GO_TO_CHARGING_STATION',
                                                 'bumper_failure': 'aborted',
                                                 'move_base_failure': 'aborted'})
             
             smach.StateMachine.add('DOCK_AND_CHARGE',
-                                   charging.BumpRecoverableDockUndockBehaviour(),
+                                   self._dock_undock,
                                    transitions={'succeeded': 'POINT_CHOOSER',
                                                 'failure': 'aborted'})
+            
+
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        self._point_chooser.set_battery_thresholds(very_low_battery,
+                                                   low_battery, 
+                                                   charged_battery)
+        self._high_level_move_base.set_battery_thresholds(very_low_battery,
+                                                          low_battery, 
+                                                          charged_battery)
+        self._dock_undock.set_battery_thresholds(very_low_battery,
+                                                          low_battery, 
+                                                          charged_battery)
+   
 

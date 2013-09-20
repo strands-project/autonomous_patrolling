@@ -17,7 +17,7 @@ got_pymongo = strands_datacentre.util.check_for_pymongo()
 if got_pymongo:
     import pymongo
     
-from parameter_store import ParameterStore
+#from parameter_store import ParameterStore
 
 class LongTermPatroller(object):
     """
@@ -39,9 +39,12 @@ class LongTermPatroller(object):
         
     """ Dyanmic reconfigure callback for the battery tresholds """
     def reconfigure_callback(self, config, level):
-        ParameterStore().CHARGED_BATTERY = config.charged_battery
-        ParameterStore().LOW_BATTERY = config.low_battery
-        ParameterStore().VERY_LOW_BATTERY = config.very_low_battery
+        self.long_term_patrol_sm.set_battery_thresholds(config.very_low_battery,
+                                                        config.low_battery, 
+                                                        config.charged_battery)
+        #ParameterStore().CHARGED_BATTERY = config.charged_battery
+        #ParameterStore().LOW_BATTERY = config.low_battery
+        #ParameterStore().VERY_LOW_BATTERY = config.very_low_battery
         return config
 
     

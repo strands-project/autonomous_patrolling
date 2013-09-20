@@ -118,8 +118,9 @@ class MonitoredRecoverableMoveBase(smach.Concurrence):
                                    input_keys=['goal_pose',
                                                'going_to_charge']
                                    )
+        self._battery_monitor = BatteryMonitor()
         with self:
-            smach.Concurrence.add('BATTERY_MONITOR', BatteryMonitor())
+            smach.Concurrence.add('BATTERY_MONITOR', self._battery_monitor)
             smach.Concurrence.add('BUMPER_MONITOR', BumperMonitor())
             smach.Concurrence.add('MOVE_BASE_SM', RecoverableMoveBase())
     
@@ -148,6 +149,17 @@ class MonitoredRecoverableMoveBase(smach.Concurrence):
             return "succeeded"
         if outcome_map["MOVE_BASE_SM"] == "failure":
             return "failure"
+        
+    
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        self._battery_monitor.set_battery_thresholds(very_low_battery,
+                                                     low_battery,
+                                                     charged_battery)
+    
 
 
 
@@ -175,9 +187,10 @@ class HighLevelMoveBase(smach.StateMachine):
                                                     'battery_low'],
                                           input_keys=['goal_pose',
                                                       'going_to_charge'] )
+        self._monitored_recoverable_move_base = MonitoredRecoverableMoveBase()
         with self:
             smach.StateMachine.add('MONITORED_MOVE_BASE',
-                                   MonitoredRecoverableMoveBase(),
+                                   self._monitored_recoverable_move_base,
                                    transitions={'bumper_pressed': 'RECOVER_BUMPER',
                                                 'battery_low': 'battery_low',
                                                 'succeeded': 'succeeded',
@@ -186,3 +199,14 @@ class HighLevelMoveBase(smach.StateMachine):
                                    RecoverBumper(),
                                    transitions={'succeeded': 'MONITORED_MOVE_BASE',
                                                 'failure': 'bumper_failure'})
+    
+    
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        self._monitored_recoverable_move_base.set_battery_thresholds(very_low_battery,
+                                                     low_battery,
+                                                     charged_battery)
+    

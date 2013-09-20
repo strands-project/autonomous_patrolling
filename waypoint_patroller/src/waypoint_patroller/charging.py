@@ -69,6 +69,8 @@ class DockUndockBehaviour(smach.StateMachine):
                                                     'preempted'],
                                           input_keys=['going_to_charge'])
         
+        self._battery_monitor =  BatteryMonitor()
+        
         with self:
             smach.StateMachine.add('DOCK_TO_CHARGING_STATION',
                                    DockToChargingStation(),
@@ -76,7 +78,7 @@ class DockUndockBehaviour(smach.StateMachine):
                                                 'aborted': 'DOCK_TO_CHARGING_STATION'})
 
             smach.StateMachine.add('CHARGING',
-                                   BatteryMonitor(),
+                                   self._battery_monitor,
                                    transitions={
                                        'invalid': 'UNDOCK_FROM_CHARGING_STATION',
                                        'valid': 'UNDOCK_FROM_CHARGING_STATION'})
@@ -85,6 +87,16 @@ class DockUndockBehaviour(smach.StateMachine):
                                    UndockFromChargingStation(),
                                    transitions={'succeeded': 'succeeded',
                                                 'failure': 'UNDOCK_FROM_CHARGING_STATION'})
+
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        self._battery_monitor.set_battery_thresholds(very_low_battery,
+                                                   low_battery, 
+                                                   charged_battery)
+   
 
 """
 A bumper aware version of DockUndockBeahviour. 
@@ -100,8 +112,9 @@ class BumpMonitoredDockUndockBehaviour(smach.Concurrence):
                                    outcome_cb=self.out_cb,
                                    input_keys=['going_to_charge']
                                    )
+        self._dock_undock_bahaviour = DockUndockBehaviour()
         with self:
-            smach.Concurrence.add('UNMONITORED_DOCKING', DockUndockBehaviour())
+            smach.Concurrence.add('UNMONITORED_DOCKING', self._dock_undock_bahaviour)
             smach.Concurrence.add('BUMPER_MONITOR', BumperMonitor())
 
     def child_term_cb(self, outcome_map):
@@ -115,7 +128,16 @@ class BumpMonitoredDockUndockBehaviour(smach.Concurrence):
             return 'bumper_pressed'
         if outcome_map["UNMONITORED_DOCKING"] == "succeeded":
             return "succeeded"
-
+        
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        self._dock_undock_bahaviour.set_battery_thresholds(very_low_battery,
+                                                   low_battery, 
+                                                   charged_battery)
+   
 
 
 """
@@ -136,10 +158,11 @@ class BumpRecoverableDockUndockBehaviour(smach.StateMachine):
                                               'failure'],
                                     input_keys=['going_to_charge'])
 
+        self._bump_monitored_dk_undk = BumpMonitoredDockUndockBehaviour()
     
         with self:
             smach.StateMachine.add('MONITORED_DOCK',
-                                   BumpMonitoredDockUndockBehaviour(),
+                                   self._bump_monitored_dk_undk,
                                    transitions={'succeeded': 'succeeded',
                                                 'failure': 'failure',
                                                 'bumper_pressed': 'RECOVER_BUMPER'
@@ -148,5 +171,12 @@ class BumpRecoverableDockUndockBehaviour(smach.StateMachine):
             smach.StateMachine.add('RECOVER_BUMPER',
                                    RecoverBumper(),
                                    transitions={'succeeded': 'MONITORED_DOCK' })
-    
-
+        
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        self._bump_monitored_dk_undk.set_battery_thresholds(very_low_battery,
+                                                   low_battery, 
+                                                   charged_battery)

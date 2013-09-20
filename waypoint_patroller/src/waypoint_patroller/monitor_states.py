@@ -17,12 +17,18 @@ class BatteryMonitor(smach_ros.MonitorState):
                                         BatteryState,
                                         self._callback,
                                         input_keys=['going_to_charge'])
-        self.set_thresholds(very_low_battery, low_battery, charged_battery)
+        self.set_battery_thresholds(very_low_battery, low_battery,
+                                    charged_battery)
         
     """ 
     Set the battery level thresholds.
     """
-    def set_thresholds(self, very_low_battery, low_battery, charged_battery):
+    def set_battery_thresholds(self, very_low_battery, low_battery,
+                               charged_battery):
+        rospy.loginfo("Updating battery thresholds on BatteryMonitor:")
+        rospy.loginfo("V.Low="+str(very_low_battery))
+        rospy.loginfo("Low="+str(low_battery))
+        rospy.loginfo("Charged="+str(charged_battery))
         if very_low_battery is not None:
             self.VERY_LOW_BATTERY = very_low_battery
         if low_battery is not None:
