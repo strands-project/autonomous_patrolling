@@ -25,7 +25,7 @@ class PanTilt(smach.State):
     def __init__(self):
         smach.State.__init__(self,
             outcomes    = ['success', 'failure'],
-            input_keys=['pan_tilt_pose']
+            input_keys=['ptu_pose']
             
         )
 
@@ -43,6 +43,8 @@ class PanTilt(smach.State):
         if rospy.is_shutdown(): # Exiting gracefully when ctrl-c is pressed
             return 'abort'
 
+
+	print userdata.ptu_pose
 
         self.ptuClient.send_goal(userdata.ptu_pose)
 
@@ -112,11 +114,11 @@ class PointReader(smach.State):
     def __init__(self, waypoints_name):
         smach.State.__init__(self,
             outcomes    = ['goto_point','pan_tilt'],
-            output_keys=['goal_pose']
+            output_keys=['goal_pose','ptu_pose']
             
         )
 
-	self.PrevWasPoint = False
+	self.waypointReached = False
 	self.points=[]
 	with open(waypoints_name, 'rb') as csvfile:
 	     	reader = csv.reader(csvfile, delimiter=',')
@@ -133,11 +135,12 @@ class PointReader(smach.State):
     def execute(self,userdata):
 
 
-	if (not self.PrevWasPoint):
+	if (self.waypointReached or len(self.points[self.current_point]) < 12) :
 		next_goal = move_base_msgs.msg.MoveBaseGoal()
 
 		if is_random:
-		  current_row=self.points[randint(0,self.n_points-1)]
+		  self.current_point=randint(0,self.n_points-1)
+		  current_row=self.points[self.current_point]
 		else:
 		  current_row=self.points[self.current_point]
 		  self.current_point=self.current_point+1
@@ -157,11 +160,14 @@ class PointReader(smach.State):
 
 		userdata.goal_pose=next_goal
 		
-		self.PrevWasPoint = True
+		self.waypointReached = False
 		return 'goto_point'
 	else:
-		userdata.ptu_pose = JointState()
-		self.PrevWasPoint = False
+		pose = scitos_ptu.msg.PanTiltGoal()
+		pose.target_ptu_pose = JointState()
+		pose.target_ptu_pose.position = self.points[self.current_point][7:13]
+		userdata.ptu_pose = pose
+		self.waypointReached = True
 		return 'pan_tilt'	
 
 
@@ -217,7 +223,7 @@ def main():
     with sm:
         smach.StateMachine.add('POINT_READER', PointReader(waypoints_name), 
                                transitions={'goto_point':'GOING_TO_POINT', 'pan_tilt':'PAN_TILT_XTION'},
-                               remapping={'goal_pose':'goal_pose'})
+                               remapping={'goal_pose':'goal_pose','ptu_pose':'ptu_pose'})
 
         smach.StateMachine.add('GOING_TO_POINT', GoTo(), 
                                transitions={'success':'POINT_READER','failure':'aborted'},
@@ -225,7 +231,7 @@ def main():
 
         smach.StateMachine.add('PAN_TILT_XTION', PanTilt(), 
                                transitions={'success':'POINT_READER','failure':'aborted'},
-                               remapping={'goal_pose':'goal_pose'})
+                               remapping={'ptu_pose':'ptu_pose'})
 
 
  
