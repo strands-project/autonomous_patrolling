@@ -7,6 +7,8 @@ from smach_ros import *
 
 from scitos_msgs.msg import MotorStatus, BatteryState
 
+from logger import Loggable
+
 """
 A smach_ros  MonitorState that monitors the robot's battery. 
 """
@@ -51,7 +53,7 @@ class BatteryMonitor(smach_ros.MonitorState):
 A smach_ros  MonitorState that monitors the robot's bumper. If the bumper get
 pressed, this state to exit with outcome 'invalid'.
 """
-class BumperMonitor(smach_ros.MonitorState):
+class BumperMonitor(smach_ros.MonitorState, Loggable):
     def __init__(self):
         smach_ros.MonitorState.__init__(self, "/motor_status",
                                         MotorStatus,
@@ -62,6 +64,7 @@ class BumperMonitor(smach_ros.MonitorState):
         # using msg.bumper_pressed does not work properly because sometimes the
         # bumper is pressed but no change of state is published
         if msg.motor_stopped and not msg.free_run:
+            self.get_logger().log_bump()
             return False
         else:
             return True

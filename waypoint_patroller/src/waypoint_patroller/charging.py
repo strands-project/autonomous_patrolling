@@ -12,12 +12,12 @@ from scitos_apps_msgs.msg import ChargingAction, ChargingGoal
 
 from monitor_states import BumperMonitor, BatteryMonitor 
 from recover_states import RecoverBumper
-
+from logger import Loggable
 
 """
 A smach_ros SimpleActionState state that calls the robot docking behaviour
 """
-class DockToChargingStation(smach_ros.SimpleActionState):
+class DockToChargingStation(smach_ros.SimpleActionState, Loggable):
     def __init__(self):
         dock_goal = ChargingGoal()
         dock_goal.Command = "charge"
@@ -27,6 +27,12 @@ class DockToChargingStation(smach_ros.SimpleActionState):
                                              'chargingServer',
                                              ChargingAction,
                                              goal=dock_goal )
+        
+    def execute(self, ud):
+        self.get_logger().log_charging_start()
+        outcome = smach_ros.SimpleActionState.execute(self, ud)
+        
+        return outcome
 
 """
 Undocks the robot from the station.
@@ -37,7 +43,7 @@ outcomes: 	succeeded
             preempted
             
 """
-class UndockFromChargingStation(smach.State):
+class UndockFromChargingStation(smach.State, Loggable):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['succeeded',
@@ -49,6 +55,7 @@ class UndockFromChargingStation(smach.State):
         self._vel_cmd.linear.x = -0.2
 
     def execute(self, userdata):
+        self.get_logger().log_charging_finish()
         for i in range(0, 20):
             self.vel_pub.publish(self._vel_cmd)
             if self.preempt_requested():
@@ -62,7 +69,7 @@ class UndockFromChargingStation(smach.State):
 A state machine that docks the robot to the charging station, waits until it is
 charged, then undocks the robot. 
 """
-class DockUndockBehaviour(smach.StateMachine):
+class DockUndockBehaviour(smach.StateMachine, Loggable):
     def __init__(self):
         smach.StateMachine.__init__(self, outcomes=['succeeded',
                                                     'failure',
@@ -70,10 +77,12 @@ class DockUndockBehaviour(smach.StateMachine):
                                           input_keys=['going_to_charge'])
         
         self._battery_monitor =  BatteryMonitor()
+        self._dock_to_charge = DockToChargingStation()
+        self._undock_from_charge = UndockFromChargingStation()
         
         with self:
             smach.StateMachine.add('DOCK_TO_CHARGING_STATION',
-                                   DockToChargingStation(),
+                                   self._dock_to_charge,
                                    transitions={'succeeded': 'CHARGING',
                                                 'aborted': 'DOCK_TO_CHARGING_STATION'})
 
@@ -84,7 +93,7 @@ class DockUndockBehaviour(smach.StateMachine):
                                        'valid': 'UNDOCK_FROM_CHARGING_STATION'})
 
             smach.StateMachine.add('UNDOCK_FROM_CHARGING_STATION',
-                                   UndockFromChargingStation(),
+                                   self._undock_from_charge,
                                    transitions={'succeeded': 'succeeded',
                                                 'failure': 'UNDOCK_FROM_CHARGING_STATION'})
 
@@ -101,7 +110,7 @@ class DockUndockBehaviour(smach.StateMachine):
 """
 A bumper aware version of DockUndockBeahviour. 
 """
-class BumpMonitoredDockUndockBehaviour(smach.Concurrence):
+class BumpMonitoredDockUndockBehaviour(smach.Concurrence, Loggable):
     def __init__(self,  to_base=False):
         smach.Concurrence.__init__(self,
                                    outcomes=['bumper_pressed',
@@ -151,7 +160,7 @@ outcomes:	succeeded
             
 input_keys:	going_to_charge
 """
-class BumpRecoverableDockUndockBehaviour(smach.StateMachine):
+class BumpRecoverableDockUndockBehaviour(smach.StateMachine, Loggable):
     def __init__(self):
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded',

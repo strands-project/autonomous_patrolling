@@ -10,6 +10,7 @@ from move_base_msgs.msg import *
 
 from monitor_states import BatteryMonitor, BumperMonitor
 from recover_states import RecoverMoveBase,  RecoverBumper
+from logger import Loggable
 
 
 MOVE_BASE_EXEC_TIMEOUT = rospy.Duration(600.0)
@@ -25,7 +26,7 @@ input keys: 	goal_pose			- geometry_msgs/Pose, goal pose in /map
                                       
 output keys:	n_move_base_fails	- see input.
 """
-class MoveBaseActionState(smach_ros.SimpleActionState):
+class MoveBaseActionState(smach_ros.SimpleActionState, Loggable):
     def __init__(self):
         smach_ros.SimpleActionState.__init__(self,
                                              'move_base',
@@ -56,9 +57,9 @@ class MoveBaseActionState(smach_ros.SimpleActionState):
     def move_base_result_cb(self, userdata, status, result):
         if status == GoalStatus.ABORTED:
             userdata.n_move_base_fails = userdata.n_move_base_fails + 1
-        else:
-            if status == GoalStatus.SUCCEEDED:
-                userdata.n_move_base_fails = 0
+        elif status == GoalStatus.SUCCEEDED:
+            userdata.n_move_base_fails = 0
+                
               
                       
 
@@ -72,7 +73,7 @@ outcomes: 	succeeded
             
 input keys:	goal_pose 
 """
-class RecoverableMoveBase(smach.StateMachine):
+class RecoverableMoveBase(smach.StateMachine, Loggable):
     def __init__(self):
         smach.StateMachine.__init__(self, 
                                     outcomes=['succeeded',
@@ -81,17 +82,28 @@ class RecoverableMoveBase(smach.StateMachine):
                                     input_keys=['goal_pose'])
 
         #self.userdata.n_move_base_fails = 0
+        self._move_base_action = MoveBaseActionState()
+        self._recover_move_base =  RecoverMoveBase()
         with self:
             smach.StateMachine.add('MOVE_BASE',
-                                   MoveBaseActionState(), 
+                                   self._move_base_action, 
                                    transitions={'succeeded': 'succeeded',
                                                 'aborted':  'RECOVER_MOVE_BASE',
                                                 'preempted': 'preempted'}
                                    )
             smach.StateMachine.add('RECOVER_MOVE_BASE',
-                                   RecoverMoveBase(),
+                                   self._recover_move_base,  
                                    transitions={'succeeded': 'MOVE_BASE',
                                                 'failure': 'failure'} )
+            
+    def execute(self, userdata=smach.UserData()):
+        outcome = smach.StateMachine.execute(self, userdata)
+        if outcome == 'succeeded':
+            self.get_logger().log_waypoint_success(userdata.goal_pose)
+        else:
+            self.get_logger().log_waypoint_fail(userdata.goal_pose)
+            
+        return outcome
             
 """
 A monitored version of RecoverableMoveBase. Adds checking for battery level
@@ -105,7 +117,7 @@ outcomes: 	bumper_pressed
 input keys:	goal_pose
             going_to_charge
 """
-class MonitoredRecoverableMoveBase(smach.Concurrence):
+class MonitoredRecoverableMoveBase(smach.Concurrence, Loggable):
     def __init__(self):
         smach.Concurrence.__init__(self,
                                    outcomes=['bumper_pressed',
@@ -119,10 +131,12 @@ class MonitoredRecoverableMoveBase(smach.Concurrence):
                                                'going_to_charge']
                                    )
         self._battery_monitor = BatteryMonitor()
+        self._bumper_monitor = BumperMonitor()
+        self._recoverable_move_base = RecoverableMoveBase()
         with self:
             smach.Concurrence.add('BATTERY_MONITOR', self._battery_monitor)
-            smach.Concurrence.add('BUMPER_MONITOR', BumperMonitor())
-            smach.Concurrence.add('MOVE_BASE_SM', RecoverableMoveBase())
+            smach.Concurrence.add('BUMPER_MONITOR', self._bumper_monitor)
+            smach.Concurrence.add('MOVE_BASE_SM', self._recoverable_move_base)
     
     def child_term_cb(self, outcome_map):
         # decide if this state is done when one or more concurrent inner states 
@@ -179,7 +193,7 @@ input_keys:	goal_pose		- geometry_msgs/Pose, the target location in /map
             going_to_charge	- bool, if going to charging station then don't
             				  cancel because of the battery monitor
 """
-class HighLevelMoveBase(smach.StateMachine):
+class HighLevelMoveBase(smach.StateMachine, Loggable):
     def __init__(self):
         smach.StateMachine.__init__(self, outcomes=['succeeded',
                                                     'bumper_failure',
@@ -188,6 +202,7 @@ class HighLevelMoveBase(smach.StateMachine):
                                           input_keys=['goal_pose',
                                                       'going_to_charge'] )
         self._monitored_recoverable_move_base = MonitoredRecoverableMoveBase()
+        self._recover_bumper =  RecoverBumper()
         with self:
             smach.StateMachine.add('MONITORED_MOVE_BASE',
                                    self._monitored_recoverable_move_base,
@@ -196,7 +211,7 @@ class HighLevelMoveBase(smach.StateMachine):
                                                 'succeeded': 'succeeded',
                                                 'failure': 'move_base_failure'})
             smach.StateMachine.add('RECOVER_BUMPER',
-                                   RecoverBumper(),
+                                   self._recover_bumper,
                                    transitions={'succeeded': 'MONITORED_MOVE_BASE',
                                                 'failure': 'bumper_failure'})
     

@@ -7,6 +7,8 @@ from scitos_msgs.srv import ResetMotorStop
 from scitos_msgs.msg import MotorStatus
 from geometry_msgs.msg import Twist
 
+from logger import Loggable
+
 # this file has the recovery states that will be used when some failures are
 # detected. There is a recovery behaviour for move_base and another for when the
 # bumper is pressed
@@ -14,7 +16,7 @@ MAX_BUMPER_RECOVERY_ATTEMPTS = 5
 MAX_MOVE_BASE_RECOVERY_ATTEMPTS = 5
 
 
-class RecoverMoveBase(smach.State):
+class RecoverMoveBase(smach.State, Loggable):
     def __init__(self):
         smach.State.__init__(self,
                              # we need the number of move_base fails as
@@ -42,12 +44,16 @@ class RecoverMoveBase(smach.State):
         # successful, we always go back to the move_base action state with
         # 'succeeded' until the number of failures treshold is reached
         if userdata.n_move_base_fails < MAX_MOVE_BASE_RECOVERY_ATTEMPTS:
+            self.get_logger().log_navigation_recovery_attempt(success=True,
+                                                              attempts=userdata.n_move_base_fails)
             return 'succeeded'
         else:
+            self.get_logger().log_navigation_recovery_attempt(success=False,
+                                                              attempts=userdata.n_move_base_fails)
             return 'failure'
 
 
-class RecoverBumper(smach.State):
+class RecoverBumper(smach.State, Loggable):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'failure']
@@ -76,6 +82,8 @@ class RecoverBumper(smach.State):
                 self.n_tries = 0
             else:
                 self.n_tries = self.n_tries + 1
+            self.get_logger().log_bump(recovered=True)
             return 'succeeded'
         else:
+            self.get_logger().log_bump(recovered=False)
             return 'failure'

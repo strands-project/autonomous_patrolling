@@ -4,6 +4,7 @@ import rospy
 
 from random import shuffle
 from . import charging, navigation
+from logger import Loggable
 
 
 from scitos_msgs.msg import BatteryState
@@ -33,7 +34,7 @@ outcomes: 	'patrol': 		a standard waypoint was selected
 ouput keys:	'goal_pose':		geometry_msgs/Pose that should drive to
 			'going_to_charge':	bool, is the next point the pre-charge location	
 """
-class PointChooser(smach.State):
+class PointChooser(smach.State, Loggable):
     """
     Constructor.
     :param waypoints_name: str, name of waypoints as appears in the datacentre
@@ -111,13 +112,14 @@ class PointChooser(smach.State):
                     shuffle(self.points)
 
             current_pt = self.points[self.current_point]
-            userdata.goal_pose = self._get_point(
-                current_pt[1], current_pt[0])  # current_row
+            userdata.goal_pose = self._get_point(current_pt[1], current_pt[0])
+            self.get_logger().log_waypoint_visit(current_pt[1])
             userdata.going_to_charge = 0
             return 'patrol'
         else:
             userdata.goal_pose = self._get_point("charging_point",
                                                  self.point_set)
+            self.get_logger().log_waypoint_visit("charging_point")
             userdata.going_to_charge = 1
             return 'go_charge'
         
@@ -137,7 +139,7 @@ charged, patrolling continues.
 outcomes:	'succeeded': 	required no. iterations of patrol points achieved
 			'aborted':		something went wrong
 """
-class WaypointPatroller(smach.StateMachine):
+class WaypointPatroller(smach.StateMachine, Loggable):
     """
     Constructor.
     :param waypoints_name: str, name of waypoints as appears in the datacentre
@@ -146,6 +148,8 @@ class WaypointPatroller(smach.StateMachine):
     """
     def __init__(self, waypoints_name, is_random, n_iterations):
         smach.StateMachine.__init__(self, outcomes=['succeeded', 'aborted'])
+        
+        self._waypoints_name = waypoints_name
         
         self._point_chooser =  PointChooser(waypoints_name,
                                             is_random,
@@ -196,3 +200,8 @@ class WaypointPatroller(smach.StateMachine):
                                                           charged_battery)
    
 
+    def execute(self):
+        self.get_logger().log_start_episode(self._waypoints_name)
+        outcome = smach.StateMachine.execute(self)
+        self.get_logger().log_finish_episode()
+        return outcome

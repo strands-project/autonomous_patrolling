@@ -8,6 +8,7 @@ import smach
 import smach_ros
 
 from waypoint_patroller.patroller import WaypointPatroller
+from waypoint_patroller.logger import PatrollLogger
 
 from dynamic_reconfigure.server import Server
 from waypoint_patroller.cfg import BatteryTresholdsConfig
@@ -17,8 +18,6 @@ got_pymongo = strands_datacentre.util.check_for_pymongo()
 if got_pymongo:
     import pymongo
     
-#from parameter_store import ParameterStore
-
 class LongTermPatroller(object):
     """
     Constructor.
@@ -31,6 +30,10 @@ class LongTermPatroller(object):
         # Create the main state machine
         self.long_term_patrol_sm = WaypointPatroller(waypoints_name, is_random,
                                                 n_iterations)
+        
+        # Create a logger
+        logger =  PatrollLogger("autonomous_patrolling")
+        self.long_term_patrol_sm.set_logger(logger)
         
         # dynamic reconfiguration of battery tresholds
         self.srv = Server(BatteryTresholdsConfig, self.reconfigure_callback)
