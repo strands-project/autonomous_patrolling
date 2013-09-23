@@ -6,7 +6,7 @@
 
      <include file="$(find ros_mary_tts)/launch/ros_mary.launch"/>
      
-     <include file="$(find strandsbag)/launch/record.launch>
+     <include file="$(find strandsbag)/launch/record.launch">
         <arg name="o" value="$(arg o)"/>
         <arg name="video_path" value="$(arg video_path)"/>
      </include>

@@ -10,6 +10,7 @@ import smach_ros
 
 from navigation import navigation
 from charging import dock_and_charge
+from openni_saver.srv import StartStopRecording
 
 from scitos_msgs.msg import BatteryState
 
@@ -67,16 +68,15 @@ class PanTilt(smach.State):
            pose.target_ptu_pose.position = userdata.goal_pose[7:13]
 
 	   # START LOGGING HERE
-	   start = rospy.ServiceProxy('start_stop_recording', StartStopRecording)
-       success = start_stop_recording('start')
+	   start_stop_recording = rospy.ServiceProxy('start_stop_recording', StartStopRecording)
+	   success = start_stop_recording('start')
 
 	   self.ptuClient.send_goal(pose)
            self.ptuClient.wait_for_result()
            result=self.ptuClient.get_state()
 
 	   # END LOGGIING HERE
-	   stop = rospy.ServiceProxy('start_stop_recording', StartStopRecording)
-       success = start_stop_recording('stop')
+	   success = start_stop_recording('stop')
 
            if result != GoalStatus.SUCCEEDED:
               return 'failure'
