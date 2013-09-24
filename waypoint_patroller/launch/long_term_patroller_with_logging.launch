@@ -1,0 +1,18 @@
+<launch>
+
+    <arg name="waypoints"/>
+    <arg name="randomized" default="true"/>
+    <arg name="n_it" default="-1"/>
+
+     <include file="$(find ros_mary_tts)/launch/ros_mary.launch"/>
+     
+     <include file="$(find strandsbag)/launch/record.launch">
+        <arg name="o" value="$(arg o)"/>
+        <arg name="video_path" value="$(arg video_path)"/>
+     </include>
+     
+     <node name="nav_monitor" pkg="nav_monitor" type="nav_monitor.py" output="screen"/>
+
+    <node name="patroller" pkg="waypoint_patroller" type="long_term_patroller_with_logging.py" output="screen" args="$(arg waypoints) $(arg randomized) $(arg n_it)">
+    </node>
+</launch>

@@ -110,7 +110,7 @@ def move_base_sm():
 def navigation(): 
 
 
-        sm=smach.StateMachine(outcomes=['succeeded','bumper_failure','move_base_failure','battery_low'], input_keys=['goal_pose','going_to_charge'])
+        sm=smach.StateMachine(outcomes=['succeeded','bumper_failure','move_base_failure','battery_low'], input_keys=['goal_pose','going_to_charge'], output_keys=['goal_pose'])
         with sm:
             
             #move_base state machine running in parallel with the bumper and battery monitor states. The input key 'goal_pose' is used to build the new move_base goal, and the input key 'going_to_charge' is used to define the behaviour of the battery monitor        
