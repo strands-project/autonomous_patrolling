@@ -62,7 +62,7 @@ class PanTilt(smach.State):
         if rospy.is_shutdown(): # Exiting gracefully when ctrl-c is pressed
             return 'abort'
 
-	if (len(userdata.goal_pose) > 7):
+	if (len(userdata.goal_pose) > 13):
 	   pose = scitos_ptu.msg.PanTiltGoal()
            pose.target_ptu_pose = JointState()
            pose.target_ptu_pose.position = userdata.goal_pose[7:13]

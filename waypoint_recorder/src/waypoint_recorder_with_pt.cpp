@@ -140,13 +140,13 @@ int main(int argc, char **argv)
 
   // Initialize pan tilt parameters
 
-  startPanAngle = -150;
-  endPanAngle = 150;
+  startPanAngle = -120;
+  endPanAngle = 120;
   panIncrementAngle = 30;
 
-  startTiltAngle = -45; 
-  endTiltAngle = 45; 
-  tiltIncrementAngle = 20;
+  startTiltAngle = -30; 
+  endTiltAngle = 30; 
+  tiltIncrementAngle = 15;
   
 /**
    * The ros::init() function needs to see argc and argv so that it can perform
@@ -167,8 +167,22 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n("waypoint_recorder");
-  
+  ros::NodeHandle private_node_handle_("~");
+  private_node_handle_.param("pan_start", startPanAngle, int(-120.0)); 
+  private_node_handle_.param("pan_end", endPanAngle, int(120.0)); 
+  private_node_handle_.param("pan_step", panIncrementAngle, int(30.0)); 
+  private_node_handle_.param("tilt_start", startTiltAngle, int(-30.0)); 
+  private_node_handle_.param("tilt_end", endTiltAngle, int(30.0)); 
+  private_node_handle_.param("tilt_step", tiltIncrementAngle, int(15.0)); 
 
+/*
+  std::cout<<"Start pan angle "<<startPanAngle<<std::endl;
+  std::cout<<"End pan angle "<<endPanAngle<<std::endl;
+  std::cout<<"Step pan angle "<<panIncrementAngle<<std::endl;
+  std::cout<<"Start tilt angle "<<startTiltAngle<<std::endl;
+  std::cout<<"End tilt angle "<<endTiltAngle<<std::endl;
+  std::cout<<"Step tilt angle "<<tiltIncrementAngle<<std::endl;
+*/
   
   
 //   n.param("csv_name", csv_name, std::string("~/waypoints.csv"));
