@@ -6,6 +6,7 @@ from smach import *
 from smach_ros import *
 
 from scitos_msgs.msg import MotorStatus, BatteryState
+from ap_msgs.msg import NavStatus
 
 from logger import Loggable
 
@@ -68,5 +69,23 @@ class BumperMonitor(smach_ros.MonitorState, Loggable):
             return False
         else:
             return True
+
+
+class StuckOnCarpetMonitor(smach_ros.MonitorState, Loggable):
+    def __init__(self):
+        smach_ros.MonitorState.__init__(self, "/nav_status",
+                                        NavStatus,
+                                        self._callback)
+    
+    """ Test the message and decide exit or not """
+    def _callback(self,  ud,  msg):
+        # using msg.bumper_pressed does not work properly because sometimes the
+        # bumper is pressed but no change of state is published
+        if  msg.carpet_stuck:
+            self.get_logger().log_carpet_stuck()
+            return False
+        else:
+            return True
+
 
 
