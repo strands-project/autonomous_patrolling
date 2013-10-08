@@ -104,10 +104,7 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
       
 * Launch the strands_datacentre:
 ```
-rosparam set datacentre_port 62345
-rosparam set datacentre_host bob # note that if using multiple machines, 'localhost' is no good
-
-HOSTNAME=bob rosrun strands_datacentre mongodb_server.py
+HOSTNAME=bob roslaunch strands_datacentre datacentre.launch
 ```
 
 
