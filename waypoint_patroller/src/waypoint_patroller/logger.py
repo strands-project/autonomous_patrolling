@@ -113,7 +113,11 @@ class PatrollLogger(Logger):
     
     def log_bump(self):
         self._record({'event_type': 'bumper pressed', })
-    
+
+    def log_bump_count(self,number):
+        self._record({'event_type': 'bump recovered',
+                      'number of resets':number})
+
     def log_intervention_alarm(self):
         pass
     
@@ -130,7 +134,12 @@ class PatrollLogger(Logger):
     
     def log_charging_finish(self):
         self._record({'event_type': 'charging finished', })
+
+            
+    def log_carpet_stuck(self):
+        self._record({'event_type': 'stuck in carpet', })
     
+
     
     
     

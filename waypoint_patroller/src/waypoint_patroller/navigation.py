@@ -8,8 +8,8 @@ from actionlib_msgs.msg import *
 from move_base_msgs.msg import *
 
 
-from monitor_states import BatteryMonitor, BumperMonitor
-from recover_states import RecoverMoveBase,  RecoverBumper
+from monitor_states import BatteryMonitor, BumperMonitor, StuckOnCarpetMonitor
+from recover_states import RecoverMoveBase,  RecoverBumper, RecoverStuckOnCarpet
 from logger import Loggable
 
 
@@ -100,7 +100,7 @@ class RecoverableMoveBase(smach.StateMachine, Loggable):
         outcome = smach.StateMachine.execute(self, userdata)
         if outcome == 'succeeded':
             self.get_logger().log_waypoint_success(userdata.goal_pose)
-        else:
+        elif outcome == 'failure':
             self.get_logger().log_waypoint_fail(userdata.goal_pose)
             
         return outcome
@@ -123,7 +123,8 @@ class MonitoredRecoverableMoveBase(smach.Concurrence, Loggable):
                                    outcomes=['bumper_pressed',
                                              'battery_low',
                                              'succeeded',
-                                             'failure'],
+                                             'failure',
+                                             'stuck_on_carpet'],
                                    default_outcome='failure',
                                    child_termination_cb=self.child_term_cb,
                                    outcome_cb=self.out_cb,
@@ -133,9 +134,11 @@ class MonitoredRecoverableMoveBase(smach.Concurrence, Loggable):
         self._battery_monitor = BatteryMonitor()
         self._bumper_monitor = BumperMonitor()
         self._recoverable_move_base = RecoverableMoveBase()
+        self._carpet_monitor = StuckOnCarpetMonitor()
         with self:
             smach.Concurrence.add('BATTERY_MONITOR', self._battery_monitor)
             smach.Concurrence.add('BUMPER_MONITOR', self._bumper_monitor)
+            smach.Concurrence.add('STUCK_ON_CARPET_MONITOR', self._carpet_monitor)
             smach.Concurrence.add('MOVE_BASE_SM', self._recoverable_move_base)
     
     def child_term_cb(self, outcome_map):
@@ -144,6 +147,7 @@ class MonitoredRecoverableMoveBase(smach.Concurrence, Loggable):
         if ( outcome_map['BUMPER_MONITOR'] == 'invalid' or
              outcome_map["BATTERY_MONITOR"] == "invalid" or
              outcome_map["MOVE_BASE_SM"] == "succeeded" or
+             outcome_map["STUCK_ON_CARPET_MONITOR"] == "invalid" or
              outcome_map['MOVE_BASE_SM'] == "failure" ):
             return True
         return False
@@ -159,6 +163,8 @@ class MonitoredRecoverableMoveBase(smach.Concurrence, Loggable):
             return 'bumper_pressed'
         if outcome_map["BATTERY_MONITOR"] == "invalid":
             return "battery_low"
+        if outcome_map["STUCK_ON_CARPET_MONITOR"] == "invalid":
+            return "stuck_on_carpet"
         if outcome_map["MOVE_BASE_SM"] == "succeeded":
             return "succeeded"
         if outcome_map["MOVE_BASE_SM"] == "failure":
@@ -203,17 +209,23 @@ class HighLevelMoveBase(smach.StateMachine, Loggable):
                                                       'going_to_charge'] )
         self._monitored_recoverable_move_base = MonitoredRecoverableMoveBase()
         self._recover_bumper =  RecoverBumper()
+        self._recover_carpet =  RecoverStuckOnCarpet()
         with self:
             smach.StateMachine.add('MONITORED_MOVE_BASE',
                                    self._monitored_recoverable_move_base,
                                    transitions={'bumper_pressed': 'RECOVER_BUMPER',
                                                 'battery_low': 'battery_low',
                                                 'succeeded': 'succeeded',
-                                                'failure': 'move_base_failure'})
+                                                'failure': 'move_base_failure',
+                                                'stuck_on_carpet':'RECOVER_STUCK_ON_CARPET'})
             smach.StateMachine.add('RECOVER_BUMPER',
                                    self._recover_bumper,
                                    transitions={'succeeded': 'MONITORED_MOVE_BASE',
                                                 'failure': 'bumper_failure'})
+            smach.StateMachine.add('RECOVER_STUCK_ON_CARPET',
+                                   self._recover_carpet,
+                                   transitions={'succeeded': 'MONITORED_MOVE_BASE',
+                                                'failure': 'RECOVER_STUCK_ON_CARPET'})
     
     
     """ 

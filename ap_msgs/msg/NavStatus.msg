@@ -1,0 +1,1 @@
+bool carpet_stuck

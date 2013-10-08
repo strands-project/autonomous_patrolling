@@ -1,3 +1,4 @@
+# TODO: Add speaking back in here
 import rospy
 
 import smach
@@ -73,17 +74,53 @@ class RecoverBumper(smach.State, Loggable):
     # Between each failure the waiting time to try and restart the motors
     # again increases. This state can check its own success
     def execute(self, userdata):
-        if self.n_tries < MAX_BUMPER_RECOVERY_ATTEMPTS:
-            self.n_tries = self.n_tries + 1
-            rospy.sleep(3 * self.n_tries)
+        n_tries=1
+
+        while True:
+            rospy.sleep(3 * n_tries)
             self.reset_motorstop()
             rospy.sleep(0.1)
             if self.isRecovered:
-                self.n_tries = 0
-            else:
-                self.n_tries = self.n_tries + 1
-            self.get_logger().log_bump(recovered=True)
+                self.get_logger().log_bump_count(n_tries)
+                return 'succeeded'
+            n_tries += 1
+                
+
+class RecoverStuckOnCarpet(smach.State, Loggable):
+    def __init__(self):
+        smach.State.__init__(self,
+            outcomes    = ['succeeded','failure'])
+        self.vel_pub = rospy.Publisher('/cmd_vel', Twist)
+        self._vel_cmd = Twist()
+        
+        
+
+
+    def execute(self,userdata):
+        #small forward vel to unstuck robot
+        self._vel_cmd.linear.x=0.8
+        self._vel_cmd.angular.z=0.4
+        for i in range(0,4): 
+            self.vel_pub.publish(self._vel_cmd)
+            self._vel_cmd.linear.x=self._vel_cmd.linear.x-0.2
+            self._vel_cmd.angular.z=self._vel_cmd.angular.z-0.2  
+   #         if self.preempt_requested():
+   #             self.service_preempt()
+   #             return 'preempted'
+            rospy.sleep(0.2)
+   #     os.system("rosservice call /ros_mary 'Recovering carpet stuck'")
+        self._vel_cmd.linear.x=0.0
+        self._vel_cmd.angular.z=0.0
+        self.vel_pub.publish(self._vel_cmd)
+        
+#        now = rospy.get_rostime()
+ #       f = open('/home/bruno/log.txt','a')
+  #      f.write(str(rospy.get_time()))
+   #     f.write('\n')
+    #    f.close()
+        
+        #check if behaviour was successful       
+        if True:     
             return 'succeeded'
         else:
-            self.get_logger().log_bump(recovered=False)
             return 'failure'
