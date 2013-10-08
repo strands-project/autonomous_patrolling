@@ -41,7 +41,9 @@ The `ap_map_saver` can also be used in conjunction with the rumblepad, where the
 
     
 ## The waypoint recorder
-  
+The waypoint recorder uses the robot_pose topic instead of the amcl_pose topic. This makes saving accuracy waypoints easier as the updates are comming in more frequently. In order for poses to be published on this topic run the robot_pose_publisher:
+      
+      $ rosrun robot_pose_publisher robot_pose_publisher  
 
 ### Without rumblepad
 
