@@ -73,7 +73,7 @@ The `waypoint_recorder` can also be used in conjunction with the rumblepad, wher
                 
 * Launch the `waypoint_recorder`, with an optional argument:
         
-           $ roslaunch waypoint_recorder waypoint_recorder.launch map:="file path to the map's .yaml file" waypoints:="file path to the file where waypoints shoud be saved"
+           $ rosrun waypoint_recorder waypoint_recorder.launch map:="file path to the map's .yaml file" waypoints:="file path to the file where waypoints shoud be saved"
                 
 * (Optional) Start rviz to check if the robot is well localized, and give it a pose estimate if needed: 
      
