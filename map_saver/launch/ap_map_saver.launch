@@ -2,8 +2,19 @@
 
 	<!-- declare arg to be passed in -->
 	<arg name="map" default="default_map_name"/> 
+	<arg name="delta" default="0.05"/>
+	<arg name="xmin" default="-30.0"/>
+	<arg name="ymin" default="-30.0"/>
+	<arg name="xmax" default="30.0"/>
+	<arg name="ymax" default="30.0"/>
+	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" >
+		<param name="xmin" value="$(arg xmin)"/>
+		<param name="ymin" value="$(arg ymin)"/>
+		<param name="xmax" value="$(arg xmax)"/>
+		<param name="ymax" value="$(arg ymax)"/>
 
-	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" />
+		<param name="delta" value="$(arg delta)"/>
+	</node>
 
 	<node pkg="map_saver" type="ap_map_saver" name="ap_map_saver" output="screen" args="$(arg map)"/>
 </launch>
