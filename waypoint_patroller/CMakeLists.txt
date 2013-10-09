@@ -6,14 +6,6 @@ project(waypoint_patroller)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS actionlib actionlib_msgs move_base_msgs rospy scitos_msgs scitos_apps_msgs std_msgs dynamic_reconfigure)
 
-#add dynamic reconfigure api
-find_package(catkin REQUIRED dynamic_reconfigure)
-generate_dynamic_reconfigure_options(
-  cfg/BatteryTresholds.cfg
-)
-
-
-
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -21,11 +13,17 @@ generate_dynamic_reconfigure_options(
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 #######################################
 ## Declare ROS messages and services ##
 #######################################
+
+# Add dynamic reconfigure api
+find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/BatteryTresholds.cfg
+)
 
 ## Generate messages in the 'msg' folder
 # add_message_files(
@@ -87,6 +85,7 @@ catkin_package(
 #   ${catkin_LIBRARIES}
 # )
 
+
 #############
 ## Install ##
 #############
@@ -121,6 +120,10 @@ catkin_package(
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(PROGRAMS scripts/long_term_patroller.py
+         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 #############
 ## Testing ##

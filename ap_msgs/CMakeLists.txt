@@ -21,8 +21,8 @@ find_package(catkin REQUIRED std_msgs message_generation)
 
 ## Generate messages in the 'msg' folder
 add_message_files(
-  FILES
-  NavStatus.msg
+   FILES
+   NavStatus.msg
 )
 
 ## Generate services in the 'srv' folder
