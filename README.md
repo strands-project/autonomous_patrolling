@@ -113,6 +113,13 @@ HOSTNAME=bob roslaunch strands_datacentre datacentre.launch
 * Run the autonomous docking service:
 
            $ roslaunch scitos_docking charging.launch
+           
+           or:
+           
+           $ rosrun scitos_docking visual_charging
+           
+           
+
 
 * Calibrate the docking as detailed in the scitos_docking package:
 ```bash
