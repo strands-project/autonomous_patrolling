@@ -68,7 +68,7 @@ class Visualiser(object):
         host = rospy.get_param("datacentre_host")
         port = rospy.get_param("datacentre_port")
 
-        self._point_set="bham_lg_2"
+        self._point_set= rospy.get_param("datacentre_waypoint_set")
 
         self._mongo_client = pymongo.MongoClient(host,port)
         db=self._mongo_client.autonomous_patrolling
