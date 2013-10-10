@@ -127,13 +127,13 @@ Then press the `SEND GOAL` button.
 
 * If you already have waypoints in your datacentre, proceed to execute. Otherwise, to insert the waypoints from a waypoint log file (as created using the waypoint recorder) into your datacentre:
 ```bash
-rosrun waypoint_recorder insert_in_db.py waypoints.csv point_set_name map_name
+rosrun waypoint_recorder insert_in_db.py waypoints.csv waypoint_set_name map_name
 ```
 Currently map_name is unimportant (until the maps are also stored in db), and the first waypoint is assumed to be the pre-charging waypoint. 
 
 * Launch the patroller:
   
-           $ roslaunch waypoint_patroller long_term_patroller.launch waypoints:=point_set_name <randomized:="value"> <n_it:="number of iterations">
+           $ roslaunch waypoint_patroller long_term_patroller.launch waypoints:=waypoint_set_name <randomized:="value"> <n_it:="number of iterations">
 
            
    * The optional argument randomized can be true or false. Default is true. If false is given, then the points are visited sequentially
