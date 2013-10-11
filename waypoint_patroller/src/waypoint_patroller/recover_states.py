@@ -5,8 +5,13 @@ import smach
 import smach_ros
 
 from scitos_msgs.srv import ResetMotorStop
+from scitos_msgs.srv import EnableMotors
 from scitos_msgs.msg import MotorStatus
 from geometry_msgs.msg import Twist
+
+import actionlib
+#from actionlib_msgs.msg import *
+from ros_mary_tts.msg import *
 
 from logger import Loggable
 
@@ -54,6 +59,11 @@ class RecoverMoveBase(smach.State, Loggable):
             return 'failure'
 
 
+            
+            
+            
+            
+            
 class RecoverBumper(smach.State, Loggable):
     def __init__(self):
         smach.State.__init__(self,
@@ -61,11 +71,17 @@ class RecoverBumper(smach.State, Loggable):
                              )
         self.reset_motorstop = rospy.ServiceProxy('reset_motorstop',
                                                   ResetMotorStop)
+        self.enable_motors= rospy.ServiceProxy('enable_motors',
+                                                  EnableMotors)                                          
         self.is_recovered = False
         self.motor_monitor = rospy.Subscriber("/motor_status",
                                               MotorStatus,
                                               self.bumper_cb)
-        self.n_tries = 0
+                                              
+        self.speaker=actionlib.SimpleActionClient('/speak', maryttsAction)
+        self.speak_goal= maryttsGoal()
+        self.speak_goal.text='My bumper is being pressed. Please release it so I can move on!'
+        self.speaker.wait_for_server()
 
     def bumper_cb(self, msg):
         self.isRecovered = not msg.bumper_pressed
@@ -75,7 +91,7 @@ class RecoverBumper(smach.State, Loggable):
     # again increases. This state can check its own success
     def execute(self, userdata):
         n_tries=1
-
+        self.enable_motors(False)
         while True:
             rospy.sleep(3 * n_tries)
             self.reset_motorstop()
@@ -83,6 +99,8 @@ class RecoverBumper(smach.State, Loggable):
             if self.isRecovered:
                 self.get_logger().log_bump_count(n_tries)
                 return 'succeeded'
+            if n_tries>1:            
+                self.speaker.send_goal(self.speak_goal)    
             n_tries += 1
                 
 
