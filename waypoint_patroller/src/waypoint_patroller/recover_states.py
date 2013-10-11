@@ -32,20 +32,20 @@ class RecoverMoveBase(smach.State, Loggable):
                              outcomes=['succeeded', 'failure', 'preempted'],
                              input_keys=['n_move_base_fails']
                              )
-        self.vel_pub = rospy.Publisher('/cmd_vel', Twist)
-        self._vel_cmd = Twist()
-        self._vel_cmd.linear.x = -0.1
+        #self.vel_pub = rospy.Publisher('/cmd_vel', Twist)
+        #self._vel_cmd = Twist()
+        #self._vel_cmd.linear.x = -0.1
 
     def execute(self, userdata):
         # move slowly backwards a bit. A better option might be to save the
         # latest messages received in cmd_vel and reverse them
-        for i in range(0, 20):
-            self.vel_pub.publish(self._vel_cmd)
-            if self.preempt_requested():
-                self.service_preempt()
-                return 'preempted'
-            rospy.sleep(0.2)
-
+        #for i in range(0, 20):
+            #self.vel_pub.publish(self._vel_cmd)
+            #if self.preempt_requested():
+                #self.service_preempt()
+                #return 'preempted'
+            #rospy.sleep(0.2)
+        rospy.sleep(0.2)
         # since there is no way to check if the recovery behaviour was
         # successful, we always go back to the move_base action state with
         # 'succeeded' until the number of failures treshold is reached
