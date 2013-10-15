@@ -79,13 +79,35 @@ class StuckOnCarpetMonitor(smach_ros.MonitorState, Loggable):
     
     """ Test the message and decide exit or not """
     def _callback(self,  ud,  msg):
-        # using msg.bumper_pressed does not work properly because sometimes the
-        # bumper is pressed but no change of state is published
         if  msg.carpet_stuck:
             self.get_logger().log_carpet_stuck()
             return False
         else:
             return True
 
+
+            
+class NavPauseMonitor(smach_ros.MonitorState, Loggable):
+    def __init__(self,is_paused):
+        self._is_paused=is_paused
+        smach_ros.MonitorState.__init__(self, "/nav_status",
+                                        NavStatus,
+                                        self._callback,
+                                        input_keys=['is_paused'])
+    
+    """ Test the message and decide exit or not """
+    def _callback(self,  ud,  msg):
+        if self._is_paused:
+            if  msg.is_paused:
+                return True
+            else:
+                #self.get_logger().log_carpet_stuck()
+                return False
+        else:
+            if  msg.is_paused:
+                #self.get_logger().log_carpet_stuck()
+                return False
+            else:
+                return True
 
 

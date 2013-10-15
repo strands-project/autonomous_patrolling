@@ -3,8 +3,9 @@
 import rospy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from ap_msgs.msg import NavStatus
+from sensor_msgs.msg import Joy
 
+from ap_msgs.msg import NavStatus 
 
 
 
@@ -17,9 +18,16 @@ class NavMonitor(object):
         self.n_fails=0
         self.MAX_FAILS=100
         
-        rospy.init_node('nav_monitor')        
+        
+        rospy.init_node('nav_monitor')
+        
+        #stuck in carpet
         rospy.Subscriber("/cmd_vel", Twist, self.vel_callback)   
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
+        
+        #pause_nav
+        self.pad_paused=False
+        rospy.Subscriber("/teleop_joystick/joy",Joy,self.pad_callback)
         
         self.pub = rospy.Publisher('nav_status', NavStatus)
         self.pub_msg=NavStatus()
@@ -35,15 +43,26 @@ class NavMonitor(object):
             self.pub_msg.carpet_stuck=True
         else:
             self.pub_msg.carpet_stuck=False
-        self.pub.publish(self.pub_msg)
-
-    
-
+            
 
     def odom_callback(self,msg):
         self.current_z=msg.twist.twist.angular.z
-
         
+        
+    def pad_callback(self,msg):
+        if msg.buttons[4]==0:
+            self.pad_paused=False
+        else:
+            self.pad_paused=True
+            
+        
+
+    def publisher(self):
+        r = rospy.Rate(10) # 10hz
+        while not rospy.is_shutdown():
+            self.pub_msg.is_paused=self.pad_paused
+            self.pub.publish(self.pub_msg)
+            r.sleep()
     
 
     
@@ -52,7 +71,9 @@ class NavMonitor(object):
 if __name__ == '__main__':
 
 
-    NavMonitor()
+    monitor=NavMonitor()
+    
+    monitor.publisher()
     
     
     rospy.spin()    

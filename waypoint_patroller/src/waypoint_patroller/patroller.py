@@ -155,7 +155,7 @@ class WaypointPatroller(smach.StateMachine, Loggable):
                                             is_random,
                                             n_iterations)
         self._high_level_move_base =  navigation.HighLevelMoveBase()
-        self._dock_undock = charging.BumpRecoverableDockUndockBehaviour()
+        self._dock_undock = charging.HighLevelDockUndockBehaviour()
         
         with self:
             smach.StateMachine.add('POINT_CHOOSER',
