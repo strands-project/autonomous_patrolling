@@ -108,6 +108,7 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
 
            $ HOSTNAME=bob roslaunch strands_datacentre datacentre.launch
 
+
     * If you haven't inserted waypoints in your datacentre, you can insert the waypoints from a waypoint log file (as created using the waypoint recorder) into your datacentre:
            
                $ rosrun waypoint_recorder insert_in_db.py waypoints.csv point_set_name map_name
@@ -120,8 +121,6 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
 
            $ roslaunch scitos_docking charging.launch
            
-
-Currently map_name is unimportant (until the maps are also stored in db), and the first waypoint is assumed to be the pre-charging waypoint. 
 
     * If this is your first run, or you changed the robot station's location, you need to run the docking calibration:
     
