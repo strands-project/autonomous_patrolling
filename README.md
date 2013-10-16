@@ -105,31 +105,34 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
            $ rosrun rviz rviz
       
 * Launch the strands_datacentre:
-```
-HOSTNAME=bob roslaunch strands_datacentre datacentre.launch
-```
+
+           $ HOSTNAME=bob roslaunch strands_datacentre datacentre.launch
+
+    * If you haven't inserted waypoints in your datacentre, you can insert the waypoints from a waypoint log file (as created using the waypoint recorder) into your datacentre:
+           
+               $ rosrun waypoint_recorder insert_in_db.py waypoints.csv point_set_name map_name
+          
+           Currently map_name is unimportant (until the maps are also stored in db), and the first waypoint is assumed to be the pre-charging waypoint. 
+
 
 
 * Run the autonomous docking service:
 
            $ roslaunch scitos_docking charging.launch
 
-* Calibrate the docking as detailed in the scitos_docking package:
-```bash
-rosrun actionlib axclient.py /chargingServer
-```
-Then in the `Goal` textfield complete as follows:
-```
-Command: calibrate
-Timeout: 1000
-```
-Then press the `SEND GOAL` button.
+    * If this is your first run, or you changed the robot station's location, you need to run the docking calibration:
+    
+               $ rosrun actionlib axclient.py /chargingServer
 
-* If you already have waypoints in your datacentre, proceed to execute. Otherwise, to insert the waypoints from a waypoint log file (as created using the waypoint recorder) into your datacentre:
-```bash
-rosrun waypoint_recorder insert_in_db.py waypoints.csv point_set_name map_name
-```
-Currently map_name is unimportant (until the maps are also stored in db), and the first waypoint is assumed to be the pre-charging waypoint. 
+                      
+      Then in the `Goal` textfield complete as follows:
+      
+               Command: calibrate
+               Timeout: 1000
+
+               
+      Then press the `SEND GOAL` button.
+
 
 * Launch the patroller:
   
@@ -139,6 +142,11 @@ Currently map_name is unimportant (until the maps are also stored in db), and th
    * The optional argument randomized can be true or false. Default is true. If false is given, then the points are visited sequentially
    * The optional argument n_it specifies how many complete iterations of all the points should be done before the patroller outputs succeeded. Default is -1, which means infinite iterations
    * NOTE: For the robot to speak and ask for help, the user that launches this file needs to be logged in the robot's computer. This is related to [this](https://github.com/strands-project/strands_hri/issues/7)
+   * If you have the gamepad running, you can pause the patroller and assume control by pressing the dead-man switch. When the dead-man switch is released the patroller resumes patrolling the previous waypoint.
+   * You can also pause execution and regain the possibility to control the robot via other sources (e.g. rviz) by running:
 
+               $ rosservice call /pause_resume_patroller
+           
+           To resume, just send another service call as above
 
 
