@@ -32,7 +32,7 @@ outcomes: 	'patrol': 		a standard waypoint was selected
             'succeeded':	if required no. of iterations achieved
 
 ouput keys:	'goal_pose':		geometry_msgs/Pose that should drive to
-			'going_to_charge':	bool, is the next point the pre-charge location	
+
 """
 class PointChooser(smach.State, Loggable):
     """
@@ -46,7 +46,7 @@ class PointChooser(smach.State, Loggable):
                              outcomes=['patrol',
                                        'go_charge',
                                        'succeeded'],
-                             output_keys=['goal_pose', 'going_to_charge']
+                             output_keys=['goal_pose']
                              )
         
         self.LOW_BATTERY = 35
@@ -114,13 +114,11 @@ class PointChooser(smach.State, Loggable):
             current_pt = self.points[self.current_point]
             userdata.goal_pose = self._get_point(current_pt[1], current_pt[0])
             self.get_logger().log_waypoint_visit(current_pt[1])
-            userdata.going_to_charge = 0
             return 'patrol'
         else:
             userdata.goal_pose = self._get_point("charging_point",
                                                  self.point_set)
             self.get_logger().log_waypoint_visit("charging_point")
-            userdata.going_to_charge = 1
             return 'go_charge'
         
     """ 
@@ -154,7 +152,8 @@ class WaypointPatroller(smach.StateMachine, Loggable):
         self._point_chooser =  PointChooser(waypoints_name,
                                             is_random,
                                             n_iterations)
-        self._high_level_move_base =  navigation.HighLevelMoveBase()
+        self._high_level_move_base_patrol =  navigation.HighLevelMoveBase(False)
+        self._high_level_move_base_charge =  navigation.HighLevelMoveBase(True)
         self._dock_undock = charging.HighLevelDockUndockBehaviour()
         
         with self:
@@ -165,14 +164,14 @@ class WaypointPatroller(smach.StateMachine, Loggable):
                                                 'succeeded': 'succeeded'})
             smach.StateMachine.add('PATROL_POINT',
                                    #navigation.HighLevelMoveBase(),
-                                   self._high_level_move_base, 
+                                   self._high_level_move_base_patrol, 
                                    transitions={'succeeded': 'POINT_CHOOSER',
                                                 'battery_low': 'POINT_CHOOSER',
                                                 'bumper_failure': 'aborted',
                                                 'move_base_failure': 'POINT_CHOOSER'})
             smach.StateMachine.add('GO_TO_CHARGING_STATION',
                                    #navigation.HighLevelMoveBase(),
-                                   self._high_level_move_base, 
+                                   self._high_level_move_base_charge, 
                                    transitions={'succeeded': 'DOCK_AND_CHARGE',
                                                 'battery_low': 'GO_TO_CHARGING_STATION',
                                                 'bumper_failure': 'aborted',
@@ -192,9 +191,12 @@ class WaypointPatroller(smach.StateMachine, Loggable):
         self._point_chooser.set_battery_thresholds(very_low_battery,
                                                    low_battery, 
                                                    charged_battery)
-        self._high_level_move_base.set_battery_thresholds(very_low_battery,
+        self._high_level_move_base_patrol.set_battery_thresholds(very_low_battery,
                                                           low_battery, 
                                                           charged_battery)
+        self._high_level_move_base_charge.set_battery_thresholds(very_low_battery,
+                                                          low_battery, 
+                                                          charged_battery)                                                          
         self._dock_undock.set_battery_thresholds(very_low_battery,
                                                           low_battery, 
                                                           charged_battery)
