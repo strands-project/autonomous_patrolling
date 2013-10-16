@@ -5,7 +5,8 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Joy
 
-from ap_msgs.msg import NavStatus 
+from ap_msgs.msg import NavStatus
+from ap_msgs.srv import PauseResumePatroller
 
 
 
@@ -31,6 +32,11 @@ class NavMonitor(object):
         
         self.pub = rospy.Publisher('nav_status', NavStatus)
         self.pub_msg=NavStatus()
+        
+        #pause service
+        self.service_pause=False        
+        self.pause_service = rospy.Service('pause_resume_patroller', PauseResumePatroller, self.pause_service_handler)
+
 
 
     def vel_callback(self,msg):
@@ -55,14 +61,23 @@ class NavMonitor(object):
         else:
             self.pad_paused=True
             
-        
+    def pause_service_handler(self, req):
+        self.service_pause=not self.service_pause
+        if self.service_pause:
+            return 'paused'
+        else:
+            return 'resumed'
+            
+    
 
     def publisher(self):
         r = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
-            self.pub_msg.is_paused=self.pad_paused
+            self.pub_msg.is_paused=self.pad_paused or self.service_pause
             self.pub.publish(self.pub_msg)
             r.sleep()
+            
+            
     
 
     
