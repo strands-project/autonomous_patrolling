@@ -10,7 +10,7 @@ from scitos_apps_msgs.srv import Charging
 from scitos_apps_msgs.msg import ChargingAction, ChargingGoal
 
 
-from monitor_states import BumperMonitor, BatteryMonitor 
+from monitor_states import BumperMonitor, BatteryMonitor, NavPauseMonitor
 from recover_states import RecoverBumper
 from logger import Loggable
 
@@ -110,10 +110,11 @@ class DockUndockBehaviour(smach.StateMachine, Loggable):
 """
 A bumper aware version of DockUndockBeahviour. 
 """
-class BumpMonitoredDockUndockBehaviour(smach.Concurrence, Loggable):
+class MonitoredDockUndockBehaviour(smach.Concurrence, Loggable):
     def __init__(self,  to_base=False):
         smach.Concurrence.__init__(self,
                                    outcomes=['bumper_pressed',
+                                             'pause_requested',
                                              'succeeded',
                                              'failure'],
                                    default_outcome='failure',
@@ -122,9 +123,12 @@ class BumpMonitoredDockUndockBehaviour(smach.Concurrence, Loggable):
                                    input_keys=['going_to_charge']
                                    )
         self._dock_undock_bahaviour = DockUndockBehaviour()
+        self._bumper_monitor = BumperMonitor()
+        self._nav_pause_monitor=NavPauseMonitor(False)
         with self:
             smach.Concurrence.add('UNMONITORED_DOCKING', self._dock_undock_bahaviour)
-            smach.Concurrence.add('BUMPER_MONITOR', BumperMonitor())
+            smach.Concurrence.add('BUMPER_MONITOR', self._bumper_monitor)
+            smach.Concurrence.add('NAV_PAUSE_MONITOR', self._nav_pause_monitor)
 
     def child_term_cb(self, outcome_map):
         # decide if this state is done when one or more concurrent inner states 
@@ -135,6 +139,8 @@ class BumpMonitoredDockUndockBehaviour(smach.Concurrence, Loggable):
         # determine what the outcome of this machine is
         if outcome_map['BUMPER_MONITOR'] == 'invalid':
             return 'bumper_pressed'
+        if outcome_map["NAV_PAUSE_MONITOR"] == "invalid":
+            return "pause_requested"
         if outcome_map["UNMONITORED_DOCKING"] == "succeeded":
             return "succeeded"
         
@@ -160,26 +166,33 @@ outcomes:	succeeded
             
 input_keys:	going_to_charge
 """
-class BumpRecoverableDockUndockBehaviour(smach.StateMachine, Loggable):
+class HighLevelDockUndockBehaviour(smach.StateMachine, Loggable):
     def __init__(self):
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded',
                                               'failure'],
                                     input_keys=['going_to_charge'])
 
-        self._bump_monitored_dk_undk = BumpMonitoredDockUndockBehaviour()
-    
+        self._bump_monitored_dk_undk = MonitoredDockUndockBehaviour()
+        self._recover_bumper =  RecoverBumper()
+        self._nav_resume_monitor=NavPauseMonitor(True)
         with self:
             smach.StateMachine.add('MONITORED_DOCK',
                                    self._bump_monitored_dk_undk,
                                    transitions={'succeeded': 'succeeded',
                                                 'failure': 'failure',
-                                                'bumper_pressed': 'RECOVER_BUMPER'
+                                                'bumper_pressed': 'RECOVER_BUMPER',
+                                                'pause_requested':'NAV_RESUME_MONITOR'
                                                 }
                                    )
             smach.StateMachine.add('RECOVER_BUMPER',
-                                   RecoverBumper(),
+                                   self._recover_bumper,
                                    transitions={'succeeded': 'MONITORED_DOCK' })
+            smach.StateMachine.add('NAV_RESUME_MONITOR',
+                                   self._nav_resume_monitor,
+                                   transitions={'invalid': 'MONITORED_DOCK',
+                                                'valid': 'MONITORED_DOCK',
+                                                'preempted':'MONITORED_DOCK'})
         
     """ 
     Set the battery level thresholds.
