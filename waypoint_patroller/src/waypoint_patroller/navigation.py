@@ -118,7 +118,7 @@ input keys:	goal_pose
             going_to_charge
 """
 class MonitoredRecoverableMoveBase(smach.Concurrence, Loggable):
-    def __init__(self):
+    def __init__(self,going_to_charge):
         smach.Concurrence.__init__(self,
                                    outcomes=['bumper_pressed',
                                              'battery_low',
@@ -129,10 +129,9 @@ class MonitoredRecoverableMoveBase(smach.Concurrence, Loggable):
                                    default_outcome='failure',
                                    child_termination_cb=self.child_term_cb,
                                    outcome_cb=self.out_cb,
-                                   input_keys=['goal_pose',
-                                               'going_to_charge']
+                                   input_keys=['goal_pose']
                                    )
-        self._battery_monitor = BatteryMonitor()
+        self._battery_monitor = BatteryMonitor(going_to_charge)
         self._bumper_monitor = BumperMonitor()
         self._recoverable_move_base = RecoverableMoveBase()
         self._carpet_monitor = StuckOnCarpetMonitor()
@@ -206,14 +205,13 @@ input_keys:	goal_pose		- geometry_msgs/Pose, the target location in /map
             				  cancel because of the battery monitor
 """
 class HighLevelMoveBase(smach.StateMachine, Loggable):
-    def __init__(self):
+    def __init__(self,going_to_charge):
         smach.StateMachine.__init__(self, outcomes=['succeeded',
                                                     'bumper_failure',
                                                     'move_base_failure',
                                                     'battery_low'],
-                                          input_keys=['goal_pose',
-                                                      'going_to_charge'] )
-        self._monitored_recoverable_move_base = MonitoredRecoverableMoveBase()
+                                          input_keys=['goal_pose'] )
+        self._monitored_recoverable_move_base = MonitoredRecoverableMoveBase(going_to_charge)
         self._recover_bumper =  RecoverBumper()
         self._recover_carpet =  RecoverStuckOnCarpet()
         self._nav_resume_monitor=NavPauseMonitor(True)        

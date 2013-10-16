@@ -14,14 +14,14 @@ from logger import Loggable
 A smach_ros  MonitorState that monitors the robot's battery. 
 """
 class BatteryMonitor(smach_ros.MonitorState):
-    def __init__(self, very_low_battery=15, low_battery=35,
+    def __init__(self, going_to_charge, very_low_battery=15, low_battery=35,
                        charged_battery=90):
         smach_ros.MonitorState.__init__(self, "/battery_state",
                                         BatteryState,
-                                        self._callback,
-                                        input_keys=['going_to_charge'])
+                                        self._callback)
         self.set_battery_thresholds(very_low_battery, low_battery,
                                     charged_battery)
+        self._going_to_charge=going_to_charge
         
     """ 
     Set the battery level thresholds.
@@ -43,7 +43,7 @@ class BatteryMonitor(smach_ros.MonitorState):
     def _callback(self,  ud,  msg):
         if msg.lifePercent < self.VERY_LOW_BATTERY:
             return False
-        if ud.going_to_charge:
+        if self._going_to_charge:
             return msg.lifePercent < self.CHARGED_BATTERY
         else:
             return msg.lifePercent > self.LOW_BATTERY

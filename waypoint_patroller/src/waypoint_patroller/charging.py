@@ -73,10 +73,9 @@ class DockUndockBehaviour(smach.StateMachine, Loggable):
     def __init__(self):
         smach.StateMachine.__init__(self, outcomes=['succeeded',
                                                     'failure',
-                                                    'preempted'],
-                                          input_keys=['going_to_charge'])
+                                                    'preempted'])
         
-        self._battery_monitor =  BatteryMonitor()
+        self._battery_monitor =  BatteryMonitor(True)
         self._dock_to_charge = DockToChargingStation()
         self._undock_from_charge = UndockFromChargingStation()
         
@@ -119,8 +118,7 @@ class MonitoredDockUndockBehaviour(smach.Concurrence, Loggable):
                                              'failure'],
                                    default_outcome='failure',
                                    child_termination_cb=self.child_term_cb,
-                                   outcome_cb=self.out_cb,
-                                   input_keys=['going_to_charge']
+                                   outcome_cb=self.out_cb
                                    )
         self._dock_undock_bahaviour = DockUndockBehaviour()
         self._bumper_monitor = BumperMonitor()
@@ -170,8 +168,7 @@ class HighLevelDockUndockBehaviour(smach.StateMachine, Loggable):
     def __init__(self):
         smach.StateMachine.__init__(self,
                                     outcomes=['succeeded',
-                                              'failure'],
-                                    input_keys=['going_to_charge'])
+                                              'failure'])
 
         self._bump_monitored_dk_undk = MonitoredDockUndockBehaviour()
         self._recover_bumper =  RecoverBumper()

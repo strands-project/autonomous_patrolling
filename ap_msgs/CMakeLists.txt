@@ -31,6 +31,7 @@ add_service_files(
   SaveMap.srv
   SaveWaypoint.srv
   SaveWaypointFile.srv
+  PauseResumePatroller.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
