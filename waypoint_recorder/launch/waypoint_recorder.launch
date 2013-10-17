@@ -10,6 +10,9 @@
 
     <!-- launch AMCL -->
     <include file="$(find scitos_2d_navigation)/launch/amcl.launch"/>
+    
+    <!-- launch pose publisher -->
+        <node name="robot_pose_publisher" pkg="robot_pose_publisher" type="robot_pose_publisher"/>
 
 
 	<node pkg="waypoint_recorder" type="waypoint_recorder" name="waypoint_recorder" output="screen" args="$(arg waypoints)"/>
