@@ -17,6 +17,18 @@ got_pymongo = strands_datacentre.util.check_for_pymongo()
 if got_pymongo:
     import pymongo
 
+    
+    
+    
+class VeryLowBattery(smach.State, Loggable):
+    def __init__(self):
+        smach.State.__init__(self)
+        
+    def execute(self, userdata):
+        while not rospy.is_shutdown():
+            rospy.sleep(1)
+    
+    
 
 """
 The point chooser state selects which waypoint to visit next. It checks the
@@ -155,6 +167,7 @@ class WaypointPatroller(smach.StateMachine, Loggable):
         self._high_level_move_base_patrol =  navigation.HighLevelMoveBase(False)
         self._high_level_move_base_charge =  navigation.HighLevelMoveBase(True)
         self._dock_undock = charging.HighLevelDockUndockBehaviour()
+        self._very_low_battery=VeryLowBattery()
         
         with self:
             smach.StateMachine.add('POINT_CHOOSER',
@@ -173,7 +186,7 @@ class WaypointPatroller(smach.StateMachine, Loggable):
                                    #navigation.HighLevelMoveBase(),
                                    self._high_level_move_base_charge, 
                                    transitions={'succeeded': 'DOCK_AND_CHARGE',
-                                                'battery_low': 'GO_TO_CHARGING_STATION',
+                                                'battery_low': 'VERY_LOW_BATTERY',
                                                 'bumper_failure': 'aborted',
                                                 'move_base_failure': 'aborted'})
             
@@ -182,6 +195,8 @@ class WaypointPatroller(smach.StateMachine, Loggable):
                                    transitions={'succeeded': 'POINT_CHOOSER',
                                                 'failure': 'aborted'})
             
+            smach.StateMachine.add('VERY_LOW_BATTERY',
+                                   self._very_low_battery)
 
     """ 
     Set the battery level thresholds.
