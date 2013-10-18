@@ -36,34 +36,52 @@ class DockToChargingStation(smach_ros.SimpleActionState, Loggable):
 
 """
 Undocks the robot from the station.
-TODO: Does not currently use the undocking action
 
 outcomes: 	succeeded
 			failure
             preempted
-            
+                        
 """
-class UndockFromChargingStation(smach.State, Loggable):
+
+class UndockFromChargingStation(smach_ros.SimpleActionState, Loggable):
     def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['succeeded',
-                                       'failure',
-                                       'preempted'],
-                             )
-        self.vel_pub = rospy.Publisher('/cmd_vel', Twist)
-        self._vel_cmd = Twist()
-        self._vel_cmd.linear.x = -0.2
+        dock_goal = ChargingGoal()
+        dock_goal.Command = "undock"
+        dock_goal.Timeout = 100
+        
+        smach_ros.SimpleActionState.__init__(self,
+                                             'chargingServer',
+                                             ChargingAction,
+                                             goal=dock_goal )
+        
+    def execute(self, ud):
+        self.get_logger().log_charging_start()
+        outcome = smach_ros.SimpleActionState.execute(self, ud)
+        
+        return outcome
 
-    def execute(self, userdata):
-        self.get_logger().log_charging_finish()
-        for i in range(0, 20):
-            self.vel_pub.publish(self._vel_cmd)
-            if self.preempt_requested():
-                self.service_preempt()
-                return 'preempted'
-            rospy.sleep(0.1)
 
-        return 'succeeded'
+#class UndockFromChargingStation(smach.State, Loggable):
+    #def __init__(self):
+        #smach.State.__init__(self,
+                             #outcomes=['succeeded',
+                                       #'failure',
+                                       #'preempted'],
+                             #)
+        #self.vel_pub = rospy.Publisher('/cmd_vel', Twist)
+        #self._vel_cmd = Twist()
+        #self._vel_cmd.linear.x = -0.2
+
+    #def execute(self, userdata):
+        #self.get_logger().log_charging_finish()
+        #for i in range(0, 20):
+            #self.vel_pub.publish(self._vel_cmd)
+            #if self.preempt_requested():
+                #self.service_preempt()
+                #return 'preempted'
+            #rospy.sleep(0.1)
+
+        #return 'succeeded'
 
 """
 A state machine that docks the robot to the charging station, waits until it is
@@ -83,7 +101,8 @@ class DockUndockBehaviour(smach.StateMachine, Loggable):
             smach.StateMachine.add('DOCK_TO_CHARGING_STATION',
                                    self._dock_to_charge,
                                    transitions={'succeeded': 'CHARGING',
-                                                'aborted': 'DOCK_TO_CHARGING_STATION'})
+                                                'aborted': 'DOCK_TO_CHARGING_STATION',
+                                                'preempted':'preempted'})
 
             smach.StateMachine.add('CHARGING',
                                    self._battery_monitor,
@@ -94,7 +113,8 @@ class DockUndockBehaviour(smach.StateMachine, Loggable):
             smach.StateMachine.add('UNDOCK_FROM_CHARGING_STATION',
                                    self._undock_from_charge,
                                    transitions={'succeeded': 'succeeded',
-                                                'failure': 'UNDOCK_FROM_CHARGING_STATION'})
+                                                'aborted': 'UNDOCK_FROM_CHARGING_STATION',
+                                                'preempted': 'preempted'})
 
     """ 
     Set the battery level thresholds.
