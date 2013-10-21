@@ -119,9 +119,9 @@ class DockUndockBehaviour(smach.StateMachine, Loggable):
     """ 
     Set the battery level thresholds.
     """
-    def set_battery_thresholds(self, very_low_battery, low_battery,
+    def set_patroller_thresholds(self, very_low_battery, low_battery,
                                charged_battery):
-        self._battery_monitor.set_battery_thresholds(very_low_battery,
+        self._battery_monitor.set_patroller_thresholds(very_low_battery,
                                                    low_battery, 
                                                    charged_battery)
    
@@ -165,12 +165,12 @@ class MonitoredDockUndockBehaviour(smach.Concurrence, Loggable):
     """ 
     Set the battery level thresholds.
     """
-    def set_battery_thresholds(self, very_low_battery, low_battery,
+    def set_patroller_thresholds(self, very_low_battery, low_battery,
                                charged_battery):
-        self._dock_undock_bahaviour.set_battery_thresholds(very_low_battery,
+        self._dock_undock_bahaviour.set_patroller_thresholds(very_low_battery,
                                                    low_battery, 
                                                    charged_battery)
-   
+
 
 
 """
@@ -212,10 +212,11 @@ class HighLevelDockUndockBehaviour(smach.StateMachine, Loggable):
                                                 'preempted':'MONITORED_DOCK'})
         
     """ 
-    Set the battery level thresholds.
+    Set the patrolelr level thresholds.
     """
-    def set_battery_thresholds(self, very_low_battery, low_battery,
-                               charged_battery):
-        self._bump_monitored_dk_undk.set_battery_thresholds(very_low_battery,
+    def set_patroller_thresholds(self, very_low_battery, low_battery,
+                               charged_battery,max_bumper_recovery_attempts,max_move_base_recovery_attempts):
+        self._bump_monitored_dk_undk.set_patroller_thresholds(very_low_battery,
                                                    low_battery, 
                                                    charged_battery)
+        self._recover_bumper.set_patroller_thresholds(max_bumper_recovery_attempts)

@@ -11,7 +11,7 @@ from waypoint_patroller.patroller import WaypointPatroller
 from waypoint_patroller.logger import PatrollLogger
 
 from dynamic_reconfigure.server import Server
-from waypoint_patroller.cfg import BatteryTresholdsConfig
+from waypoint_patroller.cfg import PatrollerTresholdsConfig
 
 import strands_datacentre.util
 got_pymongo = strands_datacentre.util.check_for_pymongo()
@@ -36,15 +36,17 @@ class LongTermPatroller(object):
         self.long_term_patrol_sm.set_logger(logger)
         
         # dynamic reconfiguration of battery tresholds
-        self.srv = Server(BatteryTresholdsConfig, self.reconfigure_callback)
+        self.srv = Server(PatrollerTresholdsConfig, self.reconfigure_callback)
     
         pass
         
     """ Dyanmic reconfigure callback for the battery tresholds """
     def reconfigure_callback(self, config, level):
-        self.long_term_patrol_sm.set_battery_thresholds(config.very_low_battery,
+        self.long_term_patrol_sm.set_patroller_thresholds(config.very_low_battery,
                                                         config.low_battery, 
-                                                        config.charged_battery)
+                                                        config.charged_battery,
+                                                        config.max_bumper_recovery_attempts,
+                                                        config.max_move_base_recovery_attempts)
         #ParameterStore().CHARGED_BATTERY = config.charged_battery
         #ParameterStore().LOW_BATTERY = config.low_battery
         #ParameterStore().VERY_LOW_BATTERY = config.very_low_battery

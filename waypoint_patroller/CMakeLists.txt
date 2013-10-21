@@ -22,7 +22,7 @@ catkin_python_setup()
 # Add dynamic reconfigure api
 find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
-  cfg/BatteryTresholds.cfg
+  cfg/PatrollerTresholds.cfg
 )
 
 ## Generate messages in the 'msg' folder
