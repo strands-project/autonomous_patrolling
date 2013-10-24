@@ -113,7 +113,7 @@ class DockUndockBehaviour(smach.StateMachine, Loggable):
             smach.StateMachine.add('UNDOCK_FROM_CHARGING_STATION',
                                    self._undock_from_charge,
                                    transitions={'succeeded': 'succeeded',
-                                                'aborted': 'UNDOCK_FROM_CHARGING_STATION',
+                                                'aborted': 'succeeded',
                                                 'preempted': 'preempted'})
 
     """ 
