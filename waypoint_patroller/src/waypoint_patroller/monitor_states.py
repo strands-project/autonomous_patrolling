@@ -19,19 +19,15 @@ class BatteryMonitor(smach_ros.MonitorState):
         smach_ros.MonitorState.__init__(self, "/battery_state",
                                         BatteryState,
                                         self._callback)
-        self.set_battery_thresholds(very_low_battery, low_battery,
+        self.set_patroller_thresholds(very_low_battery, low_battery,
                                     charged_battery)
         self._going_to_charge=going_to_charge
         
     """ 
     Set the battery level thresholds.
     """
-    def set_battery_thresholds(self, very_low_battery, low_battery,
+    def set_patroller_thresholds(self, very_low_battery, low_battery,
                                charged_battery):
-        rospy.loginfo("Updating battery thresholds on BatteryMonitor:")
-        rospy.loginfo("V.Low="+str(very_low_battery))
-        rospy.loginfo("Low="+str(low_battery))
-        rospy.loginfo("Charged="+str(charged_battery))
         if very_low_battery is not None:
             self.VERY_LOW_BATTERY = very_low_battery
         if low_battery is not None:
@@ -55,7 +51,7 @@ A smach_ros  MonitorState that monitors the robot's bumper. If the bumper get
 pressed, this state to exit with outcome 'invalid'.
 """
 class BumperMonitor(smach_ros.MonitorState, Loggable):
-    def __init__(self):
+    def __init__(self,):
         smach_ros.MonitorState.__init__(self, "/motor_status",
                                         MotorStatus,
                                         self._callback)

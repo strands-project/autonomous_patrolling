@@ -18,23 +18,24 @@ from logger import Loggable
 # this file has the recovery states that will be used when some failures are
 # detected. There is a recovery behaviour for move_base and another for when the
 # bumper is pressed
-MAX_BUMPER_RECOVERY_ATTEMPTS = 5
-MAX_MOVE_BASE_RECOVERY_ATTEMPTS = 5
+
 
 
 class RecoverMoveBase(smach.State, Loggable):
-    def __init__(self):
+    def __init__(self,max_move_base_recovery_attempts=5):
         smach.State.__init__(self,
                              # we need the number of move_base fails as
                              # incoming data from the move_base action state,
                              # because it is not possible for this recovery
                              # behaviour to check if it was succeeded
                              outcomes=['succeeded', 'failure', 'preempted'],
-                             input_keys=['n_move_base_fails']
+                             input_keys=['n_move_base_fails'],
+                             output_keys=['n_move_base_fails'],
                              )
         #self.vel_pub = rospy.Publisher('/cmd_vel', Twist)
         #self._vel_cmd = Twist()
         #self._vel_cmd.linear.x = -0.1
+        self.set_patroller_thresholds(max_move_base_recovery_attempts)
 
     def execute(self, userdata):
         # move slowly backwards a bit. A better option might be to save the
@@ -49,25 +50,28 @@ class RecoverMoveBase(smach.State, Loggable):
         # since there is no way to check if the recovery behaviour was
         # successful, we always go back to the move_base action state with
         # 'succeeded' until the number of failures treshold is reached
-        if userdata.n_move_base_fails < MAX_MOVE_BASE_RECOVERY_ATTEMPTS:
+        if userdata.n_move_base_fails < self.MAX_MOVE_BASE_RECOVERY_ATTEMPTS:
             self.get_logger().log_navigation_recovery_attempt(success=True,
                                                               attempts=userdata.n_move_base_fails)
             return 'succeeded'
         else:
+            userdata.n_move_base_fails=0
             self.get_logger().log_navigation_recovery_attempt(success=False,
                                                               attempts=userdata.n_move_base_fails)
             return 'failure'
 
 
             
-            
+    def set_patroller_thresholds(self, max_move_base_recovery_attempts):
+        if max_move_base_recovery_attempts is not None:
+            self.MAX_MOVE_BASE_RECOVERY_ATTEMPTS = max_move_base_recovery_attempts        
             
             
             
 class RecoverBumper(smach.State, Loggable):
-    def __init__(self):
+    def __init__(self,max_bumper_recovery_attempts=5):
         smach.State.__init__(self,
-                             outcomes=['succeeded', 'failure']
+                             outcomes=['succeeded']
                              )
         self.reset_motorstop = rospy.ServiceProxy('reset_motorstop',
                                                   ResetMotorStop)
@@ -82,6 +86,7 @@ class RecoverBumper(smach.State, Loggable):
         self.speak_goal= maryttsGoal()
         self.speak_goal.text='My bumper is being pressed. Please release it so I can move on!'
         self.speaker.wait_for_server()
+        self.set_patroller_thresholds(max_bumper_recovery_attempts)
 
     def bumper_cb(self, msg):
         self.isRecovered = not msg.bumper_pressed
@@ -100,8 +105,14 @@ class RecoverBumper(smach.State, Loggable):
                 self.get_logger().log_bump_count(n_tries)
                 return 'succeeded'
             if n_tries>1:            
-                self.speaker.send_goal(self.speak_goal)    
+                self.speaker.send_goal(self.speak_goal)
+            #if n_tries>self.MAX_BUMPER_RECOVERY_ATTEMPTS:
+                #send email
             n_tries += 1
+            
+    def set_patroller_thresholds(self, max_bumper_recovery_attempts):
+        if max_bumper_recovery_attempts is not None:
+            self.MAX_BUMPER_RECOVERY_ATTEMPTS = max_bumper_recovery_attempts
                 
 
 class RecoverStuckOnCarpet(smach.State, Loggable):
