@@ -24,7 +24,7 @@ class Loggable(object):
         for a in dir(self):
             attr = getattr(self, a)
             if isinstance(attr, Loggable):
-                rospy.logerr("Passing on logger to " + a)
+                rospy.logdebug("Passing on logger to " + a)
                 attr.set_logger(self._logger)
                         
     def get_logger(self):
