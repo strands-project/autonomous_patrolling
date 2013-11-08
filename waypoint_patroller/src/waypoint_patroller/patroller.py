@@ -63,6 +63,12 @@ class PointChooser(smach.State, Loggable):
         
         self.LOW_BATTERY = 35
 
+        available = self._get_point_sets()
+        print available
+        if waypoints_name not in available:
+            rospy.logerr("Desired pointset '"+waypoints_name+"' not in datacentre")
+            rospy.logerr("Available pointsets: "+str(available))
+        
         self.points = self._get_points(waypoints_name)  # []
         self.point_set = waypoints_name
         self.charing_station_pos = [waypoints_name, "charging_point"]
@@ -82,6 +88,12 @@ class PointChooser(smach.State, Loggable):
         self.battery_monitor = rospy.Subscriber(
             "/battery_state", BatteryState, self.bat_cb)
 
+    """ Get point sets available. Returns list of point set names in DB. """
+    def _get_point_sets(self):
+        mongo = pymongo.MongoClient(rospy.get_param("datacentre_host"),
+                                    rospy.get_param("datacentre_port"))
+        return mongo.autonomous_patrolling.waypoints.find().distinct("meta.pointset")
+        
     """ Get a list of points in the given set """
     def _get_points(self, point_set):
         mongo = pymongo.MongoClient(rospy.get_param("datacentre_host"),
