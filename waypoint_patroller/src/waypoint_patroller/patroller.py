@@ -68,6 +68,7 @@ class PointChooser(smach.State, Loggable):
         if waypoints_name not in available:
             rospy.logerr("Desired pointset '"+waypoints_name+"' not in datacentre")
             rospy.logerr("Available pointsets: "+str(available))
+            raise Exception("Can't find waypoints.")
         
         self.points = self._get_points(waypoints_name)  # []
         self.point_set = waypoints_name
