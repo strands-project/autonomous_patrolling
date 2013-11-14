@@ -32,6 +32,10 @@ add_service_files(
   SaveWaypoint.srv
   SaveWaypointFile.srv
   PauseResumePatroller.srv
+  GetEpisodeNames.srv
+  GetLatestEpisodeName.srv
+  GetEpisodeSummary.srv
+  GetEpisodeComplete.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
