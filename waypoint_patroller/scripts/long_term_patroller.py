@@ -18,6 +18,10 @@ got_pymongo = strands_datacentre.util.check_for_pymongo()
 if got_pymongo:
     import pymongo
     
+    
+import marathon_touch_gui.client
+    
+    
 class LongTermPatroller(object):
     """
     Constructor.
@@ -112,7 +116,11 @@ if __name__ == '__main__':
                 "Executing waypoint_patroller with infinite iterations")
     else:
         rospy.loginfo("Executing waypoint_patroller with infinite iterations")
-
+        
+        
+    displayNo = rospy.get_param("~display", 0)
+    marathon_touch_gui.client.init_marathon_gui()
+    marathon_touch_gui.client.display_main_page(displayNo)
         
     l =  LongTermPatroller(waypoints_name, is_random, n_iterations)
     l.main()
