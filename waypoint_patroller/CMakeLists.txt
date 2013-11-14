@@ -4,7 +4,7 @@ project(waypoint_patroller)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS actionlib actionlib_msgs move_base_msgs rospy scitos_msgs scitos_apps_msgs std_msgs dynamic_reconfigure)
+find_package(catkin REQUIRED COMPONENTS actionlib actionlib_msgs move_base_msgs rospy scitos_msgs scitos_apps_msgs std_msgs dynamic_reconfigure marathon_touch_gui)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
