@@ -7,6 +7,7 @@ import smach_ros
 from scitos_msgs.srv import ResetMotorStop
 from scitos_msgs.srv import EnableMotors
 from ap_msgs.srv import BumperRecovered
+from ap_msgs.srv import RobotMoved
 
 from scitos_msgs.msg import MotorStatus
 from geometry_msgs.msg import Twist
@@ -41,7 +42,23 @@ class RecoverMoveBase(smach.State, Loggable):
         #self._vel_cmd = Twist()
         #self._vel_cmd.linear.x = -0.1
         self.set_patroller_thresholds(max_move_base_recovery_attempts)
+        
 
+        self.enable_motors= rospy.ServiceProxy('enable_motors',
+                                                  EnableMotors)
+                                                  
+        self.speaker=actionlib.SimpleActionClient('/speak', maryttsAction)
+        self.speak_goal= maryttsGoal()
+        self.speaker.wait_for_server()                                                  
+                                                  
+
+    def robot_moved_checker(self,req):
+        self.speak_goal.text='Thank you! I will be on my way.'
+        self.speaker.send_goal(self.speak_goal)
+        self.speaker.wait_for_result()
+        self.isRecovered=True
+                                                  
+                                                  
     def execute(self, userdata):
         # move slowly backwards a bit. A better option might be to save the
         # latest messages received in cmd_vel and reverse them
@@ -51,6 +68,10 @@ class RecoverMoveBase(smach.State, Loggable):
                 #self.service_preempt()
                 #return 'preempted'
             #rospy.sleep(0.2)
+        
+        self.isRecovered=False
+            
+        self.enable_motors(False)    
         rospy.sleep(0.2)
         # since there is no way to check if the recovery behaviour was
         # successful, we always go back to the move_base action state with
@@ -58,6 +79,24 @@ class RecoverMoveBase(smach.State, Loggable):
         if userdata.n_move_base_fails < self.MAX_MOVE_BASE_RECOVERY_ATTEMPTS:
             self.get_logger().log_navigation_recovery_attempt(success=True,
                                                               attempts=userdata.n_move_base_fails)
+            displayNo = rospy.get_param("~display", 0)
+            on_completion = 'robot_moved'
+            service_prefix = '/patroller'
+            marathon_touch_gui.client.nav_fail(displayNo, service_prefix, on_completion)
+            
+            help_button_monitor=rospy.Service('/patroller/robot_moved', RobotMoved, self.robot_moved_checker)
+            
+            self.speak_goal.text='I am having problems moving. Please push me to a clear area.'
+            self.speaker.send_goal(self.speak_goal)
+            self.speaker.wait_for_result()
+            
+            for i in range(0,40):
+                if self.isRecovered:
+                    break
+                rospy.sleep(1)   
+            
+            marathon_touch_gui.client.display_main_page(displayNo)
+            help_button_monitor.shutdown()
             return 'succeeded'
         else:
             userdata.n_move_base_fails=0
@@ -89,11 +128,10 @@ class RecoverBumper(smach.State, Loggable):
                                               
         self.speaker=actionlib.SimpleActionClient('/speak', maryttsAction)
         self.speak_goal= maryttsGoal()
-        self.speak_goal.text='My bumper is being pressed. Please release it so I can move on!'
         self.speaker.wait_for_server()
         self.set_patroller_thresholds(max_bumper_recovery_attempts)
         
-        
+
         
     def bumper_recovered_checker(self,req):
         self.reset_motorstop()    
@@ -137,14 +175,16 @@ class RecoverBumper(smach.State, Loggable):
             rospy.sleep(4*n_tries)
             
             
+            if n_tries==2:
+                on_completion = 'bumper_recovered'
+                service_prefix = '/patroller'
+                marathon_touch_gui.client.bumper_stuck(displayNo, service_prefix, on_completion)            
+            
             if n_tries>1:
                 self.speak_goal.text='My bumper is being pressed. Please release it so I can move on!'
                 self.speaker.send_goal(self.speak_goal)
                 self.speaker.wait_for_result()
-            if n_tries==1:
-                on_completion = 'bumper_recovered'
-                service_prefix = '/patroller'
-                marathon_touch_gui.client.bumper_stuck(displayNo, service_prefix, on_completion)
+
 	
             #if n_tries>self.MAX_BUMPER_RECOVERY_ATTEMPTS:
                 #send email
