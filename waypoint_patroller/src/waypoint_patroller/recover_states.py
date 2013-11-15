@@ -6,6 +6,8 @@ import smach_ros
 
 from scitos_msgs.srv import ResetMotorStop
 from scitos_msgs.srv import EnableMotors
+from ap_msgs.srv import BumperRecovered
+
 from scitos_msgs.msg import MotorStatus
 from geometry_msgs.msg import Twist
 
@@ -14,6 +16,9 @@ import actionlib
 from ros_mary_tts.msg import *
 
 from logger import Loggable
+
+import marathon_touch_gui.client
+
 
 # this file has the recovery states that will be used when some failures are
 # detected. There is a recovery behaviour for move_base and another for when the
@@ -80,35 +85,73 @@ class RecoverBumper(smach.State, Loggable):
         self.is_recovered = False
         self.motor_monitor = rospy.Subscriber("/motor_status",
                                               MotorStatus,
-                                              self.bumper_cb)
+                                              self.bumper_monitor_cb)
                                               
         self.speaker=actionlib.SimpleActionClient('/speak', maryttsAction)
         self.speak_goal= maryttsGoal()
         self.speak_goal.text='My bumper is being pressed. Please release it so I can move on!'
         self.speaker.wait_for_server()
         self.set_patroller_thresholds(max_bumper_recovery_attempts)
-
-    def bumper_cb(self, msg):
+        
+        
+        
+    def bumper_recovered_checker(self,req):
+        self.reset_motorstop()    
+        rospy.sleep(0.1)
+        if self.isRecovered:
+            self.speak_goal.text='Thank you! I will be on my way.'
+            self.speaker.send_goal(self.speak_goal)
+            self.speaker.wait_for_result()
+        else:
+            self.speak_goal.text='Something is still wrong. Are you sure I am in a clear area?'
+            self.speaker.send_goal(self.speak_goal)
+            self.speaker.wait_for_result()
+        
+    def bumper_monitor_cb(self, msg):
         self.isRecovered = not msg.bumper_pressed
 
     # restarts the motors and check to see of they really restarted.
     # Between each failure the waiting time to try and restart the motors
     # again increases. This state can check its own success
     def execute(self, userdata):
+        help_button_monitor=rospy.Service('/patroller/bumper_recovered', BumperRecovered, self.bumper_recovered_checker)
+        displayNo = rospy.get_param("~display", 0)
         n_tries=1
-        self.enable_motors(False)
         while True:
-            rospy.sleep(3 * n_tries)
+            self.enable_motors(False)
             self.reset_motorstop()
             rospy.sleep(0.1)
+            #for i in range(0,3*n_tries):
+                #if self.isRecovered:
+                    #help_button_monitor.shutdown()
+                    #self.get_logger().log_bump_count(n_tries)
+                    #marathon_touch_gui.client.display_main_page(displayNo)
+                    #return 'succeeded' 
+                #rospy.sleep(1)
             if self.isRecovered:
+                help_button_monitor.shutdown()
                 self.get_logger().log_bump_count(n_tries)
+                marathon_touch_gui.client.display_main_page(displayNo)
                 return 'succeeded'
-            if n_tries>1:            
+                
+            rospy.sleep(4*n_tries)
+            
+            
+            if n_tries>1:
+                self.speak_goal.text='My bumper is being pressed. Please release it so I can move on!'
                 self.speaker.send_goal(self.speak_goal)
+                self.speaker.wait_for_result()
+            if n_tries==1:
+                on_completion = 'bumper_recovered'
+                service_prefix = '/patroller'
+                marathon_touch_gui.client.bumper_stuck(displayNo, service_prefix, on_completion)
+	
             #if n_tries>self.MAX_BUMPER_RECOVERY_ATTEMPTS:
                 #send email
             n_tries += 1
+            
+   
+            
             
     def set_patroller_thresholds(self, max_bumper_recovery_attempts):
         if max_bumper_recovery_attempts is not None:
