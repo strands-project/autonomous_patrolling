@@ -158,8 +158,6 @@ class StatGenerator(object):
         Return the Episode
         """
         refresh = (self.get_latest_run_name()==episode_name)
-        if refresh:
-            print "Refreshing"
         if refresh or not self._episodes.has_key(episode_name):
             self._update_episode(episode_name)
         ep = self._episodes[episode_name]
