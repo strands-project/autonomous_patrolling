@@ -9,7 +9,11 @@ It assumes that either a [morse simulation](https://github.com/strands-project/s
 
 ### Without rumblepad
 
-Prior to waypoint autonomous patrolling, a map of the area to be patrolled needs to be created. For that, the `map_saver` package can be used:
+Prior to waypoint autonomous patrolling, a map of the area to be patrolled needs to be created. For that:
+
+1. Have the robot docked (the docking station must be the origin of the odometry frame)
+
+2. Run the `map_saver` package:
   
       $ roslaunch map_saver ap_map_saver.launch 
         
@@ -20,7 +24,9 @@ The `ap_map_saver` provides a `SaveMap` service, that takes as input a string of
 ### With rumblepad
   
 The `ap_map_saver` can also be used in conjunction with the rumblepad, where the user can build a map by driving the robot around and then save it. To do this:
-     
+
+* Have the robot docked (the docking station must be the origin of the odometry frame)     
+
 * Before launching `ap_map_saver.launch`, launch the teleop_app:
         
            $ roslaunch scitos_teleop teleop_joystick.launch js:=/dev/input/"joystick name"
