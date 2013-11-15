@@ -150,18 +150,22 @@ class StatGenerator(object):
         """
         Returns a list of the episode names        
         """
-        self._update_episodes()
-        return self._episodes.keys()
+        names = [ i for i in self._collection.find().distinct("episode_name")]
+        return names
 
     def get_episode(self, episode_name):
         """
         Return the Episode
         """
-        if not self._episodes.has_key(episode_name):
+        if episode_name not in self.get_episode_names():
+            raise Exception("Unknown episode name")
+        refresh = (self.get_latest_run_name()==episode_name)
+        if refresh or not self._episodes.has_key(episode_name):
             self._update_episode(episode_name)
         ep = self._episodes[episode_name]
         if not ep._populated:
             self._update_episode(episode_name)
+            
         return self._episodes[episode_name]
 
     def get_latest_run_name(self):
