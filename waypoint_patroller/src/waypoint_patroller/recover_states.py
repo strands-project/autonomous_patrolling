@@ -6,9 +6,7 @@ import smach_ros
 
 from scitos_msgs.srv import ResetMotorStop
 from scitos_msgs.srv import EnableMotors
-from ap_msgs.srv import BumperRecovered
-from ap_msgs.srv import RobotMoved
-from ap_msgs.srv import HelpOffered
+from std_srvs.srv import Empty
 
 from scitos_msgs.msg import MotorStatus
 from geometry_msgs.msg import Twist
@@ -92,8 +90,8 @@ class RecoverMoveBase(smach.State, Loggable):
                                                               attempts=userdata.n_move_base_fails)
                                                               
                                                               
-            help_offered_monitor=rospy.Service('/patroller/help_offered', HelpOffered, self.help_offered)
-            help_done_monitor=rospy.Service('/patroller/robot_moved', RobotMoved, self.nav_recovered)            
+            help_offered_monitor=rospy.Service('/patroller/help_offered', Empty, self.help_offered)
+            help_done_monitor=rospy.Service('/patroller/robot_moved', Empty, self.nav_recovered)            
             
             displayNo = rospy.get_param("~display", 0)
             
@@ -184,8 +182,8 @@ class RecoverBumper(smach.State, Loggable):
     # Between each failure the waiting time to try and restart the motors
     # again increases. This state can check its own success
     def execute(self, userdata):
-        help_offered_monitor=rospy.Service('/patroller/help_offered', HelpOffered, self.help_offered)
-        help_done_monitor=rospy.Service('/patroller/bumper_recovered', BumperRecovered, self.bumper_recovered)
+        help_offered_monitor=rospy.Service('/patroller/help_offered', Empty, self.help_offered)
+        help_done_monitor=rospy.Service('/patroller/bumper_recovered', Empty, self.bumper_recovered)
         displayNo = rospy.get_param("~display", 0)
         n_tries=1
         while True:
