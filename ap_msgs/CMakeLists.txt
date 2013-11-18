@@ -38,6 +38,7 @@ add_service_files(
   GetEpisodeComplete.srv
   BumperRecovered.srv
   RobotMoved.srv
+  HelpOffered.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
