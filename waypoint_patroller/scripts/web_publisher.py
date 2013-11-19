@@ -34,12 +34,8 @@ if __name__ == '__main__':
 
     (options,args) = parser.parse_args()
 
-    print options
-
     while True:
         create_sumary_file()
         upload_summary_scp(options.path, options.hostname, options.username, options.password)
-        with open("/tmp/patrol_run.json","r") as f:
-            print f.read()
-        print "hello"
+        print "File uploaded."
         sleep(options.timeout)
