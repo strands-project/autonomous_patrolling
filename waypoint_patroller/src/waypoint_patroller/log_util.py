@@ -37,6 +37,9 @@ class Episode(object):
         self.stamped_mileage=[]
         self.stamped_battery=[]
         self.stamped_charges=[]
+        self.waypoints_stamps=[]
+        self.active_point_name = ""
+        
 
     def fill_from_log(self, events):
         """ Fill this episode stat from a pymongo iterator of documents, all assumed to be
@@ -70,6 +73,17 @@ class Episode(object):
                 self.finish_time = stamp_to_datetime(event['stamp'])
                 self.finish_mileage = event['mileage']
 
+            if event_type == "start waypoint":
+                self.active_point_name = event["waypoint"]
+
+            if event_type == "success waypoint":
+                self.waypoints_stamps.append([ self.active_point_name, True,
+                                          stamp_to_datetime(event['stamp']) - self.start_time ])
+            
+            if event_type == "failed waypoint":
+                self.waypoints_stamps.append([ self.active_point_name, False,
+                                          stamp_to_datetime(event['stamp']) - self.start_time ])
+
         self._populated = True
 
     def __str__(self):
@@ -96,6 +110,8 @@ Charge cycles: %d
         complete["stamped_mileage"]=[[i[0], str(i[1])] for i in self.stamped_mileage ]
         complete["stamped_battery"]=[[i[0], str(i[1])] for i in self.stamped_battery ]
         complete["stamped_charges"]=[[i[0], str(i[1])] for i in self.stamped_charges ]
+        complete["stamped_waypoints"] = [[i[0], i[1], str(i[2])] for i in self.waypoints_stamps]
+        complete["current_waypoint"]=self.active_point_name
         
         return json.dumps(complete)
 
@@ -107,6 +123,9 @@ Charge cycles: %d
         summary['distance']=self.stamped_mileage[-1][0]
         summary['bump_recoveries']=len(self.bumper_hits)
         summary['charge_cycles']=len(self.stamped_charges)
+        summary['successful_waypoints']=sum([1 if i[1] else 0 for i in self.waypoints_stamps ])
+        summary['failed_waypoints']=sum([1 if not i[1] else 0 for i in self.waypoints_stamps ])
+        summary['active_waypoint']=self.active_point_name
         return json.dumps(summary)
 
 
