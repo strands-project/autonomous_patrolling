@@ -161,7 +161,7 @@ class Visualiser(object):
         update={}
         p = feedback.pose.position
         q = feedback.pose.orientation
-        self._points_db.update({"meta.name":feedback.marker_name},{"$set":{"msg":{"position":{"x":p.x,
+        self._points_db.update({"meta.pointset":self._point_set, "meta.name":feedback.marker_name},{"$set":{"msg":{"position":{"x":p.x,
                                                                                           "y":p.y,
                                                                                           "z":p.z},
                                                                               "orientation":{"x":q.x,
@@ -172,8 +172,11 @@ class Visualiser(object):
                                                                       }
                                                               })
                                                                 
-        print feedback.marker_name + " is now at " + str(p.x) + ", " + str(p.y) + ", " + str(p.z)
+        
+        rospy.loginfo(feedback)                                                        
+       # print feedback.marker_name + " is now at x:" + str(p.x) + ", y:" + str(p.y) + ", z:" + str(p.z)  + ", w:" + str(p.w)
 
+        
     
 
 
