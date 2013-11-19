@@ -9,7 +9,11 @@ It assumes that either a [morse simulation](https://github.com/strands-project/s
 
 ### Without rumblepad
 
-Prior to waypoint autonomous patrolling, a map of the area to be patrolled needs to be created. For that, the `map_saver` package can be used:
+Prior to waypoint autonomous patrolling, a map of the area to be patrolled needs to be created. For that:
+
+1. Have the robot docked (the docking station must be the origin of the odometry frame)
+
+2. Run the `map_saver` package:
   
       $ roslaunch map_saver ap_map_saver.launch 
         
@@ -20,7 +24,9 @@ The `ap_map_saver` provides a `SaveMap` service, that takes as input a string of
 ### With rumblepad
   
 The `ap_map_saver` can also be used in conjunction with the rumblepad, where the user can build a map by driving the robot around and then save it. To do this:
-     
+
+* Have the robot docked (the docking station must be the origin of the odometry frame)     
+
 * Before launching `ap_map_saver.launch`, launch the teleop_app:
         
            $ roslaunch scitos_teleop teleop_joystick.launch js:=/dev/input/"joystick name"
@@ -115,6 +121,9 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
 
 
 
+
+
+
 * Run the autonomous docking service:
 
            $ roslaunch scitos_docking charging.launch
@@ -133,6 +142,13 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
                
       Then press the `SEND GOAL` button.
 
+* Launch the marathon gui, where HOST_IP should be set to an external ip for your machine if you want this to be externally accessible, else can be left blank for 127.0.0.1. E.g.:
+           
+               $  HOST_IP=10.0.11.158 roslaunch marathon_touch_gui marathon_gui_dependencies.launch
+    
+     * WARNING: If you are running the marathon gui for the first time, before launching, follow the installation instuctions on https://github.com/strands-project/strands_ui
+     
+     * After launching, open a browser window and navigate to `HOST_IP:8090`, where HOST_IP is the one you just set above
 
 
 * Launch the patroller:

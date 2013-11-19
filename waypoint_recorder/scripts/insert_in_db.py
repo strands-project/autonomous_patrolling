@@ -51,6 +51,6 @@ def way_points_file_to_datacentre(filename, dataset_name, map_name):
 
 if __name__=="__main__":
     if len(sys.argv)!=4:
-        print "Usage: rosrun waypoint_recorder 'csv_file' 'dataset_name' 'map_name'"
+        print "Usage: rosrun waypoint_recorder insert_in_db.py 'csv_file' 'dataset_name' 'map_name'"
         sys.exit(1)
     way_points_file_to_datacentre(sys.argv[1],sys.argv[2],sys.argv[3])
