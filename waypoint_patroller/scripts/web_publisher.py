@@ -7,8 +7,9 @@ from optparse import OptionParser
 from time import sleep
 import waypoint_patroller.log_util
 
-def create_sumary_file():
-    gen = waypoint_patroller.log_util.StatGenerator()
+
+def create_sumary_file(datacentre_host, datacentre_port):
+    gen = waypoint_patroller.log_util.StatGenerator(datacentre_host, datacentre_port)
     summary = gen.get_episode(gen.get_latest_run_name()).get_json_summary()
     with  open("/tmp/patrol_run.json", "w") as f:
         f.write(summary)
@@ -32,10 +33,17 @@ if __name__ == '__main__':
     parser.add_option("-t","--time-between",dest="timeout", type="int", default=300,
                       help="the time in seconds to pause between uploads to server. default = 300 seconds")
 
+    parser.add_option("-d","--datacentre-host",dest="datacentre", default="localhost",
+                      help="the machine that the datacentre(mongodb) is on")
+
+    parser.add_option("-k","--datacentre-port",dest="datacentre_port",  type="int", default="62345",
+                      help="the port that the datacentre(mongodb) is on")
+
+    
     (options,args) = parser.parse_args()
 
     while True:
-        create_sumary_file()
+        create_sumary_file(options.datacentre, options.datacentre_port)
         upload_summary_scp(options.path, options.hostname, options.username, options.password)
         print "File uploaded."
         sleep(options.timeout)
