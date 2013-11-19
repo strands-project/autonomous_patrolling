@@ -31,6 +31,7 @@ class Episode(object):
         self.start_time = None
         self.start_mileage = 0
         self.bumper_hits=[]
+        self.navigation_fails=[]
         self.finish_time = None
         self.start_mileage = 0
         self.finish_mileage = 0
@@ -65,6 +66,9 @@ class Episode(object):
 
             if event_type == "bumper pressed":
                 self.bumper_hits.append(stamp_to_datetime(event['stamp']) - self.start_time )
+
+            if event_type == "navigation recovery":
+                self.navigation_fails.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
             if event_type == "charge started":
                 self.bumper_hits.append(stamp_to_datetime(event['stamp']) - self.start_time )
@@ -104,6 +108,7 @@ Charge cycles: %d
         complete["start_time"] = str(self.start_time)
         complete["start_mileage"] = self.start_mileage
         complete["bumper_hits"]=[str(i) for i in self.bumper_hits]
+        complete["navigation_fails"]=[str(i) for i in self.navigation_fails]
         complete["finish_time"] = str(self.finish_time)
         complete["start_mileage"] = self.start_mileage
         complete["finish_mileage"] = self.finish_mileage
@@ -122,6 +127,7 @@ Charge cycles: %d
         summary['run_duration']=str(self.stamped_mileage[-1][1])
         summary['distance']=self.stamped_mileage[-1][0]
         summary['bump_recoveries']=len(self.bumper_hits)
+        summary['navigation_recoveries']=len(self.navigation_fails)
         summary['charge_cycles']=len(self.stamped_charges)
         summary['successful_waypoints']=sum([1 if i[1] else 0 for i in self.waypoints_stamps ])
         summary['failed_waypoints']=sum([1 if not i[1] else 0 for i in self.waypoints_stamps ])
