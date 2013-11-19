@@ -55,7 +55,7 @@ class UndockFromChargingStation(smach_ros.SimpleActionState, Loggable):
                                              goal=dock_goal )
         
     def execute(self, ud):
-        self.get_logger().log_charging_start()
+        self.get_logger().log_charging_finish()
         outcome = smach_ros.SimpleActionState.execute(self, ud)
         
         return outcome
