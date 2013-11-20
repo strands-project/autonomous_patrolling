@@ -8,14 +8,14 @@ from time import sleep
 import waypoint_patroller.log_util
 
 
-def create_sumary_file(datacentre_host, datacentre_port):
+def create_sumary_file(datacentre_host, datacentre_port, jsonfile):
     gen = waypoint_patroller.log_util.StatGenerator(datacentre_host, datacentre_port)
     summary = gen.get_episode(gen.get_latest_run_name()).get_json_summary()
-    with  open("/tmp/patrol_run.json", "w") as f:
+    with  open(jsonfile, "w") as f:
         f.write(summary)
 
-def upload_summary_scp(upload_path, server, user, password):
-    call = subprocess.call(["sshpass", "-p", password, "scp", "/tmp/patrol_run.json", "%s@%s:%s"%(user,server,upload_path) ])
+def upload_summary_scp(upload_path, server, user, password, jsonfile):
+    call = subprocess.call(["sshpass", "-p", password, "scp", jsonfile, "%s@%s:%s"%(user,server,upload_path) ])
     if call != 0:
         raise Exception("Failed to upload summary. Bad call to sshpass...scp")
     
@@ -28,6 +28,8 @@ if __name__ == '__main__':
                       help="username for account on ssh server")
     parser.add_option("-p","--password",dest="password", default="nopass",
                       help="the users password")
+    parser.add_option("-j","--jsonfile",dest="jsonfile", default="/tmp/patrol_run.json",
+                      help="the path of the temporary json file")
     parser.add_option("-f","--filepath",dest="path",
                       help="the location to place the file on the server.")
     parser.add_option("-t","--time-between",dest="timeout", type="int", default=300,
@@ -43,7 +45,9 @@ if __name__ == '__main__':
     (options,args) = parser.parse_args()
 
     while True:
-        create_sumary_file(options.datacentre, options.datacentre_port)
-        upload_summary_scp(options.path, options.hostname, options.username, options.password)
-        print "File uploaded."
+        create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile)
+
+        if options.hostname != None:
+	        upload_summary_scp(options.path, options.hostname, options.username, options.password,options.jsonfile)
+	        print "File uploaded."
         sleep(options.timeout)
