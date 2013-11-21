@@ -183,6 +183,20 @@ class StatGenerator(object):
         names = [ i for i in self._collection.find().distinct("episode_name")]
         return names
 
+    def get_episode_names_since(self, start_date, end_date=None):
+        """
+        Gets a list of episodes that started since the start_date, started before end_date
+        """
+        candidates = self.get_episode_names()
+        episodes=[]
+        for i in candidates:
+            start = self._collection.find_one({"episode_name":i,"event_type":"episode start"})
+            time = stamp_to_datetime(start["stamp"])
+            if time > start_date and ( end_date is None or time < end_date):
+                episodes.append(i)
+        return episodes
+            
+
     def get_episode(self, episode_name):
         """
         Return the Episode
@@ -206,3 +220,5 @@ class StatGenerator(object):
         return name
         
 
+
+    
