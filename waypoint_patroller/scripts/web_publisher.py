@@ -7,6 +7,7 @@ from optparse import OptionParser
 from time import sleep
 import waypoint_patroller.log_util
 import datetime
+from dateutil import parser
 import json
 
 def create_sumary_file(datacentre_host, datacentre_port, jsonfile, start_time=None, end_time=None):
@@ -55,7 +56,8 @@ if __name__ == '__main__':
 
     while True:
         try:
-            create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile)
+            create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile,
+                               start_time=datetime.datetime.strptime('Nov 18 2013  9:00AM', '%b %d %Y %I:%M%p'))
 
             if options.hostname != None:
                 upload_summary_scp(options.path, options.hostname, options.username, options.password,options.jsonfile)
