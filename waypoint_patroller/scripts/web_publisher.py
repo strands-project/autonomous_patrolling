@@ -45,9 +45,12 @@ if __name__ == '__main__':
     (options,args) = parser.parse_args()
 
     while True:
-        create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile)
+        try:
+            create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile)
 
-        if options.hostname != None:
-	        upload_summary_scp(options.path, options.hostname, options.username, options.password,options.jsonfile)
-	        print "File uploaded."
+            if options.hostname != None:
+                upload_summary_scp(options.path, options.hostname, options.username, options.password,options.jsonfile)
+        except Exception, e:
+            print "Upload failed: ", e
+        print "File done."
         sleep(options.timeout)
