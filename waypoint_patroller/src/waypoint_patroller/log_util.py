@@ -29,6 +29,7 @@ class Episode(object):
         self._populated = False
 
         self.start_time = None
+        self.latest_event_time = None
         self.start_mileage = 0
         self.bumper_hits=[]
         self.navigation_fails=[]
@@ -70,8 +71,8 @@ class Episode(object):
             if event_type == "navigation recovery":
                 self.navigation_fails.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
-            if event_type == "charge started":
-                self.bumper_hits.append(stamp_to_datetime(event['stamp']) - self.start_time )
+            if event_type == "charging started":
+                self.stamped_charges.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
             if event_type == "episode finish":
                 self.finish_time = stamp_to_datetime(event['stamp'])
@@ -87,6 +88,8 @@ class Episode(object):
             if event_type == "failed waypoint":
                 self.waypoints_stamps.append([ self.active_point_name, False,
                                           stamp_to_datetime(event['stamp']) - self.start_time ])
+
+            self.latest_event_time = stamp_to_datetime(event['stamp'])
 
         self._populated = True
 
@@ -117,6 +120,7 @@ Charge cycles: %d
         complete["stamped_charges"]=[[i[0], str(i[1])] for i in self.stamped_charges ]
         complete["stamped_waypoints"] = [[i[0], i[1], str(i[2])] for i in self.waypoints_stamps]
         complete["current_waypoint"]=self.active_point_name
+        complete['last_event_time']=str(self.latest_event_time)
         
         return json.dumps(complete)
 
@@ -132,6 +136,7 @@ Charge cycles: %d
         summary['successful_waypoints']=sum([1 if i[1] else 0 for i in self.waypoints_stamps ])
         summary['failed_waypoints']=sum([1 if not i[1] else 0 for i in self.waypoints_stamps ])
         summary['active_waypoint']=self.active_point_name
+        summary['last_event_time']=str(self.latest_event_time)
         return json.dumps(summary)
 
 
