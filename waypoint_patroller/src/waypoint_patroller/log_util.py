@@ -124,7 +124,7 @@ Charge cycles: %d
         
         return json.dumps(complete)
 
-    def get_json_summary(self):
+    def get_summary(self):
         summary = {}
         summary['episode_name']=self.name
         summary['date']=str(self.start_time)
@@ -137,7 +137,11 @@ Charge cycles: %d
         summary['failed_waypoints']=sum([1 if not i[1] else 0 for i in self.waypoints_stamps ])
         summary['active_waypoint']=self.active_point_name
         summary['last_event_time']=str(self.latest_event_time)
-        return json.dumps(summary)
+        return summary
+        
+    def get_json_summary(self):
+        summary = self.get_summary()
+        return json.dumps([summary])
 
 
                 
