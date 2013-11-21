@@ -6,13 +6,23 @@ import sys
 from optparse import OptionParser
 from time import sleep
 import waypoint_patroller.log_util
+import datetime
+from dateutil import parser
+import json
 
-
-def create_sumary_file(datacentre_host, datacentre_port, jsonfile):
+def create_sumary_file(datacentre_host, datacentre_port, jsonfile, start_time=None, end_time=None):
+    """ create a json summary. if start_time and end_time are set, then all episodes in that
+    window are sumarised, otherwise only the latest"""
     gen = waypoint_patroller.log_util.StatGenerator(datacentre_host, datacentre_port)
-    summary = gen.get_episode(gen.get_latest_run_name()).get_json_summary()
-    with  open(jsonfile, "w") as f:
-        f.write(summary)
+    if start_time is None:
+        summary = gen.get_episode(gen.get_latest_run_name()).get_json_summary()
+        with  open(jsonfile, "w") as f:
+            f.write(summary)
+    else:
+        episodes = gen.get_episode_names_since(start_time, end_time)
+        summaries = [gen.get_episode(i).get_summary() for i in episodes]
+        with  open(jsonfile, "w") as f:
+            f.write(json.dumps(summaries))
 
 def upload_summary_scp(upload_path, server, user, password, jsonfile):
     call = subprocess.call(["sshpass", "-p", password, "scp", jsonfile, "%s@%s:%s"%(user,server,upload_path) ])
@@ -45,9 +55,13 @@ if __name__ == '__main__':
     (options,args) = parser.parse_args()
 
     while True:
-        create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile)
+        try:
+            create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile,
+                               start_time=datetime.datetime.strptime('Nov 18 2013  9:00AM', '%b %d %Y %I:%M%p'))
 
-        if options.hostname != None:
-	        upload_summary_scp(options.path, options.hostname, options.username, options.password,options.jsonfile)
-	        print "File uploaded."
+            if options.hostname != None:
+                upload_summary_scp(options.path, options.hostname, options.username, options.password,options.jsonfile)
+            print "File done."
+        except Exception, e:
+            print "Upload failed: ", e
         sleep(options.timeout)

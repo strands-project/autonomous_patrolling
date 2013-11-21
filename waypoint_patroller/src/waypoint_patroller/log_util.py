@@ -29,6 +29,7 @@ class Episode(object):
         self._populated = False
 
         self.start_time = None
+        self.latest_event_time = None
         self.start_mileage = 0
         self.bumper_hits=[]
         self.navigation_fails=[]
@@ -70,8 +71,8 @@ class Episode(object):
             if event_type == "navigation recovery":
                 self.navigation_fails.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
-            if event_type == "charge started":
-                self.bumper_hits.append(stamp_to_datetime(event['stamp']) - self.start_time )
+            if event_type == "charging started":
+                self.stamped_charges.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
             if event_type == "episode finish":
                 self.finish_time = stamp_to_datetime(event['stamp'])
@@ -87,6 +88,8 @@ class Episode(object):
             if event_type == "failed waypoint":
                 self.waypoints_stamps.append([ self.active_point_name, False,
                                           stamp_to_datetime(event['stamp']) - self.start_time ])
+
+            self.latest_event_time = stamp_to_datetime(event['stamp'])
 
         self._populated = True
 
@@ -117,14 +120,15 @@ Charge cycles: %d
         complete["stamped_charges"]=[[i[0], str(i[1])] for i in self.stamped_charges ]
         complete["stamped_waypoints"] = [[i[0], i[1], str(i[2])] for i in self.waypoints_stamps]
         complete["current_waypoint"]=self.active_point_name
+        complete['last_event_time']=str(self.latest_event_time)
         
         return json.dumps(complete)
 
-    def get_json_summary(self):
+    def get_summary(self):
         summary = {}
         summary['episode_name']=self.name
         summary['date']=str(self.start_time)
-        summary['run_duration']=str(self.stamped_mileage[-1][1])
+        summary['run_duration']=self.stamped_mileage[-1][1].total_seconds()
         summary['distance']=self.stamped_mileage[-1][0]
         summary['bump_recoveries']=len(self.bumper_hits)
         summary['navigation_recoveries']=len(self.navigation_fails)
@@ -132,7 +136,12 @@ Charge cycles: %d
         summary['successful_waypoints']=sum([1 if i[1] else 0 for i in self.waypoints_stamps ])
         summary['failed_waypoints']=sum([1 if not i[1] else 0 for i in self.waypoints_stamps ])
         summary['active_waypoint']=self.active_point_name
-        return json.dumps(summary)
+        summary['last_event_time']=str(self.latest_event_time)
+        return summary
+        
+    def get_json_summary(self):
+        summary = self.get_summary()
+        return json.dumps([summary])
 
 
                 
@@ -178,6 +187,20 @@ class StatGenerator(object):
         names = [ i for i in self._collection.find().distinct("episode_name")]
         return names
 
+    def get_episode_names_since(self, start_date, end_date=None):
+        """
+        Gets a list of episodes that started since the start_date, started before end_date
+        """
+        candidates = self.get_episode_names()
+        episodes=[]
+        for i in candidates:
+            start = self._collection.find_one({"episode_name":i,"event_type":"episode start"})
+            time = stamp_to_datetime(start["stamp"])
+            if time > start_date and ( end_date is None or time < end_date):
+                episodes.append(i)
+        return episodes
+            
+
     def get_episode(self, episode_name):
         """
         Return the Episode
@@ -201,3 +224,5 @@ class StatGenerator(object):
         return name
         
 
+
+    
