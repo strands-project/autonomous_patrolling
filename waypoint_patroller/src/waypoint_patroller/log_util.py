@@ -128,7 +128,7 @@ Charge cycles: %d
         summary = {}
         summary['episode_name']=self.name
         summary['date']=str(self.start_time)
-        summary['run_duration']=str(self.stamped_mileage[-1][1])
+        summary['run_duration']=self.stamped_mileage[-1][1].total_seconds()
         summary['distance']=self.stamped_mileage[-1][0]
         summary['bump_recoveries']=len(self.bumper_hits)
         summary['navigation_recoveries']=len(self.navigation_fails)
