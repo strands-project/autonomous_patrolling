@@ -58,7 +58,7 @@ class PatrollLogger(Logger):
                                           int(rospy.get_param("datacentre_port")))
         self._db = self._mongo[name].episodes
         
-        self._mileage_sub = rospy.Subscriber('/mileage', Float32,
+        self._mileage_sub = rospy.Subscriber('/odom_mileage', Float32,
                                              self._mileage_cb)
         self._batterystate_sub = rospy.Subscriber('/battery_state', BatteryState,
                                              self._batterystate_cb)
