@@ -117,6 +117,7 @@ class RecoverMoveBase(smach.State, Loggable):
                 self.being_helped=False
                 for i in range(0,60):
                     if self.help_finished:
+                        self.get_logger().log_helped("navigation")
                         self.speak_goal.text='Thank you! I will be on my way.'
                         self.speaker.send_goal(self.speak_goal)
                         self.speaker.wait_for_result()
@@ -205,6 +206,7 @@ class RecoverBumper(smach.State, Loggable):
                 self.reset_motorstop()    
                 rospy.sleep(0.1)
                 if self.isRecovered:
+                    self.get_logger().log_helped("bumper")
                     self.speak_goal.text='Thank you! I will be on my way.'
                     self.speaker.send_goal(self.speak_goal)
                     self.speaker.wait_for_result()
