@@ -269,7 +269,7 @@ class WaypointPatrollerWithPulse(smach.Concurrence, Loggable):
                                    outcome_cb=self.out_cb
                                    )
         self._patroller = WaypointPatroller(waypoints_name, is_random, n_iterations)
-        self._pulse = BumperMonitor()
+        self._pulse = Pulse()
         with self:
             smach.Concurrence.add('PATROLLER', self._patroller)
             smach.Concurrence.add('PULSE', self._pulse)
