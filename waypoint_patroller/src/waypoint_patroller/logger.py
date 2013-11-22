@@ -144,4 +144,8 @@ class PatrollLogger(Logger):
         self._record({'event_type': 'heartbeat', })
     
     
+    def log_helped(self,  help_type):
+        """ Logs when a user has helped the robot """
+        self._record({'event_type': 'helped', 'type': help_type,})
+    
     
