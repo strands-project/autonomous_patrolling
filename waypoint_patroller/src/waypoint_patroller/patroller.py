@@ -224,7 +224,7 @@ class WaypointPatroller(smach.StateMachine, Loggable):
         self._high_level_move_base_patrol.set_patroller_thresholds(very_low_battery,
                                                           low_battery, 
                                                           charged_battery,
-                                                          max_bumper_recovery_attempts
+                                                          max_bumper_recovery_attempts, 
                                                           max_move_base_recovery_attempts)
         self._high_level_move_base_charge.set_patroller_thresholds(very_low_battery,
                                                           low_battery, 
