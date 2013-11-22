@@ -140,6 +140,8 @@ class PatrollLogger(Logger):
         self._record({'event_type': 'stuck in carpet', })
     
 
+    def log_pulse(self):
+        self._record({'event_type': 'heartbeat', })
     
     
     
