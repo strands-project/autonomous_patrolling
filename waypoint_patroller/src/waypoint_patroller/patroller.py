@@ -240,7 +240,7 @@ class WaypointPatroller(smach.StateMachine, Loggable):
         rospy.loginfo("Max move_base recovers before going to a new point="+str(max_move_base_recovery_attempts))
    
 
-    def execute(self):
+    def execute(self,  userdata=None):
         self.get_logger().log_start_episode(self._waypoints_name)
         outcome = smach.StateMachine.execute(self)
         self.get_logger().log_finish_episode()
