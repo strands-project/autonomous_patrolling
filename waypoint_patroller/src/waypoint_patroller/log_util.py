@@ -41,6 +41,8 @@ class Episode(object):
         self.stamped_charges=[]
         self.waypoints_stamps=[]
         self.active_point_name = ""
+        self.bump_help_count = 0
+        self.navigation_help_count = 0
         
 
     def fill_from_log(self, events):
@@ -64,7 +66,11 @@ class Episode(object):
                                           stamp_to_datetime(event['stamp']) - self.start_time ])
             self.stamped_battery.append([ event['battery level'],
                                           stamp_to_datetime(event['stamp']) - self.start_time ])
+            self.latest_event_time = stamp_to_datetime(event['stamp'])
 
+            if event_type ==  "heartbeat":
+                continue
+            
             if event_type == "bumper pressed":
                 self.bumper_hits.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
@@ -88,8 +94,12 @@ class Episode(object):
             if event_type == "failed waypoint":
                 self.waypoints_stamps.append([ self.active_point_name, False,
                                           stamp_to_datetime(event['stamp']) - self.start_time ])
-
-            self.latest_event_time = stamp_to_datetime(event['stamp'])
+            
+            if event_type == "helped":
+                if event['type'] == "navigation":
+                    self.navigation_help_count += 1
+                elif event['type'] == "bumper":
+                    self.bump_help_count += 1
 
         self._populated = True
 
@@ -121,6 +131,8 @@ Charge cycles: %d
         complete["stamped_waypoints"] = [[i[0], i[1], str(i[2])] for i in self.waypoints_stamps]
         complete["current_waypoint"]=self.active_point_name
         complete['last_event_time']=str(self.latest_event_time)
+        complete['bump_help_count']= self.bump_help_count
+        complete['navigation_help_count']=self.navigation_help_count
         
         return json.dumps(complete)
 
@@ -137,6 +149,8 @@ Charge cycles: %d
         summary['failed_waypoints']=sum([1 if not i[1] else 0 for i in self.waypoints_stamps ])
         summary['active_waypoint']=self.active_point_name
         summary['last_event_time']=str(self.latest_event_time)
+        summary['bump_help_count']= self.bump_help_count
+        summary['navigation_help_count']=self.navigation_help_count
         return summary
         
     def get_json_summary(self):
