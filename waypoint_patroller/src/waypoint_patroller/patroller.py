@@ -1,6 +1,7 @@
 import smach
 import smach_ros
 import rospy
+import time
 
 from random import shuffle
 from . import charging, navigation
@@ -213,13 +214,18 @@ class WaypointPatroller(smach.StateMachine, Loggable):
     Set the patoller thresholds.
     """
     def set_patroller_thresholds(self, very_low_battery, low_battery,
-                               charged_battery,max_bumper_recovery_attempts,max_move_base_recovery_attempts):
+                               charged_battery,max_bumper_recovery_attempts,
+                               max_move_base_recovery_attempts):
         self._point_chooser.set_patroller_thresholds(very_low_battery,
                                                    low_battery, 
-                                                   charged_battery,max_bumper_recovery_attempts,max_move_base_recovery_attempts)
+                                                   charged_battery,
+                                                   max_bumper_recovery_attempts,
+                                                   max_move_base_recovery_attempts)
         self._high_level_move_base_patrol.set_patroller_thresholds(very_low_battery,
                                                           low_battery, 
-                                                          charged_battery,max_bumper_recovery_attempts,max_move_base_recovery_attempts)
+                                                          charged_battery,
+                                                          max_bumper_recovery_attempts
+                                                          max_move_base_recovery_attempts)
         self._high_level_move_base_charge.set_patroller_thresholds(very_low_battery,
                                                           low_battery, 
                                                           charged_battery,max_bumper_recovery_attempts,max_move_base_recovery_attempts)                                                          
@@ -239,3 +245,62 @@ class WaypointPatroller(smach.StateMachine, Loggable):
         outcome = smach.StateMachine.execute(self)
         self.get_logger().log_finish_episode()
         return outcome
+    
+          
+
+class Pulse(smach.State, Loggable):
+    def __init__(self):
+        smach.State.__init__(self,
+            outcomes    = ['aborted'])
+
+    def execute(self,userdata):
+        while True:
+            self.get_logger().log_pulse()
+            time.sleep(300) # every 5 minutes
+            
+
+
+class WaypointPatrollerWithPulse(smach.Concurrence, Loggable):
+    def __init__(self,waypoints_name, is_random, n_iterations):
+        smach.Concurrence.__init__(self,
+                                   outcomes=['succeeded', 'aborted'], 
+                                   default_outcome='aborted',
+                                   child_termination_cb=self.child_term_cb,
+                                   outcome_cb=self.out_cb
+                                   )
+        self._patroller = WaypointPatroller(waypoints_name, is_random, n_iterations)
+        self._pulse = BumperMonitor()
+        with self:
+            smach.Concurrence.add('PATROLLER', self._patroller)
+            smach.Concurrence.add('PULSE', self._pulse)
+    
+    def child_term_cb(self, outcome_map):
+        # decide if this state is done when one or more concurrent inner states 
+        # stop. Only done when the patroler is done
+        if ( outcome_map['PATROLLER'] == 'succeeded' or
+             outcome_map['PATROLLER'] == 'aborted'):
+            return True
+        return False
+    
+    def out_cb(self, outcome_map):
+        # determine what the outcome of this machine is
+        
+        # rospy.sleep(0.1) without this sleep, sometimes the concurrence container
+        # terminates before all its children terminate, and an error is printed.
+        # However, that does not affect the evolution, and I think that with the
+        # sleep sometimes the container blocks and never terminates
+        return outcome_map['PATROLLER']
+    
+    """ 
+    Set the battery level thresholds.
+    """
+    def set_patroller_thresholds(self, very_low_battery, low_battery,
+                               charged_battery,max_bumper_recovery_attempts,max_move_base_recovery_attempts):
+        self._patroller.set_patroller_thresholds(very_low_battery,
+                                                   low_battery, 
+                                                   charged_battery,
+                                                   max_bumper_recovery_attempts,
+                                                   max_move_base_recovery_attempts)
+    
+
+

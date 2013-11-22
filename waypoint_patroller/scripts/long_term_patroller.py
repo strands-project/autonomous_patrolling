@@ -7,7 +7,7 @@ import csv
 import smach
 import smach_ros
 
-from waypoint_patroller.patroller import WaypointPatroller
+from waypoint_patroller.patroller import WaypointPatrollerWithPulse
 from waypoint_patroller.logger import PatrollLogger
 
 from dynamic_reconfigure.server import Server
@@ -32,8 +32,9 @@ class LongTermPatroller(object):
     def __init__(self, waypoints_name, is_random, n_iterations):
     
         # Create the main state machine
-        self.long_term_patrol_sm = WaypointPatroller(waypoints_name, is_random,
-                                                n_iterations)
+        self.long_term_patrol_sm = WaypointPatrollerWithPulse(waypoints_name,
+                                                              is_random,
+                                                              n_iterations)
         
         # Create a logger
         logger =  PatrollLogger("autonomous_patrolling")
