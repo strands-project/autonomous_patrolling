@@ -71,7 +71,7 @@ class Episode(object):
             if event_type == "navigation recovery":
                 self.navigation_fails.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
-            if event_type == "charging started":
+            if event_type == "charging finished":
                 self.stamped_charges.append(stamp_to_datetime(event['stamp']) - self.start_time )
 
             if event_type == "episode finish":
