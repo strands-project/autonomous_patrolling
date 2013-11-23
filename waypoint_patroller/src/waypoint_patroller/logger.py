@@ -61,7 +61,7 @@ class PatrollLogger(Logger):
         self._mileage_sub = rospy.Subscriber('/mileage', Float32,
                                              self._mileage_cb)
         self._odom_mileage_sub = rospy.Subscriber('/odom_mileage', Float32,
-                                             self._mileage_cb)
+                                             self._odom_mileage_cb)
         self._batterystate_sub = rospy.Subscriber('/battery_state', BatteryState,
                                              self._batterystate_cb)
         self._mileage = 0
