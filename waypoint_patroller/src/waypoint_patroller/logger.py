@@ -60,14 +60,20 @@ class PatrollLogger(Logger):
         
         self._mileage_sub = rospy.Subscriber('/mileage', Float32,
                                              self._mileage_cb)
+        self._odom_mileage_sub = rospy.Subscriber('/odom_mileage', Float32,
+                                             self._mileage_cb)
         self._batterystate_sub = rospy.Subscriber('/battery_state', BatteryState,
                                              self._batterystate_cb)
         self._mileage = 0
+        self._odom_mileage = 0
         self._battery = 100
         
 
     def _mileage_cb(self, msg):
         self._mileage = msg.data
+
+    def _odom_mileage_cb(self, msg):
+        self._odom_mileage = msg.data
         
     def _batterystate_cb(self, msg):
         self._battery = msg.lifePercent
@@ -83,6 +89,7 @@ class PatrollLogger(Logger):
         if self._active_episode:
             doc['episode_name'] = self._episode_name
             doc['mileage'] = self._mileage
+            doc['odom_mileage'] = self._odom_mileage
             doc['battery level'] = self._battery
             self._db.insert(self._stamp(doc))
         
