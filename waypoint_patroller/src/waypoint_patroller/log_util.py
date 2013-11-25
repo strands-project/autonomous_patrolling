@@ -55,14 +55,14 @@ class Episode(object):
 
             if event_type == "episode start":
                 self.start_time = stamp_to_datetime(event['stamp'])
-                self.start_mileage = event['mileage']
+                self.start_mileage = event['odom_mileage']
 
             if self.start_time is None:
                 # Problem - should never get to this as the first event should be a start event..
                 continue
                 #raise ()
 
-            self.stamped_mileage.append([ event['mileage'] - self.start_mileage,
+            self.stamped_mileage.append([ event['odom_mileage'] - self.start_mileage,
                                           stamp_to_datetime(event['stamp']) - self.start_time ])
             self.stamped_battery.append([ event['battery level'],
                                           stamp_to_datetime(event['stamp']) - self.start_time ])
@@ -82,7 +82,7 @@ class Episode(object):
 
             if event_type == "episode finish":
                 self.finish_time = stamp_to_datetime(event['stamp'])
-                self.finish_mileage = event['mileage']
+                self.finish_mileage = event['odom_mileage']
 
             if event_type == "start waypoint":
                 self.active_point_name = event["waypoint"]
