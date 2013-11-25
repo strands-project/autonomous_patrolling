@@ -57,7 +57,7 @@ if __name__ == '__main__':
     while True:
         try:
             create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile,
-                               start_time=datetime.datetime.strptime('Nov 25 2013  10:00AM', '%b %d %Y %I:%M%p'))
+                               start_time=datetime.datetime.strptime('Nov 25 2013  09:40AM', '%b %d %Y %I:%M%p'))
 
             if options.hostname != None:
                 upload_summary_scp(options.path, options.hostname, options.username, options.password,options.jsonfile)
