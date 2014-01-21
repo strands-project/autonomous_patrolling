@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('gather_smach')
+#import roslib; roslib.load_manifest('gather_smach')
 from time import sleep
 import rospy
 import smach

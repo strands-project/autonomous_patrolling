@@ -35,7 +35,7 @@ class StartingState(smach.State):
         if self._at_charger :
             userdata.sts_current_node='ChargingStation'
             wait_for_it=datetime.datetime.now()
-            while (int(wait_for_it.minute)%10) != 0 :
+            while (int(wait_for_it.minute)%2) != 0 :
                 print "%d:%d" %(wait_for_it.minute, wait_for_it.second)
                 wait_for_it=datetime.datetime.now()
                 sleep(1)
