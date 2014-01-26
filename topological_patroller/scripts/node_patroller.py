@@ -38,14 +38,12 @@ def loadTask(inputfile):
                 while line and not(line.startswith('CheckPoint:')) :
                     info= line.strip('\t')
                     info= info.strip('\n')
-                    #inf = info.split(',',2)
+                    inf = info.split(',',2)
                     #action = {'node':inf[0].strip(), 'action':inf[1].strip()}
-                    print "Inserting:"
-                    print info
-                    actions.append(info)
+                    ckp._insert_actions(inf)
+                    #actions.append(info)
                     line = fin.readline()
                 #actions.pop(0)
-                ckp._insert_actions(actions)
             checkpoints.append(ckp)
         else:
             line = fin.readline()
@@ -61,7 +59,8 @@ def main():
     patrol_points = loadTask(file_name)
     for i in patrol_points:
         print i.name
-        print i.actions
+        for j in i.actions:
+            print j.name, j.args
     #['WayPoint1','WayPoint2','WayPoint3','WayPoint4']
     # Create a SMACH state machine
 

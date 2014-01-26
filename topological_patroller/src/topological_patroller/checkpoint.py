@@ -2,6 +2,7 @@
 
 #import roslib; roslib.load_manifest('gather_smach')
 from time import sleep
+import os
 import rospy
 import smach
 import smach_ros
@@ -13,13 +14,21 @@ from actionlib.msg import *
 import topological_navigation.msg
 
 
+class CheckPointAction(object):
+    def __init__(self, name, args):
+        self.name = name
+        self.args = args.strip(' ')
+
 class CheckPoint(object):
     def __init__(self, name):
         self.name = name
         self.actions=[]
         
     def _insert_actions(self, action_name):
-        self.actions.append(action_name)
+        print "Inserting:"
+        print action_name
+        act=CheckPointAction(action_name[0],action_name[1])
+        self.actions.append(act)
         
         
         
@@ -28,7 +37,7 @@ class PatrolCheckpoint(smach.State):
     def __init__(self):
         smach.State.__init__(self, 
                              outcomes=['succeeded','aborted'], 
-                             input_keys=['pch_patrol_points','pch_next_node'])
+                             input_keys=['task_name','pch_patrol_points','pch_next_node'])
 
 
     def execute(self, userdata):
@@ -67,10 +76,14 @@ class PatrolCheckpoint(smach.State):
             if i.name == targ:
                 for j in i.actions:
                     print "executing!!!!!"
-                    b = j[0].split(',',2)
-                    print b[0]
-                    if b[0] == 'sleep' :
-                        print b[1]
-                        c = int(b[1])
+                    print j.name
+                    if j.name == 'sleep' :
+                        print j.args
+                        c = int(j.args)
                         sleep(c)
+                    if j.name == '3Dsnapshot' :
+                        filename = "3D_%s_%s.bag" %(userdata.task_name,targ)
+                        bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args,filename)
+                        print bashCommand
+                        os.system(bashCommand)
         return 'succeeded'
