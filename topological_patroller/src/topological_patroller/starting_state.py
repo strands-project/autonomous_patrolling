@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('gather_smach')
+#import roslib; roslib.load_manifest('gather_smach')
 from time import sleep
 import rospy
 import smach
@@ -16,7 +16,7 @@ class StartingState(smach.State):
     _charger_received=False
     _at_charger=False
     def __init__(self):
-        smach.State.__init__(self, outcomes=['undock','go_to_charge'], input_keys=['sts_initial_node'], output_keys=['sts_current_node'] )
+        smach.State.__init__(self, outcomes=['undock','go_to_charge'], output_keys = ['task_name'])
         self.counter = 0
 
     def execute(self, userdata):
@@ -31,9 +31,8 @@ class StartingState(smach.State):
         if timeout >= 100 :
             rospy.loginfo('NO CHARGING INFORMATION RECEIVED')
         chargsub.unregister()
-        sleep(5)
+        sleep(1)
         if self._at_charger :
-            userdata.sts_current_node='ChargingStation'
             wait_for_it=datetime.datetime.now()
             while (int(wait_for_it.minute)%2) != 0 :
                 print "%d:%d" %(wait_for_it.minute, wait_for_it.second)
@@ -41,9 +40,11 @@ class StartingState(smach.State):
                 sleep(1)
             print 'the time has come'
             print wait_for_it
+            patrol_name = wait_for_it.strftime('%Y-%m-%d_%H-%M')
+            print "Starting Patrol %s" %patrol_name
+            userdata.task_name=patrol_name
             return 'undock'
         else:
-            userdata.sts_current_node='Unknown'
             return 'go_to_charge'
 
     def charger_callback(self, data) :
