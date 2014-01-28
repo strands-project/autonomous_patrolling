@@ -51,10 +51,51 @@ def loadTask(inputfile):
     return checkpoints
 
 
+class CheckForHome(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['retry','abort','succeeded'])
+        self.counter = 0
+        print "retrying %d" %self.counter
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state RETRY_TASK')
+        chargres=self.get_charger_state()
+        if chargres and self._at_charger :
+                print "Successfuly reached charging station"
+                return 'succeeded'
+        else:
+            print "retrying %d" %self.counter
+            if self.counter < 3:
+                self.counter += 1
+                return 'retry'
+            else:
+                print "Couldn't reach Charging station Aborting"
+                self.counter = 0
+                return 'abort'
+
+    def get_charger_state(self):
+        self._charger_received=False
+        chargsub = rospy.Subscriber("/battery_state", BatteryState, self.charger_callback)
+        timeout=0
+        while (not self._charger_received) and timeout < 100:
+            sleep(0.1)
+            timeout=timeout+1
+        chargsub.unregister()
+        if timeout >= 100 :
+            rospy.loginfo('NO CHARGING INFORMATION RECEIVED')
+            return False
+        return True
+
+    def charger_callback(self, data) :
+        rospy.loginfo(rospy.get_name() + ": I heard %s" % data.charging)
+        self._at_charger=data.charging
+        self._charger_received=True
+
+
 def main():
 
     file_name=str(sys.argv[1])
-    rospy.init_node('gather_smach')
+    rospy.init_node('topological_patroller')
 
     patrol_points = loadTask(file_name)
     for i in patrol_points:
@@ -72,15 +113,14 @@ def main():
     # Open the container
     with sm0:
         # Add states to the container
-        smach.StateMachine.add('STARTING_STATE', StartingState(), transitions={'undock':'UNDOCKING_STATE', 'go_to_charge':'GOTO_CHARGING_POINT'})
-
-
+        smach.StateMachine.add('STARTING_STATE', StartingState(), transitions={'undock':'UNDOCKING_STATE', 'go_to_charge':'GO_HOME'})
 
 
         sm_patrol = smach.StateMachine(outcomes=['succeeded','aborted','preempted'], input_keys = ['sm_patrol_points','task_name'])
 
-        with sm_patrol:
 
+        with sm_patrol:
+    
             # POINT CHOOSE
             smach.StateMachine.add('POINT_CHOOSE', PointChoose(),
                                    transitions={'next_waypoint':'PATROL_CHECKPOINT', 'back_to_home':'succeeded'},
@@ -91,10 +131,33 @@ def main():
                                    transitions={'succeeded':'POINT_CHOOSE', 'aborted':'aborted'},
                                    remapping={'pch_patrol_points':'sm_patrol_points','pch_next_node':'sm_next_node'})
 
-        smach.StateMachine.add('PATROL', sm_patrol,
-                               transitions={'succeeded':'GOTO_CHARGING_POINT','aborted':'GOTO_CHARGING_POINT','preempted':'GOTO_CHARGING_POINT'})
+
+        smach.StateMachine.add('PATROL', sm_patrol, 
+                               transitions={'succeeded':'GO_HOME','aborted':'GO_HOME','preempted':'GO_HOME'})
+        
+        sm_go_to_home = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
+
+        with sm_go_to_home:
+
+            goto_charge_goal = topological_navigation.msg.GotoNodeGoal()
+            goto_charge_goal.target = "ChargingPoint"      
+            smach.StateMachine.add('GOTO_CHARGING_POINT', 
+                                   smach_ros.SimpleActionState('topological_navigation',topological_navigation.msg.GotoNodeAction, goal=goto_charge_goal),
+                                   transitions= {'succeeded':'DOCKING_STATE','aborted':'aborted'})
+
+            charging_goal = scitos_apps_msgs.msg.ChargingGoal()
+            charging_goal.Command = 'charge'
+            charging_goal.Timeout = 1000
+            smach.StateMachine.add('DOCKING_STATE', 
+                                   smach_ros.SimpleActionState('/chargingServer', scitos_apps_msgs.msg.ChargingAction, goal=charging_goal), 
+                                    transitions={'succeeded':'CHECK_HOME','aborted':'CHECK_HOME'})
+
+            smach.StateMachine.add('CHECK_HOME', CheckForHome(), transitions={'retry':'GOTO_CHARGING_POINT', 'abort':'aborted', 'succeeded':'succeeded'})
 
 
+        smach.StateMachine.add('GO_HOME', sm_go_to_home,
+                               transitions={'succeeded':'STARTING_STATE','aborted':'aborted','preempted':'aborted'})
+                               
 
         undocking_goal = scitos_apps_msgs.msg.ChargingGoal()
         undocking_goal.Command = 'undock'
@@ -103,21 +166,6 @@ def main():
                                smach_ros.SimpleActionState('/chargingServer', scitos_apps_msgs.msg.ChargingAction, goal=undocking_goal),
                                transitions={'succeeded':'PATROL', 'aborted':'aborted'})
 
-
-        charging_goal = scitos_apps_msgs.msg.ChargingGoal()
-        charging_goal.Command = 'charge'
-        charging_goal.Timeout = 1000
-        smach.StateMachine.add('DOCKING_STATE', 
-                               smach_ros.SimpleActionState('/chargingServer', scitos_apps_msgs.msg.ChargingAction, goal=charging_goal), 
-                               transitions={'succeeded':'STARTING_STATE','aborted':'aborted'})
-
-
-        goto_charge_goal = topological_navigation.msg.GotoNodeGoal()
-        goto_charge_goal.target = "ChargingPoint"
-        
-        smach.StateMachine.add('GOTO_CHARGING_POINT', 
-                               smach_ros.SimpleActionState('topological_navigation',topological_navigation.msg.GotoNodeAction, goal=goto_charge_goal),
-                               transitions= {'succeeded':'DOCKING_STATE','aborted':'aborted'})
 
 
     sis = smach_ros.IntrospectionServer('server_name', sm0, '/SM_ROOT')
