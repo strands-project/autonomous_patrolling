@@ -8,9 +8,9 @@ import smach_ros
 import datetime
 import sys
 
-from topological_patroller.checkpoint import *
+from topological_patroller.patrol import *
 from topological_patroller.starting_state import *
-from topological_patroller.point_choose import *
+#from topological_patroller.point_choose import *
 from scitos_msgs.msg import BatteryState
 import scitos_apps_msgs.msg
 from actionlib import *
@@ -62,6 +62,7 @@ class CheckForHome(smach.State):
         chargres=self.get_charger_state()
         if chargres and self._at_charger :
                 print "Successfuly reached charging station"
+                self.counter = 0
                 return 'succeeded'
         else:
             print "retrying %d" %self.counter
