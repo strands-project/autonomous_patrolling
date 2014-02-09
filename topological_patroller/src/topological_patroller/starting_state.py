@@ -34,11 +34,11 @@ class StartingState(smach.State):
         sleep(1)
         if self._at_charger :
             wait_for_it=datetime.datetime.now()
-            while (int(wait_for_it.minute)%15) != 0 :
+            while (int(wait_for_it.minute)%2) != 0 :
                 if (int(wait_for_it.second)%10==0) :
                     print "%d:%d" %(wait_for_it.minute, wait_for_it.second)
                 wait_for_it=datetime.datetime.now()
-                sleep(1)
+                rospy.sleep(rospy.Duration.from_sec(1))
             print 'the time has come'
             print wait_for_it
             patrol_name = wait_for_it.strftime('%Y-%m-%d_%H-%M')

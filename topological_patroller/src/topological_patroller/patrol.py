@@ -34,19 +34,12 @@ class CheckPoint(object):
 class PatrolCheckpoint(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, 
-                             outcomes=['succeeded','aborted'], 
-                             input_keys=['task_name','pch_patrol_points','pch_next_node'])
+        smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['task_name','pch_patrol_points','pch_next_node'])
 
 
     def execute(self, userdata):
-        #print "point set:"
-        #print userdata.pch_patrol_points
-        #print "current node:"
-        #print userdata.pch_current_node
+
         targ  = userdata.pch_next_node
-        print "Going to:"
-        print userdata.pch_next_node
         rospy.loginfo('Executing state PATROL_CHECKPOINT')
 
         nav_client = actionlib.SimpleActionClient('topological_navigation', topological_navigation.msg.GotoNodeAction)

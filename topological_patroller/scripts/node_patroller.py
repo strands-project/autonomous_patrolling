@@ -10,7 +10,7 @@ import sys
 
 from topological_patroller.patrol import *
 from topological_patroller.starting_state import *
-#from topological_patroller.point_choose import *
+from topological_patroller.go_home import *
 from scitos_msgs.msg import BatteryState
 import scitos_apps_msgs.msg
 from actionlib import *
@@ -34,7 +34,7 @@ def loadTask(inputfile):
             line = fin.readline()
             if line.startswith('\tAction:') :
                 line = fin.readline()
-                actions=[]
+                #actions=[]
                 while line and not(line.startswith('CheckPoint:')) :
                     info= line.strip('\t')
                     info= info.strip('\n')
@@ -49,49 +49,6 @@ def loadTask(inputfile):
             line = fin.readline()
     fin.close()
     return checkpoints
-
-
-class CheckForHome(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['retry','abort','succeeded'])
-        self.counter = 0
-        print "retrying %d" %self.counter
-
-    def execute(self, userdata):
-        rospy.loginfo('Executing state RETRY_TASK')
-        chargres=self.get_charger_state()
-        if chargres and self._at_charger :
-                print "Successfuly reached charging station"
-                self.counter = 0
-                return 'succeeded'
-        else:
-            print "retrying %d" %self.counter
-            if self.counter < 3:
-                self.counter += 1
-                return 'retry'
-            else:
-                print "Couldn't reach Charging station Aborting"
-                self.counter = 0
-                return 'abort'
-
-    def get_charger_state(self):
-        self._charger_received=False
-        chargsub = rospy.Subscriber("/battery_state", BatteryState, self.charger_callback)
-        timeout=0
-        while (not self._charger_received) and timeout < 100:
-            sleep(0.1)
-            timeout=timeout+1
-        chargsub.unregister()
-        if timeout >= 100 :
-            rospy.loginfo('NO CHARGING INFORMATION RECEIVED')
-            return False
-        return True
-
-    def charger_callback(self, data) :
-        rospy.loginfo(rospy.get_name() + ": I heard %s" % data.charging)
-        self._at_charger=data.charging
-        self._charger_received=True
-
 
 def main():
 
@@ -123,18 +80,15 @@ def main():
         with sm_patrol:
     
             # POINT CHOOSE
-            smach.StateMachine.add('POINT_CHOOSE', PointChoose(),
-                                   transitions={'next_waypoint':'PATROL_CHECKPOINT', 'back_to_home':'succeeded'},
+            smach.StateMachine.add('POINT_CHOOSE', PointChoose(), transitions={'next_waypoint':'PATROL_CHECKPOINT', 'back_to_home':'succeeded'},
                                    remapping={'pc_patrol_points':'sm_patrol_points','pc_next_node':'sm_next_node'})
             
             #GO TO CHECKPOINT
-            smach.StateMachine.add('PATROL_CHECKPOINT', PatrolCheckpoint(),
-                                   transitions={'succeeded':'POINT_CHOOSE', 'aborted':'aborted'},
+            smach.StateMachine.add('PATROL_CHECKPOINT', PatrolCheckpoint(), transitions={'succeeded':'POINT_CHOOSE', 'aborted':'aborted'},
                                    remapping={'pch_patrol_points':'sm_patrol_points','pch_next_node':'sm_next_node'})
 
 
-        smach.StateMachine.add('PATROL', sm_patrol, 
-                               transitions={'succeeded':'GO_HOME','aborted':'GO_HOME','preempted':'GO_HOME'})
+        smach.StateMachine.add('PATROL', sm_patrol, transitions={'succeeded':'GO_HOME','aborted':'GO_HOME','preempted':'GO_HOME'})
         
         sm_go_to_home = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
 
@@ -165,7 +119,7 @@ def main():
         undocking_goal.Timeout = 1000
         smach.StateMachine.add('UNDOCKING_STATE', 
                                smach_ros.SimpleActionState('/chargingServer', scitos_apps_msgs.msg.ChargingAction, goal=undocking_goal),
-                               transitions={'succeeded':'PATROL', 'aborted':'aborted'})
+                               transitions={'succeeded':'PATROL', 'aborted':'GO_HOME'})
 
 
 
