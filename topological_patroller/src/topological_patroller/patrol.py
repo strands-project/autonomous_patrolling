@@ -7,6 +7,7 @@ import smach
 import smach_ros
 import datetime
 
+from random import shuffle
 import scitos_apps_msgs.msg
 from actionlib import *
 from actionlib.msg import *
@@ -86,18 +87,20 @@ class PointChoose(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['next_waypoint','back_to_home'], input_keys=['pc_patrol_points','task_name'], output_keys=['pc_next_node'] )
         self.counter = 0
-
+        self.nodes = []
 
     def execute(self, userdata):
-        #print "point set:"
-        #print userdata.pc_patrol_points.name
-        #print "current node:"
         print "Executing patrol %s" %userdata.task_name
         rospy.loginfo('Executing state POINT_CHOOSE')
-        if len(userdata.pc_patrol_points) > self.counter :
-            userdata.pc_next_node = userdata.pc_patrol_points[self.counter].name
+        if self.counter == 0 :
+            for i in userdata.pc_patrol_points :
+                self.nodes.append(i.name)
+            shuffle(self.nodes)
+
+        if len(self.nodes) > self.counter :
+            userdata.pc_next_node = self.nodes[self.counter]
             print "Going to:"
-            print userdata.pc_patrol_points[self.counter].name
+            print self.nodes[self.counter]
             self.counter=self.counter+1
             return 'next_waypoint'
         else:
@@ -105,5 +108,26 @@ class PointChoose(smach.State):
             print "Going to:"
             print "ChargingPoint"
             self.counter=0
+            self.nodes=[]
             return 'back_to_home'
 
+
+class RetryPoint(smach.State):
+    
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['retry','next_waypoint'], input_keys=['pc_next_node'])
+        self.counter = 0
+        self.lastnode = 'none'
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state Retry Nav')
+        if self.lastnode != userdata.pc_next_node :
+            self.lastnode = userdata.pc_next_node
+            self.counter = 0
+
+        if self.counter < 5 :
+            self.counter = self.counter+1
+            return 'retry'
+        else:
+            self.counter=0
+            return 'next_waypoint'

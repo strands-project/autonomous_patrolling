@@ -25,7 +25,7 @@ class CheckForHome(smach.State):
                 return 'succeeded'
         else:
             print "retrying %d" %self.counter
-            if self.counter < 3:
+            if self.counter < 10:
                 self.counter += 1
                 return 'retry'
             else:

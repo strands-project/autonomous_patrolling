@@ -25,6 +25,7 @@ def loadTask(inputfile):
 
     checkpoints=[]
     line = fin.readline()
+
     while line:
         if line.startswith('CheckPoint:') :
             line = fin.readline()
@@ -84,11 +85,14 @@ def main():
                                    remapping={'pc_patrol_points':'sm_patrol_points','pc_next_node':'sm_next_node'})
             
             #GO TO CHECKPOINT
-            smach.StateMachine.add('PATROL_CHECKPOINT', PatrolCheckpoint(), transitions={'succeeded':'POINT_CHOOSE', 'aborted':'aborted'},
+            smach.StateMachine.add('PATROL_CHECKPOINT', PatrolCheckpoint(), transitions={'succeeded':'POINT_CHOOSE', 'aborted':'RETRY_POINT'},
                                    remapping={'pch_patrol_points':'sm_patrol_points','pch_next_node':'sm_next_node'})
 
+            smach.StateMachine.add('RETRY_POINT', RetryPoint(), transitions={'retry':'PATROL_CHECKPOINT', 'next_waypoint':'POINT_CHOOSE'},
+                                   remapping={'pc_next_node':'sm_next_node'})
 
         smach.StateMachine.add('PATROL', sm_patrol, transitions={'succeeded':'GO_HOME','aborted':'GO_HOME','preempted':'GO_HOME'})
+
         
         sm_go_to_home = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
 
@@ -98,7 +102,7 @@ def main():
             goto_charge_goal.target = "ChargingPoint"      
             smach.StateMachine.add('GOTO_CHARGING_POINT', 
                                    smach_ros.SimpleActionState('topological_navigation',topological_navigation.msg.GotoNodeAction, goal=goto_charge_goal),
-                                   transitions= {'succeeded':'DOCKING_STATE','aborted':'aborted'})
+                                   transitions= {'succeeded':'DOCKING_STATE','aborted':'CHECK_HOME'})
 
             charging_goal = scitos_apps_msgs.msg.ChargingGoal()
             charging_goal.Command = 'charge'
