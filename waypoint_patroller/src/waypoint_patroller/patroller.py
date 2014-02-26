@@ -12,9 +12,9 @@ from scitos_msgs.msg import BatteryState
 
 from geometry_msgs.msg import Pose
 
-import strands_datacentre as datacentre
-import strands_datacentre.util
-got_pymongo = strands_datacentre.util.check_for_pymongo()
+import ros_datacentre as datacentre
+import ros_datacentre.util
+got_pymongo = ros_datacentre.util.check_for_pymongo()
 if got_pymongo:
     import pymongo
 
@@ -116,7 +116,7 @@ class PointChooser(smach.State, Loggable):
                   "meta.pointset": point_set}
         p = mongo.autonomous_patrolling.waypoints.find(search)            
         p = p[0]
-        meta, pose = strands_datacentre.util.document_to_msg(p, Pose)
+        meta, pose = ros_datacentre.util.document_to_msg(p, Pose)
         return pose
 
 
