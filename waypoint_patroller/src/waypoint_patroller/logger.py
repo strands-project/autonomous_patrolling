@@ -1,5 +1,5 @@
 import rospy
-import strands_datacentre.util as dc_util
+import ros_datacentre.util as dc_util
 
 from std_msgs.msg import Float32
 from scitos_msgs.msg import BatteryState
@@ -43,7 +43,7 @@ class Logger(object):
             raise AttributeError("Logger has no attrribute %s"%name)
 
 """
-Logging class for entering run data into the strands_datacentre.
+Logging class for entering run data into the ros_datacentre.
 This class should be created once and each state that wants to log should
 hold a reference to it.
 """
@@ -52,7 +52,7 @@ class PatrollLogger(Logger):
         self._active_episode = False
         got_datacentre = dc_util.wait_for_mongo()
         if not got_datacentre:
-            raise Exception("strands_datacentres does not appear to be running")
+            raise Exception("ros_datacentres does not appear to be running")
         self._mongo = pymongo.MongoClient(rospy.get_param("datacentre_host",
                                                           "localhost"),
                                           int(rospy.get_param("datacentre_port")))

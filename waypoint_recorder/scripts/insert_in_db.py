@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose
 import pymongo
 import csv
 
-import strands_datacentre.util
+import ros_datacentre.util
 
 def way_points_file_to_datacentre(filename, dataset_name, map_name):
     host = rospy.get_param("datacentre_host")
@@ -45,7 +45,7 @@ def way_points_file_to_datacentre(filename, dataset_name, map_name):
         p.orientation.z=point[5]
         p.orientation.w=point[6]
 
-        strands_datacentre.util.store_message(points_db,p,entry)
+        ros_datacentre.util.store_message(points_db,p,entry)
 
 
 

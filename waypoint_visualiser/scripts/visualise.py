@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose
 import pymongo
 import csv
 
-import strands_datacentre.util
+import ros_datacentre.util
 
 def way_points_file_to_datacentre(filename, dataset_name, map_name):
     host = rospy.get_param("datacentre_host")
@@ -56,7 +56,7 @@ def way_points_file_to_datacentre(filename, dataset_name, map_name):
         p.orientation.z=point[5]
         p.orientation.w=point[6]
 
-        strands_datacentre.util.store_message(points_db,p,entry)
+        ros_datacentre.util.store_message(points_db,p,entry)
 
         
 class Visualiser(object):
@@ -79,7 +79,7 @@ class Visualiser(object):
     
         for entry in self._points_db.find({"meta.pointset":self._point_set}):
             rospy.loginfo("Adding marker")
-            meta, p = strands_datacentre.util.document_to_msg(entry, TYPE=Pose)
+            meta, p = ros_datacentre.util.document_to_msg(entry, TYPE=Pose)
 #            p=Pose()
 #            p.orientation.x=entry["pose"]["orientation"]["x"]
 #            p.orientation.y=entry["pose"]["orientation"]["y"]

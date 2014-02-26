@@ -4,7 +4,7 @@ project(waypoint_visualiser)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS rospy strands_datacentre visualization_msgs)
+find_package(catkin REQUIRED COMPONENTS rospy ros_datacentre visualization_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -51,7 +51,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES waypoint_visualiser
-#  CATKIN_DEPENDS rospy strands_datacentre visualization_msgs
+#  CATKIN_DEPENDS rospy ros_datacentre visualization_msgs
 #  DEPENDS system_lib
 )
 
