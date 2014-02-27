@@ -12,13 +12,7 @@ from scitos_msgs.msg import BatteryState
 
 from geometry_msgs.msg import Pose
 
-import ros_datacentre as datacentre
-import ros_datacentre.util
-got_pymongo = ros_datacentre.util.check_for_pymongo()
-if got_pymongo:
-    import pymongo
-
-    
+from ros_datacentre.message_store import MessageStoreProxy
     
     
 class VeryLowBattery(smach.State, Loggable):
@@ -64,12 +58,13 @@ class PointChooser(smach.State, Loggable):
         
         self.LOW_BATTERY = 35
 
-        available = self._get_point_sets()
-        print available
-        if waypoints_name not in available:
-            rospy.logerr("Desired pointset '"+waypoints_name+"' not in datacentre")
-            rospy.logerr("Available pointsets: "+str(available))
-            raise Exception("Can't find waypoints.")
+        self.msg_store = MessageStoreProxy()
+
+      
+        if  not self.waypoints_available(waypoints_name):
+            error_str = "Desired pointset '"+waypoints_name+"' not in datacentre"
+            rospy.logerr(error_str)
+            raise Exception(error_str)
         
         self.points = self._get_points(waypoints_name)  # []
         self.point_set = waypoints_name
@@ -90,34 +85,31 @@ class PointChooser(smach.State, Loggable):
         self.battery_monitor = rospy.Subscriber(
             "/battery_state", BatteryState, self.bat_cb)
 
-    """ Get point sets available. Returns list of point set names in DB. """
-    def _get_point_sets(self):
-        mongo = pymongo.MongoClient(rospy.get_param("datacentre_host"),
-                                    rospy.get_param("datacentre_port"))
-        return mongo.autonomous_patrolling.waypoints.find().distinct("meta.pointset")
-        
+    """ Check whether waypoints are available in db """
+    def waypoints_available(self, point_set):
+      query_meta = {}
+      query_meta["pointset"] = point_set
+      return len(self.msg_store.query(Pose._type, {}, query_meta)) > 0
+
     """ Get a list of points in the given set """
-    def _get_points(self, point_set):
-        mongo = pymongo.MongoClient(rospy.get_param("datacentre_host"),
-                                    rospy.get_param("datacentre_port"))
+    def _get_points(self, point_set):        
+        query_meta = {}
+        query_meta["pointset"] = point_set
+        message_list = self.msg_store.query(Pose._type, {}, query_meta)
+
         points = []
-        search =  {"meta.pointset": point_set}
-        for point in mongo.autonomous_patrolling.waypoints.find(search):
-            print point
-            if point["meta"]["name"] != "charging_point":
-                points.append([point_set, point["meta"]["name"]])
+        for [point, meta] in message_list:
+            # print point
+            if meta["name"] != "charging_point":
+                points.append([point_set, meta["name"]])
         return points
 
     """ Get a given waypoint pose """
     def _get_point(self, point_name, point_set):
-        mongo = pymongo.MongoClient(rospy.get_param("datacentre_host"),
-                                    rospy.get_param("datacentre_port"))
-        search = {"meta.name": point_name,
-                  "meta.pointset": point_set}
-        p = mongo.autonomous_patrolling.waypoints.find(search)            
-        p = p[0]
-        meta, pose = ros_datacentre.util.document_to_msg(p, Pose)
-        return pose
+      query_meta = {}
+      query_meta["name"] = point_name      
+      query_meta["pointset"] = point_set
+      return self.msg_store.query(Pose._type, {}, query_meta, True)[0]
 
 
     """ /battery_state subscription callback"""
