@@ -3,6 +3,7 @@ import roslib; roslib.load_manifest("waypoint_visualiser")
 import rospy
 
 from interactive_markers.interactive_marker_server import *
+from visualization_msgs.msg import *
 from geometry_msgs.msg import Pose
 
 import pymongo
