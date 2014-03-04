@@ -120,9 +120,9 @@ class Visualiser(object):
 
         points = []
         for [point, meta] in message_list:
-            # print point
-            if meta["name"] != "charging_point":
-                points.append([point_set, meta["name"]])
+            ## print point
+            #if meta["name"] != "charging_point":
+            points.append([point_set, meta["name"]])
         return points
 
     """ Get a given waypoint pose """
