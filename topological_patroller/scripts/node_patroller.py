@@ -39,7 +39,7 @@ def loadTask(inputfile):
                 while line and not(line.startswith('CheckPoint:')) :
                     info= line.strip('\t')
                     info= info.strip('\n')
-                    inf = info.split(',',2)
+                    inf = info.split(';',2)
                     #action = {'node':inf[0].strip(), 'action':inf[1].strip()}
                     ckp._insert_actions(inf)
                     #actions.append(info)

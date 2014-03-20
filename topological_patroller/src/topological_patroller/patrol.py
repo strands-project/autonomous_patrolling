@@ -12,6 +12,7 @@ import scitos_apps_msgs.msg
 from actionlib import *
 from actionlib.msg import *
 import topological_navigation.msg
+import scitos_ptu.msg
 
 
 class CheckPointAction(object):
@@ -79,6 +80,28 @@ class PatrolCheckpoint(smach.State):
                         bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args,filename)
                         print bashCommand
                         os.system(bashCommand)
+                    if j.name == 'scitos_ptu' :
+                        print "Scitos PTU:"
+                        print "Creating Action Server"
+                        ptu_client = actionlib.SimpleActionClient('ptu_pan_tilt', scitos_ptu.msg.PanTiltAction)
+                        print "Done"
+                        ptu_client.wait_for_server()
+                        ptugoal = scitos_ptu.msg.PanTiltGoal()
+                        argums = j.args.split(',') 
+                        ptugoal.pan_start=int(argums[0])
+                        ptugoal.pan_step=int(argums[1])
+                        ptugoal.pan_end=int(argums[2])
+                        ptugoal.tilt_start=int(argums[3])
+                        ptugoal.tilt_step=int(argums[4])
+                        ptugoal.tilt_end=int(argums[5])
+                        ptu_client.send_goal(ptugoal)
+                    
+                        # Waits for the server to finish performing the action.
+                        ptu_client.wait_for_result()
+                        # Prints out the result of executing the action
+                        result_ptu = nav_client.get_result()  # A FibonacciResult
+                        print "result"
+                        print result_ptu
         return 'succeeded'
 
 
@@ -95,7 +118,7 @@ class PointChoose(smach.State):
         if self.counter == 0 :
             for i in userdata.pc_patrol_points :
                 self.nodes.append(i.name)
-            shuffle(self.nodes)
+            #shuffle(self.nodes)
 
         if len(self.nodes) > self.counter :
             userdata.pc_next_node = self.nodes[self.counter]
