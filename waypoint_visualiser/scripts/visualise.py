@@ -3,12 +3,14 @@ import roslib; roslib.load_manifest("waypoint_visualiser")
 import rospy
 
 from interactive_markers.interactive_marker_server import *
+from visualization_msgs.msg import *
 from geometry_msgs.msg import Pose
 
 import pymongo
 import csv
 
 import ros_datacentre.util
+from ros_datacentre.message_store import MessageStoreProxy
 
 def way_points_file_to_datacentre(filename, dataset_name, map_name):
     host = rospy.get_param("datacentre_host")
@@ -75,11 +77,18 @@ class Visualiser(object):
         self._points_db=db["waypoints"]
 
         self._marker_server = InteractiveMarkerServer(self._point_set+"_markers")
+        
+        self.msg_store=MessageStoreProxy()
 
-    
-        for entry in self._points_db.find({"meta.pointset":self._point_set}):
+        if  not self.waypoints_available(self._point_set):
+            error_str = "Desired pointset '"+_point_set+"' not in datacentre"
+            rospy.logerr(error_str)
+            raise Exception(error_str)
+        
+        self.points = self._get_points(self._point_set)  # []
+        for entry in self.points:
             rospy.loginfo("Adding marker")
-            meta, p = ros_datacentre.util.document_to_msg(entry, TYPE=Pose)
+            #meta, p = ros_datacentre.util.document_to_msg(entry, TYPE=Pose)
 #            p=Pose()
 #            p.orientation.x=entry["pose"]["orientation"]["x"]
 #            p.orientation.y=entry["pose"]["orientation"]["y"]
@@ -88,11 +97,43 @@ class Visualiser(object):
 #            p.position.x=entry["pose"]["position"]["x"]
 #            p.position.y=entry["pose"]["position"]["y"]
 #            p.position.z=entry["pose"]["position"]["z"]
+            rospy.loginfo(entry[1])
+            rospy.loginfo(self._get_point(entry[1],entry[0]))
 
-            self._create_marker(meta["name"], p, meta["name"])
+            self._create_marker(entry[1], self._get_point(entry[1],entry[0]), entry[1])
 
         rospy.spin()
 
+        
+        
+    """ Check whether waypoints are available in db """
+    def waypoints_available(self, point_set):
+      query_meta = {}
+      query_meta["pointset"] = point_set
+      return len(self.msg_store.query(Pose._type, {}, query_meta)) > 0
+
+    """ Get a list of points in the given set """
+    def _get_points(self, point_set):        
+        query_meta = {}
+        query_meta["pointset"] = point_set
+        message_list = self.msg_store.query(Pose._type, {}, query_meta)
+
+        points = []
+        for [point, meta] in message_list:
+            ## print point
+            #if meta["name"] != "charging_point":
+            points.append([point_set, meta["name"]])
+        return points
+
+    """ Get a given waypoint pose """
+    def _get_point(self, point_name, point_set):
+      query_meta = {}
+      query_meta["name"] = point_name      
+      query_meta["pointset"] = point_set
+      return self.msg_store.query(Pose._type, {}, query_meta, True)[0]
+        
+        
+        
 
     def _create_marker(self, marker_name, pose,  marker_description="waypoint marker"):
         # create an interactive marker for our server
@@ -158,20 +199,11 @@ class Visualiser(object):
 
 
     def _marker_feedback(self, feedback):
-        update={}
+        #update={}
         p = feedback.pose.position
         q = feedback.pose.orientation
-        self._points_db.update({"meta.pointset":self._point_set, "meta.name":feedback.marker_name},{"$set":{"msg":{"position":{"x":p.x,
-                                                                                          "y":p.y,
-                                                                                          "z":p.z},
-                                                                              "orientation":{"x":q.x,
-                                                                                             "y":q.y,
-                                                                                             "z":q.z,
-                                                                                             "w":q.w }
-                                                                              }
-                                                                      }
-                                                              })
-                                                                
+        self.msg_store.update_named(feedback.marker_name, feedback.pose, upsert=True);
+
         
         rospy.loginfo(feedback)                                                        
        # print feedback.marker_name + " is now at x:" + str(p.x) + ", y:" + str(p.y) + ", z:" + str(p.z)  + ", w:" + str(p.w)
