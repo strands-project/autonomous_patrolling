@@ -7,19 +7,23 @@ and to create a file like this:
 CheckPoint:
 	WayPoint1
 	Action:
-		sleep, 1
+		sleep; 1
+		scitos_ptu; -30,5,30,-15,5,15
 CheckPoint:
 	WayPoint2
 	Action:
-		sleep, 1
+		sleep; 1
+		scitos_ptu; -30,5,30,-15,5,15
 CheckPoint:
 	WayPoint3
 	Action:
-		sleep, 1
+		sleep; 1
+		scitos_ptu; -30,5,30,-15,5,15
 CheckPoint:
 	WayPoint4
 	Action:
-		sleep, 1
+		sleep; 1
+		scitos_ptu; -30,5,30,-15,5,15
 ```
 
 On which every checkpoint is a waypoint to visit on every round, the first line is the name of the node, 
