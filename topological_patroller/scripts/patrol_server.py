@@ -134,7 +134,7 @@ class PatrolCheckpoint(smach.State):
                         ptusgoal.pan_step = float(j.args[4])
                         ptusgoal.tilt_step = float(j.args[5])
 
-                        ptus_client.send_goal(ptugoal)
+                        ptus_client.send_goal(ptusgoal)
                     
                         # Waits for the server to finish performing the action.
                         ptus_client.wait_for_result()
