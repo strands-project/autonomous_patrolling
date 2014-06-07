@@ -19,32 +19,30 @@ import topological_navigation.msg
 import scitos_ptu.msg
 import scitos_ptu_sweep.msg
 
-class PTUSweep_client(object):
-
-    def __init__(self, args):
-        print "PTU Sweep:"
-        print "Creating Action Server"
-        ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
-        print "Done"
-        ptus_client.wait_for_server()
-        ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
-        #argums = j.args.split(',') 
-        
-        ptusgoal.max_pan = float(args[0])
-        ptusgoal.max_tilt = float(args[1])
-        ptusgoal.min_pan = float(args[2])
-        ptusgoal.min_tilt = float(args[3])
-        ptusgoal.pan_step = float(args[4])
-        ptusgoal.tilt_step = float(args[5])
-
-        ptus_client.send_goal(ptusgoal)
+def PTUSweep_client(args) :
+    print "PTU Sweep:"
+    print "Creating Action Server"
+    ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
+    print "Done"
+    ptus_client.wait_for_server()
+    ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
+    #argums = j.args.split(',') 
     
-        # Waits for the server to finish performing the action.
-        ptus_client.wait_for_result()
-        # Prints out the result of executing the action
-        result_ptus = ptus_client.get_result()  # A FibonacciResult
-        #print "result"
-        return result_ptus
+    ptusgoal.max_pan = float(args[0])
+    ptusgoal.max_tilt = float(args[1])
+    ptusgoal.min_pan = float(args[2])
+    ptusgoal.min_tilt = float(args[3])
+    ptusgoal.pan_step = float(args[4])
+    ptusgoal.tilt_step = float(args[5])
+
+    ptus_client.send_goal(ptusgoal)
+
+    # Waits for the server to finish performing the action.
+    ptus_client.wait_for_result()
+    # Prints out the result of executing the action
+    result_ptus = ptus_client.get_result()  # A FibonacciResult
+    #print "result"
+    return result_ptus
         
         
 
@@ -147,7 +145,8 @@ class PatrolCheckpoint(smach.State):
                 #print "result"
                 print result_ptu
             if j.name == 'ptu_sweep' :
-                result_ptus = PTUSweep_client(j.args)
+                res = PTUSweep_client(j.args)
+                print res
         return 'succeeded'
 
 
