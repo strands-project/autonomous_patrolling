@@ -38,9 +38,9 @@ class ClientPTUSweep(object):
         self.save_next=False
         current_time = datetime.now()
         self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
-        hourname= current_time.strftime('%d-%m-%y-%H-%M')
+        #hourname= current_time.strftime('%d-%m-%y-%H-%M')
         self.task=task
-        bagname = '/localhome/strands/storage/Patrol_'+task+'_'+waypoint+'_'+hourname+'.bag'
+        #bagname = '/localhome/strands/storage/Patrol_'+task+'_'+waypoint+'_'+hourname+'.bag'
         self.waypoint=waypoint
 
         
@@ -49,7 +49,7 @@ class ClientPTUSweep(object):
         print "Done"
         self.msg_store = MessageStoreProxy(collection='patrol_data')
         
-        self.bag = rosbag.Bag(bagname, 'w')
+        #self.bag = rosbag.Bag(bagname, 'w')
         self.ptus_client.wait_for_server()
         
         self.ptu_subs1 = rospy.Subscriber('/ptu_sweep/depth/points', sensor_msgs.msg.PointCloud2, self.dpth_callback,  queue_size=1)
@@ -85,7 +85,7 @@ class ClientPTUSweep(object):
         self.ptu_subs2.unregister()
         self.ptu_subs3.unregister()
         self.pos_sub.unregister()
-        self.bag.close()
+        #self.bag.close()
         
         return result_ptus        
 
@@ -98,7 +98,7 @@ class ClientPTUSweep(object):
         meta["time"] = self.dt_text
         meta["topic"] = '/robot_pose'
         self.msg_store.insert(msg,meta)
-        self.bag.write('robot_pose', msg)
+        #self.bag.write('robot_pose', msg)
         self.pos_sub.unregister()
         
 
@@ -111,7 +111,7 @@ class ClientPTUSweep(object):
         meta["time"] = self.dt_text
         meta["topic"] = '/ptu_sweep/depth/points'
         self.msg_store.insert(msg,meta)
-        self.bag.write('ptu_sweep/depth/points', msg)
+        #self.bag.write('ptu_sweep/depth/points', msg)
         self.save_next=True
 
 
