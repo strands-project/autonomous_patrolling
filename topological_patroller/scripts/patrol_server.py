@@ -82,7 +82,7 @@ class ClientPTUSweep(object):
         sleep(1)
 
         #self.ptu_subs1.unregister()
-        #self.ptu_subs2.unregister()
+        self.ptu_subs2.unregister()
         self.ptu_subs3.unregister()
         self.pos_sub.unregister()
         self.tf_sub.unregister()
@@ -117,13 +117,13 @@ class ClientPTUSweep(object):
 
     def tpc_callback(self, msg):
 #        print "s2"
-        meta = {}
-        meta["task"] = self.task
-        meta["action"] = 'ptu_sweep'
-        meta["waypoint"] = self.waypoint
-        meta["time"] = self.dt_text
-        meta["topic"] = '/transform_pc2/depth/points'    
-        self.msg_store.insert(msg,meta)
+#        meta = {}
+#        meta["task"] = self.task
+#        meta["action"] = 'ptu_sweep'
+#        meta["waypoint"] = self.waypoint
+#        meta["time"] = self.dt_text
+#        meta["topic"] = '/transform_pc2/depth/points'    
+#        self.msg_store.insert(msg,meta)
         #self.msg_store.insert(msg)
         self.save_next=True
         #self.bag.write('transform_pc2/depth/points', msg)
