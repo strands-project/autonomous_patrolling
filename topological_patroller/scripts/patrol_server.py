@@ -17,6 +17,7 @@ from topological_patroller.msg import *
 from ros_datacentre.message_store import MessageStoreProxy
 import topological_navigation.msg
 import scitos_ptu.msg
+import scitos_ptu_sweep.msg
 
 
 
@@ -117,6 +118,30 @@ class PatrolCheckpoint(smach.State):
                         result_ptu = nav_client.get_result()  # A FibonacciResult
                         #print "result"
                         print result_ptu
+                    if j.name == 'ptu_sweep' :
+                        print "PTU Sweep:"
+                        print "Creating Action Server"
+                        ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
+                        print "Done"
+                        ptus_client.wait_for_server()
+                        ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
+                        #argums = j.args.split(',') 
+                        
+                        ptugoal.max_pan = float(j.args[0])
+                        ptugoal.max_tilt = float(j.args[1])
+                        ptugoal.min_pan = float(j.args[2])
+                        ptugoal.min_tilt = float(j.args[3])
+                        ptugoal.pan_step = float(j.args[4])
+                        ptugoal.tilt_step = float(j.args[5])
+
+                        ptus_client.send_goal(ptugoal)
+                    
+                        # Waits for the server to finish performing the action.
+                        ptus_client.wait_for_result()
+                        # Prints out the result of executing the action
+                        result_ptus = nav_client.get_result()  # A FibonacciResult
+                        #print "result"
+                        print result_ptus
             return 'succeeded'
 
 
