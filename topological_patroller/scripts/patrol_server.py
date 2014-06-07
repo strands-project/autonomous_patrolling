@@ -97,7 +97,8 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/robot_pose'
-        self.msg_store.insert(msg,meta)
+        #self.msg_store.insert(msg,meta)
+        self.msg_store.insert(msg)
         #self.bag.write('robot_pose', msg)
         self.pos_sub.unregister()
         
@@ -110,8 +111,9 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/ptu_sweep/depth/points'
-        self.msg_store.insert(msg,meta)
+        #self.msg_store.insert(msg,meta)
         #self.bag.write('ptu_sweep/depth/points', msg)
+        self.msg_store.insert(msg)
         self.save_next=True
 
 
@@ -123,8 +125,9 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/transform_pc2/depth/points'    
-        self.msg_store.insert(msg,meta)
-        self.bag.write('transform_pc2/depth/points', msg)
+        #self.msg_store.insert(msg,meta)
+        self.msg_store.insert(msg)
+        #self.bag.write('transform_pc2/depth/points', msg)
 
     def rgpc_callback(self, msg):
         if self.save_next :
@@ -135,19 +138,12 @@ class ClientPTUSweep(object):
             meta["waypoint"] = self.waypoint
             meta["time"] = self.dt_text
             meta["topic"] = '/head_xtion/depth_registered/points'
-            self.msg_store.insert(msg,meta)
-            self.bag.write('head_xtion/depth_registered/points', msg)  
+            #self.msg_store.insert(msg,meta)
+            self.msg_store.insert(msg)
+            #self.bag.write('head_xtion/depth_registered/points', msg)  
             self.save_next=False
         
-#    def tf_callback(self, msg) :
-#        print "tf"
-#        meta = {}
-#        meta["task"] = self.task
-#        meta["waypoint"] = self.waypoint
-#        meta["time"] = self.dt_text
-#        meta["topic"] = '/robot_pose'
-#        self.msg_store.insert(msg,meta)
-#        self.tf_sub.unregister()
+
 
 class PointChoose(smach.State):
     
