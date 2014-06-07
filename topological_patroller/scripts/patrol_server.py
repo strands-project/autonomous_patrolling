@@ -234,7 +234,7 @@ class PatrolCheckpoint(smach.State):
                 #print "result"
                 print result_ptu
             if j.name == 'ptu_sweep' :
-                sweep = PTUSweep_client(userdata.task_name, userdata.next_node.waypoint)
+                sweep = PTUSweepClient(userdata.task_name, userdata.next_node.waypoint)
                 res = sweep.execute_action(j.args)
                 del sweep
                 print res
