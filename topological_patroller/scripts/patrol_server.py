@@ -53,8 +53,8 @@ class ClientPTUSweep(object):
         self.ptus_client.wait_for_server()
         
         self.ptu_subs1 = rospy.Subscriber('/ptu_sweep/depth/points', sensor_msgs.msg.PointCloud2, self.dpth_callback,  queue_size=1)
-        self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.msg.PointCloud2, self.tpc_callback,  queue_size=1)
-        self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.msg.PointCloud2, self.rgpc_callback,  queue_size=1)
+        #self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.msg.PointCloud2, self.tpc_callback,  queue_size=1)
+        #self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.msg.PointCloud2, self.rgpc_callback,  queue_size=1)
         self.pos_sub   = rospy.Subscriber('/robot_pose', geometry_msgs.msg.Pose, self.pose_callback,  queue_size=1)
         #self.tf_sub    = rospy.Subscriber('/tf', tf.msg.tfMessage, self.tf_callback,  queue_size=1)
         
@@ -82,8 +82,8 @@ class ClientPTUSweep(object):
         sleep(1)
 
         self.ptu_subs1.unregister()
-        self.ptu_subs2.unregister()
-        self.ptu_subs3.unregister()
+        #self.ptu_subs2.unregister()
+        #self.ptu_subs3.unregister()
         self.pos_sub.unregister()
         #self.bag.close()
         
