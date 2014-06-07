@@ -12,11 +12,15 @@ import sys
 from actionlib import *
 from actionlib.msg import *
 
+
+
 #from topological_patroller.patroller import *
 from topological_patroller.msg import *
 from ros_datacentre.message_store import MessageStoreProxy
 
-import sensor_msgs
+from geometry_msgs.msg import *
+from sensor_msgs.msg import *
+from tf.msg import *
 import topological_navigation.msg
 import scitos_ptu.msg
 import scitos_ptu_sweep.msg
@@ -30,19 +34,22 @@ class PTUSweepClient(object):
         self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
         self.task=task
         self.waypoint=waypoint
+
         
         print "Creating Action Server"
         self.ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
         print "Done"
-      
-        
+        self.msg_store = MessageStoreProxy(collection='patrol_data')       
         self.ptus_client.wait_for_server()
         
-        self.ptu_subs1 = rospy.Subscriber('/ptu_sweep/depth/points', sensor_msgs.PointCloud2, self.dpth_callback,  queue_size=1)
-        self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.PointCloud2, self.tpc_callback,  queue_size=1)
-        self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.PointCloud2, self.rgpc_callback,  queue_size=1)
-
+        self.ptu_subs1 = rospy.Subscriber('/ptu_sweep/depth/points', sensor_msgs.msg.PointCloud2, self.dpth_callback,  queue_size=1)
+        self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.msg.PointCloud2, self.tpc_callback,  queue_size=1)
+        self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.msg.PointCloud2, self.rgpc_callback,  queue_size=1)
+        self.pos_sub   = rospy.Subscriber('/robot_pose', geometry_msgs.msg.Pose, self.pose_callback,  queue_size=1)
+        self.tf_sub    = rospy.Subscriber('/tf', tf.msg.tfMessage, self.tf_callback,  queue_size=1)
         
+
+
     def execute_action(self, args) :
 
         ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
@@ -67,44 +74,63 @@ class PTUSweepClient(object):
         self.ptu_subs1.unregister()
         self.ptu_subs2.unregister()
         self.ptu_subs3.unregister()
+        self.pos_sub.unregister()
 
         return result_ptus        
 
+    def pose_callback(self,msg) :
+        print "P"
+        meta = {}
+        meta["task"] = self.task
+        meta["waypoint"] = self.waypoint
+        meta["time"] = self.dt_text
+        meta["topic"] = '/robot_pose'
+        self.msg_store.insert(msg,meta)
+        self.pos_sub.unregister()
+        
+        
+    def tf_callback(self, msg) :
+        print "tf"
+        meta = {}
+        meta["task"] = self.task
+        meta["waypoint"] = self.waypoint
+        meta["time"] = self.dt_text
+        meta["topic"] = '/robot_pose'
+        self.msg_store.insert(msg,meta)
+        self.tf_sub.unregister()
 
     def dpth_callback(self, msg):
-   
+        print "s1"
         meta = {}
         meta["task"] = self.task
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/ptu_sweep/depth/points'
                
-        msg_store = MessageStoreProxy(collection='patrol_data')
-        msg_store.insert(msg,meta)
+
+        self.msg_store.insert(msg,meta)
         self.save_next=True
 
 
     def tpc_callback(self, msg):
-   
+        print "s2"
         meta = {}
         meta["task"] = self.task
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
-        meta["topic"] = '/transform_pc2/depth/points'
-        
-        msg_store = MessageStoreProxy(collection='patrol_data')
-        msg_store.insert(msg,meta)
+        meta["topic"] = '/transform_pc2/depth/points'    
+        self.msg_store.insert(msg,meta)
+
 
     def rgpc_callback(self, msg):
         if self.save_next :
+            print "s3"
             meta = {}
             meta["task"] = self.task
             meta["waypoint"] = self.waypoint
             meta["time"] = self.dt_text
             meta["topic"] = '/head_xtion/depth_registered/points'
-            
-            msg_store = MessageStoreProxy(collection='patrol_data')
-            msg_store.insert(msg,meta)
+            self.msg_store.insert(msg,meta)
             self.save_next=False
         
 
@@ -210,6 +236,7 @@ class PatrolCheckpoint(smach.State):
             if j.name == 'ptu_sweep' :
                 sweep = PTUSweep_client(userdata.task_name, userdata.next_node.waypoint)
                 res = sweep.execute_action(j.args)
+                del sweep
                 print res
         return 'succeeded'
 
