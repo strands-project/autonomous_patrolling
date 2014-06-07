@@ -323,7 +323,7 @@ class PatrolServer(object):
             smach.StateMachine.add('POINT_CHOOSE', PointChoose(), transitions={'next_waypoint':'PATROL_CHECKPOINT', 'back_to_home':'succeeded'})
                     
             #GO TO CHECKPOINT
-            smach.StateMachine.add('PATROL_CHECKPOINT', PatrolCheckpoint(), transitions={'succeeded':'POINT_CHOOSE', 'aborted':'aborted'})
+            smach.StateMachine.add('PATROL_CHECKPOINT', PatrolCheckpoint(), transitions={'succeeded':'POINT_CHOOSE', 'aborted':'POINT_CHOOSE'})
     
         # Execute SMACH plan
         outcome = sm0.execute()
