@@ -66,12 +66,12 @@ class ClientPTUSweep(object):
         ptusgoal.pan_step = float(args[4])
         ptusgoal.tilt_step = float(args[5])
 
-        ptus_client.send_goal(ptusgoal)
+        self.ptus_client.send_goal(ptusgoal)
     
         # Waits for the server to finish performing the action.
-        ptus_client.wait_for_result()
+        self.ptus_client.wait_for_result()
         # Prints out the result of executing the action
-        result_ptus = ptus_client.get_result()  # A FibonacciResult
+        result_ptus = self.ptus_client.get_result()  # A FibonacciResult
         #print "result"
         sleep(1)
 
