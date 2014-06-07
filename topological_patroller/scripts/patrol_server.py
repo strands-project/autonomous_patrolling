@@ -47,7 +47,7 @@ class ClientPTUSweep(object):
         print "Creating Action Server"
         self.ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
         print "Done"
-        #self.msg_store = MessageStoreProxy(collection='patrol_data')
+        self.msg_store = MessageStoreProxy(collection='patrol_data')
         
         self.bag = rosbag.Bag(bagname, 'w')
         self.ptus_client.wait_for_server()
@@ -91,49 +91,53 @@ class ClientPTUSweep(object):
 
     def pose_callback(self,msg) :
 #        print "P"
-#        meta = {}
-#        meta["task"] = self.task
-#        meta["waypoint"] = self.waypoint
-#        meta["time"] = self.dt_text
-#        meta["topic"] = '/robot_pose'
-#        self.msg_store.insert(msg,meta)
-        self.bag.write('/robot_pose', msg)
+        meta = {}
+        meta["task"] = self.task
+        meta["action"] = 'ptu_sweep'
+        meta["waypoint"] = self.waypoint
+        meta["time"] = self.dt_text
+        meta["topic"] = '/robot_pose'
+        self.msg_store.insert(msg,meta)
+        self.bag.write('robot_pose', msg)
         self.pos_sub.unregister()
         
 
     def dpth_callback(self, msg):
  #       print "s1"
- #       meta = {}
- #       meta["task"] = self.task
- #       meta["waypoint"] = self.waypoint
- #       meta["time"] = self.dt_text
- #       meta["topic"] = '/ptu_sweep/depth/points'
- #       self.msg_store.insert(msg,meta)
-        self.bag.write('/ptu_sweep/depth/points', msg)
+        meta = {}
+        meta["task"] = self.task
+        meta["action"] = 'ptu_sweep'
+        meta["waypoint"] = self.waypoint
+        meta["time"] = self.dt_text
+        meta["topic"] = '/ptu_sweep/depth/points'
+        self.msg_store.insert(msg,meta)
+        self.bag.write('ptu_sweep/depth/points', msg)
         self.save_next=True
 
 
     def tpc_callback(self, msg):
         self.bag.write('/transform_pc2/depth/points', msg)        
 #        print "s2"
-#        meta = {}
-#        meta["task"] = self.task
-#        meta["waypoint"] = self.waypoint
-#        meta["time"] = self.dt_text
-#        meta["topic"] = '/transform_pc2/depth/points'    
-#        self.msg_store.insert(msg,meta)
+        meta = {}
+        meta["task"] = self.task
+        meta["action"] = 'ptu_sweep'
+        meta["waypoint"] = self.waypoint
+        meta["time"] = self.dt_text
+        meta["topic"] = 'transform_pc2/depth/points'    
+        self.msg_store.insert(msg,meta)
 
 
     def rgpc_callback(self, msg):
         if self.save_next :
 #            print "s3"
-#            meta = {}
-#            meta["task"] = self.task
-#            meta["waypoint"] = self.waypoint
-#            meta["time"] = self.dt_text
-#            meta["topic"] = '/head_xtion/depth_registered/points'
-#            self.msg_store.insert(msg,meta)
-            self.bag.write('/head_xtion/depth_registered/points', msg)  
+            meta = {}
+            meta["task"] = self.task
+            meta["action"] = 'ptu_sweep'
+            meta["waypoint"] = self.waypoint
+            meta["time"] = self.dt_text
+            meta["topic"] = '/head_xtion/depth_registered/points'
+            self.msg_store.insert(msg,meta)
+            self.bag.write('head_xtion/depth_registered/points', msg)  
             self.save_next=False
         
 #    def tf_callback(self, msg) :
