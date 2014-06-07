@@ -25,7 +25,7 @@ import topological_navigation.msg
 import scitos_ptu.msg
 import scitos_ptu_sweep.msg
 
-class PTUSweepClient(object):
+class ClientPTUSweep(object):
 
     def __init__(self, task, waypoint):
         print "PTU Sweep:"
@@ -234,7 +234,7 @@ class PatrolCheckpoint(smach.State):
                 #print "result"
                 print result_ptu
             if j.name == 'ptu_sweep' :
-                sweep = PTUSweepClient(userdata.task_name, userdata.next_node.waypoint)
+                sweep = ClientPTUSweep(userdata.task_name, userdata.next_node.waypoint)
                 res = sweep.execute_action(j.args)
                 del sweep
                 print res
