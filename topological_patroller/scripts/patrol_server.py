@@ -15,36 +15,99 @@ from actionlib.msg import *
 #from topological_patroller.patroller import *
 from topological_patroller.msg import *
 from ros_datacentre.message_store import MessageStoreProxy
+
+import sensor_msgs
 import topological_navigation.msg
 import scitos_ptu.msg
 import scitos_ptu_sweep.msg
 
-def PTUSweep_client(args) :
-    print "PTU Sweep:"
-    print "Creating Action Server"
-    ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
-    print "Done"
-    ptus_client.wait_for_server()
-    ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
-    #argums = j.args.split(',') 
+class PTUSweepClient(object):
+
+    def __init__(self, task, waypoint):
+        print "PTU Sweep:"
+        self.save_next=False
+        current_time = datetime.now()
+        self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
+        self.task=task
+        self.waypoint=waypoint
+        
+        print "Creating Action Server"
+        self.ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
+        print "Done"
+      
+        
+        self.ptus_client.wait_for_server()
+        
+        self.ptu_subs1 = rospy.Subscriber('/ptu_sweep/depth/points', sensor_msgs.PointCloud2, self.dpth_callback,  queue_size=1)
+        self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.PointCloud2, self.tpc_callback,  queue_size=1)
+        self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.PointCloud2, self.rgpc_callback,  queue_size=1)
+
+        
+    def execute_action(self, args) :
+
+        ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
+        #argums = j.args.split(',') 
+        
+        ptusgoal.max_pan = float(args[0])
+        ptusgoal.max_tilt = float(args[1])
+        ptusgoal.min_pan = float(args[2])
+        ptusgoal.min_tilt = float(args[3])
+        ptusgoal.pan_step = float(args[4])
+        ptusgoal.tilt_step = float(args[5])
+
+        ptus_client.send_goal(ptusgoal)
     
-    ptusgoal.max_pan = float(args[0])
-    ptusgoal.max_tilt = float(args[1])
-    ptusgoal.min_pan = float(args[2])
-    ptusgoal.min_tilt = float(args[3])
-    ptusgoal.pan_step = float(args[4])
-    ptusgoal.tilt_step = float(args[5])
+        # Waits for the server to finish performing the action.
+        ptus_client.wait_for_result()
+        # Prints out the result of executing the action
+        result_ptus = ptus_client.get_result()  # A FibonacciResult
+        #print "result"
+        sleep(1)
 
-    ptus_client.send_goal(ptusgoal)
+        self.ptu_subs1.unregister()
+        self.ptu_subs2.unregister()
+        self.ptu_subs3.unregister()
 
-    # Waits for the server to finish performing the action.
-    ptus_client.wait_for_result()
-    # Prints out the result of executing the action
-    result_ptus = ptus_client.get_result()  # A FibonacciResult
-    #print "result"
-    return result_ptus
+        return result_ptus        
+
+
+    def dpth_callback(self, msg):
+   
+        meta = {}
+        meta["task"] = self.task
+        meta["waypoint"] = self.waypoint
+        meta["time"] = self.dt_text
+        meta["topic"] = '/ptu_sweep/depth/points'
+               
+        msg_store = MessageStoreProxy(collection='patrol_data')
+        msg_store.insert(msg,meta)
+        self.save_next=True
+
+
+    def tpc_callback(self, msg):
+   
+        meta = {}
+        meta["task"] = self.task
+        meta["waypoint"] = self.waypoint
+        meta["time"] = self.dt_text
+        meta["topic"] = '/transform_pc2/depth/points'
         
+        msg_store = MessageStoreProxy(collection='patrol_data')
+        msg_store.insert(msg,meta)
+
+    def rgpc_callback(self, msg):
+        if self.save_next :
+            meta = {}
+            meta["task"] = self.task
+            meta["waypoint"] = self.waypoint
+            meta["time"] = self.dt_text
+            meta["topic"] = '/head_xtion/depth_registered/points'
+            
+            msg_store = MessageStoreProxy(collection='patrol_data')
+            msg_store.insert(msg,meta)
+            self.save_next=False
         
+
 
 class PointChoose(smach.State):
     
@@ -145,7 +208,8 @@ class PatrolCheckpoint(smach.State):
                 #print "result"
                 print result_ptu
             if j.name == 'ptu_sweep' :
-                res = PTUSweep_client(j.args)
+                sweep = PTUSweep_client(userdata.task_name, userdata.next_node.waypoint)
+                res = sweep.execute_action(j.args)
                 print res
         return 'succeeded'
 
