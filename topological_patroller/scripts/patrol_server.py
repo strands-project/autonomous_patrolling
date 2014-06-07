@@ -148,7 +148,7 @@ class PatrolCheckpoint(smach.State):
                 print result_ptu
             if j.name == 'ptu_sweep' :
                 result_ptus = PTUSweep_client(j.args)
-            return 'succeeded'
+        return 'succeeded'
 
 
 
