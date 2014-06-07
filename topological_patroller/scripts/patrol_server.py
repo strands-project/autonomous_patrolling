@@ -19,7 +19,34 @@ import topological_navigation.msg
 import scitos_ptu.msg
 import scitos_ptu_sweep.msg
 
+class PTUSweep_client(object):
 
+    def __init__(self, args):
+        print "PTU Sweep:"
+        print "Creating Action Server"
+        ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
+        print "Done"
+        ptus_client.wait_for_server()
+        ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
+        #argums = j.args.split(',') 
+        
+        ptusgoal.max_pan = float(args[0])
+        ptusgoal.max_tilt = float(args[1])
+        ptusgoal.min_pan = float(args[2])
+        ptusgoal.min_tilt = float(args[3])
+        ptusgoal.pan_step = float(args[4])
+        ptusgoal.tilt_step = float(args[5])
+
+        ptus_client.send_goal(ptusgoal)
+    
+        # Waits for the server to finish performing the action.
+        ptus_client.wait_for_result()
+        # Prints out the result of executing the action
+        result_ptus = ptus_client.get_result()  # A FibonacciResult
+        #print "result"
+        return result_ptus
+        
+        
 
 class PointChoose(smach.State):
     
@@ -37,7 +64,9 @@ class PointChoose(smach.State):
             #shuffle(self.nodes)
 
         if len(self.nodes) > self.counter :
-            userdata.next_node = self.nodes[self.counter]
+            for i in userdata.patrol_points :
+                if self.nodes[self.counter] == i.waypoint :
+                    userdata.next_node = i
             print "Going to:"
             print self.nodes[self.counter]
             self.counter=self.counter+1
@@ -58,7 +87,7 @@ class PatrolCheckpoint(smach.State):
 
     def execute(self, userdata):
 
-        targ  = userdata.next_node
+        targ  = userdata.next_node.waypoint
         rospy.loginfo('Executing state PATROL_CHECKPOINT')
 
         nav_client = actionlib.SimpleActionClient('topological_navigation', topological_navigation.msg.GotoNodeAction)
@@ -74,74 +103,51 @@ class PatrolCheckpoint(smach.State):
         nav_client.wait_for_result()
         # Prints out the result of executing the action
         result = nav_client.get_result()  # A FibonacciResult
-        print "result"
+        print "navigation result"
         print result
         print result.success        
         if result.success == False :
             return 'aborted'
         else :          
             print "navigation Succeeded"
-        for i in userdata.patrol_points :
-            if i.waypoint == targ:
-                for j in i.action :
-                    print "executing!!!!!"
-                    print j.name
-                    if j.name == 'sleep' :
-                        
-                        print 'sleep '+j.args[0]
-                        c = int(j.args[0])
-                        sleep(c)
-                    if j.name == '3Dsnapshot' :
-                        filename = "3D_%s_%s.bag" %(userdata.task_name,targ)
-                        bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args[0],filename)
-                        print bashCommand
-                        os.system(bashCommand)
-                    if j.name == 'scitos_ptu' :
-                        print "Scitos PTU:"
-                        print "Creating Action Server"
-                        ptu_client = actionlib.SimpleActionClient('ptu_pan_tilt', scitos_ptu.msg.PanTiltAction)
-                        print "Done"
-                        ptu_client.wait_for_server()
-                        ptugoal = scitos_ptu.msg.PanTiltGoal()
-                        #argums = j.args.split(',') 
-                        ptugoal.pan_start=int(j.args[0])
-                        ptugoal.pan_step=int(j.args[1])
-                        ptugoal.pan_end=int(j.args[2])
-                        ptugoal.tilt_start=int(j.args[3])
-                        ptugoal.tilt_step=int(j.args[4])
-                        ptugoal.tilt_end=int(j.args[5])
-                        ptu_client.send_goal(ptugoal)
-                    
-                        # Waits for the server to finish performing the action.
-                        ptu_client.wait_for_result()
-                        # Prints out the result of executing the action
-                        result_ptu = nav_client.get_result()  # A FibonacciResult
-                        #print "result"
-                        print result_ptu
-                    if j.name == 'ptu_sweep' :
-                        print "PTU Sweep:"
-                        print "Creating Action Server"
-                        ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
-                        print "Done"
-                        ptus_client.wait_for_server()
-                        ptusgoal = scitos_ptu_sweep.msg.PTUSweepGoal()
-                        #argums = j.args.split(',') 
-                        
-                        ptusgoal.max_pan = float(j.args[0])
-                        ptusgoal.max_tilt = float(j.args[1])
-                        ptusgoal.min_pan = float(j.args[2])
-                        ptusgoal.min_tilt = float(j.args[3])
-                        ptusgoal.pan_step = float(j.args[4])
-                        ptusgoal.tilt_step = float(j.args[5])
-
-                        ptus_client.send_goal(ptusgoal)
-                    
-                        # Waits for the server to finish performing the action.
-                        ptus_client.wait_for_result()
-                        # Prints out the result of executing the action
-                        result_ptus = ptus_client.get_result()  # A FibonacciResult
-                        #print "result"
-                        print result_ptus
+        
+        for j in userdata.next_node.action :
+            print "executing!!!!!"
+            print j.name
+            if j.name == 'sleep' :
+                
+                print 'sleep '+j.args[0]
+                c = int(j.args[0])
+                sleep(c)
+            if j.name == '3Dsnapshot' :
+                filename = "3D_%s_%s.bag" %(userdata.task_name,targ)
+                bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args[0],filename)
+                print bashCommand
+                os.system(bashCommand)
+            if j.name == 'scitos_ptu' :
+                print "Scitos PTU:"
+                print "Creating Action Server"
+                ptu_client = actionlib.SimpleActionClient('ptu_pan_tilt', scitos_ptu.msg.PanTiltAction)
+                print "Done"
+                ptu_client.wait_for_server()
+                ptugoal = scitos_ptu.msg.PanTiltGoal()
+                #argums = j.args.split(',') 
+                ptugoal.pan_start=int(j.args[0])
+                ptugoal.pan_step=int(j.args[1])
+                ptugoal.pan_end=int(j.args[2])
+                ptugoal.tilt_start=int(j.args[3])
+                ptugoal.tilt_step=int(j.args[4])
+                ptugoal.tilt_end=int(j.args[5])
+                ptu_client.send_goal(ptugoal)
+            
+                # Waits for the server to finish performing the action.
+                ptu_client.wait_for_result()
+                # Prints out the result of executing the action
+                result_ptu = nav_client.get_result()  # A FibonacciResult
+                #print "result"
+                print result_ptu
+            if j.name == 'ptu_sweep' :
+                result_ptus = PTUSweep_client(j.args)
             return 'succeeded'
 
 
@@ -167,8 +173,8 @@ def loadTask(task_name):
         query_meta["task"] = task_name
         message_list = msg_store.query(topological_patroller.msg.PatrolTask._type, {}, query_meta)
 
-        #for i in message_list:
-         #   print i
+        print message_list[0][0]
+        #   print i
     print "DONE"
     return  message_list[0][0]
 
