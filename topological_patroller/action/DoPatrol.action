@@ -1,0 +1,8 @@
+#goal definition
+string task_name
+---
+#result definition
+string result
+---
+#feedback
+string status
