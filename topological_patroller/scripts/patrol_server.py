@@ -92,16 +92,6 @@ class ClientPTUSweep(object):
         self.msg_store.insert(msg,meta)
         self.pos_sub.unregister()
         
-        
-#    def tf_callback(self, msg) :
-#        print "tf"
-#        meta = {}
-#        meta["task"] = self.task
-#        meta["waypoint"] = self.waypoint
-#        meta["time"] = self.dt_text
-#        meta["topic"] = '/robot_pose'
-#        self.msg_store.insert(msg,meta)
-#        self.tf_sub.unregister()
 
     def dpth_callback(self, msg):
         print "s1"
@@ -110,8 +100,6 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/ptu_sweep/depth/points'
-               
-
         self.msg_store.insert(msg,meta)
         self.save_next=True
 
@@ -137,7 +125,15 @@ class ClientPTUSweep(object):
             self.msg_store.insert(msg,meta)
             self.save_next=False
         
-
+#    def tf_callback(self, msg) :
+#        print "tf"
+#        meta = {}
+#        meta["task"] = self.task
+#        meta["waypoint"] = self.waypoint
+#        meta["time"] = self.dt_text
+#        meta["topic"] = '/robot_pose'
+#        self.msg_store.insert(msg,meta)
+#        self.tf_sub.unregister()
 
 class PointChoose(smach.State):
     
