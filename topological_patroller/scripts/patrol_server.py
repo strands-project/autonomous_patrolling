@@ -52,11 +52,11 @@ class ClientPTUSweep(object):
         #self.bag = rosbag.Bag(bagname, 'w')
         self.ptus_client.wait_for_server()
         
-        self.ptu_subs1 = rospy.Subscriber('/ptu_sweep/depth/points', sensor_msgs.msg.PointCloud2, self.dpth_callback,  queue_size=1)
-        #self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.msg.PointCloud2, self.tpc_callback,  queue_size=1)
-        #self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.msg.PointCloud2, self.rgpc_callback,  queue_size=1)
+        #self.ptu_subs1 = rospy.Subscriber('/ptu_sweep/depth/points', sensor_msgs.msg.PointCloud2, self.dpth_callback,  queue_size=1)
+        self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.msg.PointCloud2, self.tpc_callback,  queue_size=1)
+        self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.msg.PointCloud2, self.rgpc_callback,  queue_size=1)
         self.pos_sub   = rospy.Subscriber('/robot_pose', geometry_msgs.msg.Pose, self.pose_callback,  queue_size=1)
-        #self.tf_sub    = rospy.Subscriber('/tf', tf.msg.tfMessage, self.tf_callback,  queue_size=1)
+        self.tf_sub    = rospy.Subscriber('/tf', tf.msg.tfMessage, self.tf_callback,  queue_size=1)
         
 
 
@@ -81,10 +81,11 @@ class ClientPTUSweep(object):
         #print "result"
         sleep(1)
 
-        self.ptu_subs1.unregister()
+        #self.ptu_subs1.unregister()
         #self.ptu_subs2.unregister()
-        #self.ptu_subs3.unregister()
+        self.ptu_subs3.unregister()
         self.pos_sub.unregister()
+        self.tf_sub.unregister()
         #self.bag.close()
         
         return result_ptus        
@@ -97,24 +98,21 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/robot_pose'
-        #self.msg_store.insert(msg,meta)
-        self.msg_store.insert(msg)
+        self.msg_store.insert(msg,meta)
+        #self.msg_store.insert(msg)
         #self.bag.write('robot_pose', msg)
         self.pos_sub.unregister()
-        
 
-    def dpth_callback(self, msg):
- #       print "s1"
+    def tf_callback(self, msg):
         meta = {}
         meta["task"] = self.task
         meta["action"] = 'ptu_sweep'
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
-        meta["topic"] = '/ptu_sweep/depth/points'
-        #self.msg_store.insert(msg,meta)
-        #self.bag.write('ptu_sweep/depth/points', msg)
-        self.msg_store.insert(msg)
-        self.save_next=True
+        meta["topic"] = '/tf'
+        self.msg_store.insert(msg,meta)
+#        #self.bag.write('ptu_sweep/depth/points', msg)
+#        self.msg_store.insert(msg)
 
 
     def tpc_callback(self, msg):
@@ -125,8 +123,9 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/transform_pc2/depth/points'    
-        #self.msg_store.insert(msg,meta)
-        self.msg_store.insert(msg)
+        self.msg_store.insert(msg,meta)
+        #self.msg_store.insert(msg)
+        self.save_next=True
         #self.bag.write('transform_pc2/depth/points', msg)
 
     def rgpc_callback(self, msg):
