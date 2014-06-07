@@ -38,7 +38,7 @@ class ClientPTUSweep(object):
         self.save_next=False
         current_time = datetime.now()
         self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
-        hourname= current_time.strftime('%d-%m-%y-%H-%M_%Z')
+        hourname= current_time.strftime('%d-%m-%y-%H-%M')
         self.task=task
         bagname = '/localhome/strands/storage/Patrol_'+task+'_'+waypoint+'_'+hourname+'.bag'
         self.waypoint=waypoint
@@ -47,7 +47,7 @@ class ClientPTUSweep(object):
         print "Creating Action Server"
         self.ptus_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
         print "Done"
-        #self.msg_store = MessageStoreProxy(collection='patrol_data')
+        self.msg_store = MessageStoreProxy(collection='patrol_data')
         
         self.bag = rosbag.Bag(bagname, 'w')
         self.ptus_client.wait_for_server()
@@ -97,7 +97,7 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/robot_pose'
-        #self.msg_store.insert(msg,meta)
+        self.msg_store.insert(msg,meta)
         self.bag.write('robot_pose', msg)
         self.pos_sub.unregister()
         
@@ -110,13 +110,12 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/ptu_sweep/depth/points'
-        #self.msg_store.insert(msg,meta)
+        self.msg_store.insert(msg,meta)
         self.bag.write('ptu_sweep/depth/points', msg)
         self.save_next=True
 
 
     def tpc_callback(self, msg):
-        self.bag.write('transform_pc2/depth/points', msg)        
 #        print "s2"
         meta = {}
         meta["task"] = self.task
@@ -124,8 +123,8 @@ class ClientPTUSweep(object):
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
         meta["topic"] = '/transform_pc2/depth/points'    
-        #self.msg_store.insert(msg,meta)
-
+        self.msg_store.insert(msg,meta)
+        self.bag.write('transform_pc2/depth/points', msg)
 
     def rgpc_callback(self, msg):
         if self.save_next :
@@ -136,7 +135,7 @@ class ClientPTUSweep(object):
             meta["waypoint"] = self.waypoint
             meta["time"] = self.dt_text
             meta["topic"] = '/head_xtion/depth_registered/points'
-            #self.msg_store.insert(msg,meta)
+            self.msg_store.insert(msg,meta)
             self.bag.write('head_xtion/depth_registered/points', msg)  
             self.save_next=False
         
