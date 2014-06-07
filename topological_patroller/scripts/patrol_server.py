@@ -50,7 +50,7 @@ class ClientPTUSweep(object):
         self.ptu_subs2 = rospy.Subscriber('/transform_pc2/depth/points', sensor_msgs.msg.PointCloud2, self.tpc_callback,  queue_size=1)
         self.ptu_subs3 = rospy.Subscriber('/head_xtion/depth_registered/points', sensor_msgs.msg.PointCloud2, self.rgpc_callback,  queue_size=1)
         self.pos_sub   = rospy.Subscriber('/robot_pose', geometry_msgs.msg.Pose, self.pose_callback,  queue_size=1)
-        self.tf_sub    = rospy.Subscriber('/tf', tf.msg.tfMessage, self.tf_callback,  queue_size=1)
+        #self.tf_sub    = rospy.Subscriber('/tf', tf.msg.tfMessage, self.tf_callback,  queue_size=1)
         
 
 
@@ -93,15 +93,15 @@ class ClientPTUSweep(object):
         self.pos_sub.unregister()
         
         
-    def tf_callback(self, msg) :
-        print "tf"
-        meta = {}
-        meta["task"] = self.task
-        meta["waypoint"] = self.waypoint
-        meta["time"] = self.dt_text
-        meta["topic"] = '/robot_pose'
-        self.msg_store.insert(msg,meta)
-        self.tf_sub.unregister()
+#    def tf_callback(self, msg) :
+#        print "tf"
+#        meta = {}
+#        meta["task"] = self.task
+#        meta["waypoint"] = self.waypoint
+#        meta["time"] = self.dt_text
+#        meta["topic"] = '/robot_pose'
+#        self.msg_store.insert(msg,meta)
+#        self.tf_sub.unregister()
 
     def dpth_callback(self, msg):
         print "s1"
