@@ -27,6 +27,7 @@ from tf.msg import *
 import topological_navigation.msg
 import scitos_ptu.msg
 import scitos_ptu_sweep.msg
+import tf
 
 class ClientPTUSweep(object):
 
