@@ -34,7 +34,12 @@ import rosbag
 class ClientPTUSweep(object):
 
     def __init__(self, task, waypoint):
+        self.save_sweeps = rospy.get_param('/topological_patroller/save_sweeps')
         print "PTU Sweep:"
+        if self.save_sweeps :
+            print "Saving"
+        else :
+            print "Not saving"
         self.save_next=False
         current_time = datetime.now()
         self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
@@ -74,11 +79,10 @@ class ClientPTUSweep(object):
 
         self.ptus_client.send_goal(ptusgoal)
     
-        # Waits for the server to finish performing the action.
         self.ptus_client.wait_for_result()
-        # Prints out the result of executing the action
+
         result_ptus = self.ptus_client.get_result()  # A FibonacciResult
-        #print "result"
+
         sleep(1)
 
         #self.ptu_subs1.unregister()
@@ -92,15 +96,16 @@ class ClientPTUSweep(object):
 
     def pose_callback(self,msg) :
 #        print "P"
-        meta = {}
-        meta["task"] = self.task
-        meta["action"] = 'ptu_sweep'
-        meta["waypoint"] = self.waypoint
-        meta["time"] = self.dt_text
-        meta["topic"] = '/robot_pose'
-        self.msg_store.insert(msg,meta)
-        #self.msg_store.insert(msg)
-        #self.bag.write('robot_pose', msg)
+        if self.save_sweeps :
+            meta = {}
+            meta["task"] = self.task
+            meta["action"] = 'ptu_sweep'
+            meta["waypoint"] = self.waypoint
+            meta["time"] = self.dt_text
+            meta["topic"] = '/robot_pose'
+            self.msg_store.insert(msg,meta)
+            #self.msg_store.insert(msg)
+            #self.bag.write('robot_pose', msg)
         self.pos_sub.unregister()
 
 #    def tf_callback(self, msg):
@@ -124,12 +129,11 @@ class ClientPTUSweep(object):
 #        meta["time"] = self.dt_text
 #        meta["topic"] = '/transform_pc2/depth/points'    
 #        self.msg_store.insert(msg,meta)
-        
-        self.save_next=True
+              self.save_next=True
         #self.bag.write('transform_pc2/depth/points', msg)
 
     def rgpc_callback(self, msg):
-        if self.save_next :
+        if self.save_next and self.save_sweeps :
 #            print "s3"
             meta = {}
             meta["task"] = self.task
