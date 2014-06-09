@@ -6,7 +6,7 @@
 
     <machine name="$(arg machine)" address="$(arg machine)" env-loader="/opt/strands/strands_catkin_ws/devel/env.sh" user="$(arg user)" default="true"/>
 
-	<param name="/topological_patroller/save_sweeps" value="true" type="bool" />
+    <param name="/topological_patroller/save_sweeps" value="true" type="bool" />
 
 
     <include file="$(find topological_patroller)/launch/ptu_sweep.launch" >
