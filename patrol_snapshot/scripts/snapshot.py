@@ -140,6 +140,6 @@ class patrolSnap():
 
 
 if __name__ == '__main__':
-    rospy.init_node("patrol_snaptshot")
+    rospy.init_node("patrol_snapshot")
     ps = patrolSnap(rospy.get_name())
     rospy.spin()
