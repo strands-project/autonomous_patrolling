@@ -15,13 +15,14 @@ from sensor_msgs.msg import LaserScan
 from strands_perception_people_msgs.msg import PedestrianLocations
 #from strands_perception_people_msgs import PedestrianTrackingArray
 from ros_datacentre.message_store import MessageStoreProxy
-
+from patrol_snapshot.msg import *
 
 class patrolSnap():
     # Create feedback and result messages
     #_feedback = scitos_ptu_sweep.msg.PTUSweepFeedback()
     #_result   = scitos_ptu_sweep.msg.PTUSweepResult()
-
+    _result = patrol_snapshot.msg.PatrolSnapshotResult()
+    
     def __init__(self, name):
         rospy.loginfo("Starting %s", name)
         self._action_name = name
@@ -107,6 +108,9 @@ class patrolSnap():
             count += 1
         self.ped_sub.unregister()
 
+        self._result.success = True
+        self._as.set_succeeded(self._result)
+
 
     def nodeCallback(self, msg):
         self.waypoint = msg.data
@@ -130,7 +134,9 @@ class patrolSnap():
             self.msg_store.insert(msg,meta)
             self.received = True
 
-
+    def preemptCallback(self):
+        self._result.success = False
+        self._as.set_preempted(self._result)
 
 
 if __name__ == '__main__':
