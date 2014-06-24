@@ -8,7 +8,7 @@ import patrol_snapshot.msg
 
 def snap_client():
     
-    client = actionlib.SimpleActionClient('patrol_snapshot', patrol_snapshot.msg.PatrolSnapshot)
+    client = actionlib.SimpleActionClient('patrol_snapshot', patrol_snapshot.msg.PatrolSnapshotAction)
     
     client.wait_for_server()
     rospy.loginfo(" ... Init done")
