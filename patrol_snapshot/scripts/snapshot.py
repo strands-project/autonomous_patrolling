@@ -33,7 +33,7 @@ class patrolSnap():
         current_time = datetime.now()
         self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
 
-        self.msg_store = MessageStoreProxy(collection='patrol_data')
+        self.msg_store = MessageStoreProxy(collection='snapshots')
         rospy.loginfo(" ...starting")
         self._as.start()
         rospy.loginfo(" ...done")        
@@ -143,6 +143,7 @@ class patrolSnap():
 
     def Callback(self, msg):
         if not self.received :
+            print "saving"
             meta = {}
             meta["action"] = 'patrol_snapshot'
             meta["waypoint"] = self.waypoint
