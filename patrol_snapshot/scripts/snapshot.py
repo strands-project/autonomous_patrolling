@@ -115,7 +115,6 @@ class patrolSnap():
     def nodeCallback(self, msg):
         self.waypoint = msg.data
         meta = {}
-        meta["task"] = self.task
         meta["action"] = 'patrol_snapshot'
         meta["waypoint"] = self.waypoint
         meta["time"] = self.dt_text
@@ -127,7 +126,6 @@ class patrolSnap():
     def Callback(self, msg):
         if not self.received :
             meta = {}
-            meta["task"] = self.task
             meta["action"] = 'patrol_snapshot'
             meta["waypoint"] = self.waypoint
             meta["time"] = self.dt_text
