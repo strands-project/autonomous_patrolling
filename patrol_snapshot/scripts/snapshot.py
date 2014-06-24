@@ -33,15 +33,18 @@ class patrolSnap():
         current_time = datetime.now()
         self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
 
-        self.msg_store = MessageStoreProxy(collection='snapshots')
+        self.msg_store = MessageStoreProxy(collection='patrol_data')
         rospy.loginfo(" ...starting")
         self._as.start()
         rospy.loginfo(" ...done")        
 
     def executeCallback(self, goal):
+        
+        current_time = datetime.now()
+        self.dt_text= current_time.strftime('%A, %B %d, at %H:%M hours')
         print "New snap requested"
         #Subscribers
-        
+        print self.dt_text
         
         print "/current_node"
         self.received = False
@@ -86,22 +89,22 @@ class patrolSnap():
         print "/head_xtion/depth/image_rect"
         self.received = False
         count = 0
-        self.depth_img_sub = rospy.Subscriber('/head_xtion/depth/image_rect', Image, self.Callback, None, 1)
+        self.depth_img_sub = rospy.Subscriber('/head_xtion/depth/image_rect_meters', Image, self.Callback, None, 1)
         while not self.received and count < 1000:
             sleep(0.01)
             count += 1
         self.depth_img_sub.unregister()
         print self.received
 
-        print "/head_xtion/depth/points"
-        self.received = False
-        count = 0
-        self.pc2_sub = rospy.Subscriber('/head_xtion/depth/points', PointCloud2, self.Callback, None, 1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.pc2_sub.unregister()
-        print self.received
+#        print "/head_xtion/depth/points"
+#        self.received = False
+#        count = 0
+#        self.pc2_sub = rospy.Subscriber('/head_xtion/depth/points', PointCloud2, self.Callback, None, 1)
+#        while not self.received and count < 1000:
+#            sleep(0.01)
+#            count += 1
+#        self.pc2_sub.unregister()
+#        print self.received
         
         
         print "/head_xtion/depth_registered/points"
