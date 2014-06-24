@@ -45,7 +45,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.node_sub = rospy.Subscriber('/current_node', String, self.nodeCallback, None, 1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.node_sub.unregister()
@@ -53,7 +53,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.pose_sub = rospy.Subscriber('/robot_pose', Pose, self.Callback, None, 1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.pose_sub.unregister()
@@ -61,7 +61,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.laser_sub = rospy.Subscriber('/scan', LaserScan, self.Callback, None, 1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.laser_sub.unregister()
@@ -69,7 +69,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.img_sub = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.Callback, None, 1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.img_sub.unregister()
@@ -77,7 +77,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.depth_img_sub = rospy.Subscriber('/head_xtion/depth/image_rect', Image, self.Callback, None, 1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.depth_img_sub.unregister()
@@ -85,7 +85,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.pc2_sub = rospy.Subscriber('/head_xtion/depth/points', PointCloud2, self.Callback, None, 1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.pc2_sub.unregister()
@@ -94,7 +94,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.reg_sub = rospy.Subscriber('/head_xtion/depth_registered/points', PointCloud2, self.Callback,  queue_size=1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.reg_sub.unregister()
@@ -103,7 +103,7 @@ class patrolSnap():
         self.received = False
         count = 0
         self.ped_sub = rospy.Subscriber('/pedestrian_localisation/localisations', PedestrianLocations, self.Callback, None, 1)
-        while not self.received and count < 1000:
+        while not self.received or count < 1000:
             sleep(0.01)
             count += 1
         self.ped_sub.unregister()
