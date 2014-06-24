@@ -12,7 +12,8 @@ import scitos_ptu_sweep.msg
 from std_msgs.msg import String
 from sensor_msgs.msg import LaserScan
 
-from strands_perception_people_msgs import PedestrianTrackingArray
+from strands_perception_people_msgs.msg import PedestrianLocations
+#from strands_perception_people_msgs import PedestrianTrackingArray
 from ros_datacentre.message_store import MessageStoreProxy
 
 
@@ -100,7 +101,7 @@ class patrolSnap():
         
         self.received = False
         count = 0
-        self.ped_sub = rospy.Subscriber('/pedestrian_tracking/pedestrian_array', PedestrianTrackingArray, self.Callback, None, 1)
+        self.ped_sub = rospy.Subscriber('/pedestrian_localisation/localisations', PedestrianLocations, self.Callback, None, 1)
         while not self.received and count < 1000:
             sleep(0.01)
             count += 1
