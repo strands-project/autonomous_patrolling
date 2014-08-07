@@ -6,5 +6,6 @@
 	<machine name="$(arg machine)" address="$(arg machine)" env-loader="/opt/strands/strands_catkin_ws/devel/env.sh" user="$(arg user)" default="true"/>
 
 	<node pkg="topological_patroller" name="patrol_server" type="patrol_server.py" output="screen"/>
+	<node pkg="topological_patroller" name="sweep_save" type="sweep_save.py" output="screen"/>
 
 </launch>

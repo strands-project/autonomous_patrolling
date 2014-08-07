@@ -15,23 +15,6 @@ import topological_navigation.msg
 import scitos_ptu.msg
 
 
-class CheckPointAction(object):
-    def __init__(self, name, args):
-        self.name = name
-        self.args = args.strip(' ')
-
-class CheckPoint(object):
-    def __init__(self, name):
-        self.name = name
-        self.actions=[]
-        
-    def _insert_actions(self, action_name):
-        print "Inserting:"
-        print action_name
-        act=CheckPointAction(action_name[0], action_name[1])
-        self.actions.append(act)
-        
-        
         
 class PatrolCheckpoint(smach.State):
 
@@ -117,7 +100,7 @@ class PointChoose(smach.State):
         rospy.loginfo('Executing state POINT_CHOOSE')
         if self.counter == 0 :
             for i in userdata.pc_patrol_points :
-                self.nodes.append(i.name)
+                self.nodes.append(i.waypoint)
             #shuffle(self.nodes)
 
         if len(self.nodes) > self.counter :
@@ -127,12 +110,12 @@ class PointChoose(smach.State):
             self.counter=self.counter+1
             return 'next_waypoint'
         else:
-            userdata.pc_next_node = "ChargingPoint"
-            print "Going to:"
-            print "ChargingPoint"
+            userdata.pc_next_node = "none"
+            print "all Done"
             self.counter=0
             self.nodes=[]
             return 'back_to_home'
+
 
 
 class RetryPoint(smach.State):
