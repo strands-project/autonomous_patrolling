@@ -12,7 +12,7 @@ import scitos_ptu_sweep.msg
 from std_msgs.msg import String
 from sensor_msgs.msg import LaserScan
 
-from strands_perception_people_msgs.msg import PedestrianLocations
+#from strands_perception_people_msgs.msg import PedestrianLocations
 #from strands_perception_people_msgs import PedestrianTrackingArray
 from ros_datacentre.message_store import MessageStoreProxy
 from patrol_snapshot.msg import *
@@ -45,114 +45,73 @@ class patrolSnap():
         print "New snap requested"
         #Subscribers
         print self.dt_text
+        self.waypoint = 'None'
         
         print "/current_node"
-        self.received = False
-        count = 0
-        self.node_sub = rospy.Subscriber('/current_node', String, self.nodeCallback, None, 1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.node_sub.unregister()
-        print self.received
+        nod_rec=True
+        try:
+            msg = rospy.wait_for_message('/current_node', String, timeout=1.0)
+        except rospy.ROSException :
+            rospy.logwarn("Failed to get current node")
+            nod_rec=False
+        if nod_rec:
+            self.waypoint = msg.data
+            meta = {}
+            meta["action"] = 'patrol_snapshot'
+            meta["waypoint"] = self.waypoint
+            meta["time"] = self.dt_text
+            self.msg_store.insert(msg, meta)
+
         
         print "/robot_pose"
-        self.received = False
-        count = 0
-        self.pose_sub = rospy.Subscriber('/robot_pose', Pose, self.Callback, None, 1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.pose_sub.unregister()
-        print self.received
-
+        nod_rec=True
+        try:
+            msg = rospy.wait_for_message('/robot_pose', Pose, timeout=1.0)
+        except rospy.ROSException :
+            rospy.logwarn("Failed to get robot pose")
+            nod_rec=False
+        if nod_rec:
+            self.msg_store.insert(msg,meta)
+        
+  
         print "/scan"
-        self.received = False
-        count = 0
-        self.laser_sub = rospy.Subscriber('/scan', LaserScan, self.Callback, None, 1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.laser_sub.unregister()
-        print self.received
+        nod_rec=True
+        try:
+            msg = rospy.wait_for_message('/scan', LaserScan, timeout=1.0)
+        except rospy.ROSException :
+            rospy.logwarn("Failed to get scan")
+            nod_rec=False
+        if nod_rec:
+            self.msg_store.insert(msg,meta)        
+        
+                
 
         print "/head_xtion/rgb/image_color"
-        self.received = False
-        count = 0
-        self.img_sub = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.Callback, None, 1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.img_sub.unregister()
-        print self.received
+        nod_rec=True
+        try:
+            msg = rospy.wait_for_message('/head_xtion/rgb/image_color', Image, timeout=1.0)
+        except rospy.ROSException :
+            rospy.logwarn("Failed to get scan")
+            nod_rec=False
+        if nod_rec:
+            self.msg_store.insert(msg,meta)
+
 
         print "/head_xtion/depth/image_rect"
-        self.received = False
-        count = 0
-        self.depth_img_sub = rospy.Subscriber('/head_xtion/depth/image_rect_meters', Image, self.Callback, None, 1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.depth_img_sub.unregister()
-        print self.received
-
-#        print "/head_xtion/depth/points"
-#        self.received = False
-#        count = 0
-#        self.pc2_sub = rospy.Subscriber('/head_xtion/depth/points', PointCloud2, self.Callback, None, 1)
-#        while not self.received and count < 1000:
-#            sleep(0.01)
-#            count += 1
-#        self.pc2_sub.unregister()
-#        print self.received
-        
-        
-        print "/head_xtion/depth_registered/points"
-        self.received = False
-        count = 0
-        self.reg_sub = rospy.Subscriber('/head_xtion/depth_registered/points', PointCloud2, self.Callback,  queue_size=1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.reg_sub.unregister()
-        print self.received
-        
-        
-        print "/pedestrian_localisation/localisations"
-        self.received = False
-        count = 0
-        self.ped_sub = rospy.Subscriber('/pedestrian_localisation/localisations', PedestrianLocations, self.Callback, None, 1)
-        while not self.received and count < 1000:
-            sleep(0.01)
-            count += 1
-        self.ped_sub.unregister()
-        print self.received
-        
+        nod_rec=True
+        try:
+            msg = rospy.wait_for_message('/head_xtion/depth/image_rect_meters', Image, timeout=1.0)
+        except rospy.ROSException :
+            rospy.logwarn("Failed to get scan")
+            nod_rec=False
+        if nod_rec:
+            self.msg_store.insert(msg,meta)
+      
         
         self._result.success = True
         self._as.set_succeeded(self._result)
 
 
-    def nodeCallback(self, msg):
-        self.waypoint = msg.data
-        meta = {}
-        meta["action"] = 'patrol_snapshot'
-        meta["waypoint"] = self.waypoint
-        meta["time"] = self.dt_text
-        self.msg_store.insert(msg,meta)
-        self.node_sub.unregister()
-        self.received = True
-
-
-    def Callback(self, msg):
-        if not self.received :
-            print "saving"
-            meta = {}
-            meta["action"] = 'patrol_snapshot'
-            meta["waypoint"] = self.waypoint
-            meta["time"] = self.dt_text
-            self.msg_store.insert(msg,meta)
-            self.received = True
 
     def preemptCallback(self):
         self._result.success = False

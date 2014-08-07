@@ -25,8 +25,6 @@ class SweepSave():
         self.task = 'none'
         self.waypoint = 'None'
         
-        self.msg_store = MessageStoreProxy(collection='patrol_data')
-
         rospy.Subscriber('/patrol_server/current_task', String, self.task_callback,  queue_size=1)
         rospy.Subscriber('/ptu_sweep/current_node', String, self.node_callback,  queue_size=1)
         rospy.Subscriber('/ptu_sweep/robot_pose', geometry_msgs.msg.Pose, self.callback,  queue_size=1)
@@ -51,7 +49,8 @@ class SweepSave():
         meta["waypoint"] = self.waypoint
         meta["time"] = dt_text
         #meta["topic"] = '/ptu_sweep/robot_pose'
-        self.msg_store.insert(msg,meta)
+        msg_store = MessageStoreProxy(collection='patrol_data')
+        msg_store.insert(msg, meta)
 
 
 if __name__ == '__main__':
