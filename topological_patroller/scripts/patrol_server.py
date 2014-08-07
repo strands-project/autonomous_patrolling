@@ -120,7 +120,7 @@ class PatrolCheckpoint(smach.State):
                 snap_client.wait_for_result()
             
                 # Prints out the result of executing the action
-                print client.get_result()
+                print snap_client.get_result()
                 #filename = "3D_%s_%s.bag" %(userdata.task_name,targ)
                 #bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args[0],filename)
                 #print bashCommand
