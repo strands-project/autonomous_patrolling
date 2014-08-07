@@ -21,7 +21,7 @@ from actionlib.msg import *
 from topological_patroller.msg import *
 from ros_datacentre.message_store import MessageStoreProxy
 
-
+import patrol_snapshot.msg
 from geometry_msgs.msg import *
 from sensor_msgs.msg import *
 from tf.msg import *
@@ -104,11 +104,27 @@ class PatrolCheckpoint(smach.State):
                 print 'sleep '+j.args[0]
                 c = int(j.args[0])
                 sleep(c)
-            if j.name == '3Dsnapshot' :
-                filename = "3D_%s_%s.bag" %(userdata.task_name,targ)
-                bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args[0],filename)
-                print bashCommand
-                os.system(bashCommand)
+            if j.name == '3Dsnapshot' or j.name == 'ptu_sweep' :
+                print "snapshot"
+                snap_client = actionlib.SimpleActionClient('patrol_snapshot', patrol_snapshot.msg.PatrolSnapshotAction)
+    
+                snap_client.wait_for_server()
+                rospy.loginfo(" ... Init done")
+            
+                goal = patrol_snapshot.msg.PatrolSnapshotGoal()
+            
+                # Sends the goal to the action server.
+                snap_client.send_goal(goal)
+            
+                # Waits for the server to finish performing the action.
+                snap_client.wait_for_result()
+            
+                # Prints out the result of executing the action
+                print client.get_result()
+                #filename = "3D_%s_%s.bag" %(userdata.task_name,targ)
+                #bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args[0],filename)
+                #print bashCommand
+                #os.system(bashCommand)
             if j.name == 'scitos_ptu' or j.name == 'ptu_sweep' :
                 print "Scitos PTU:"
                 print "Creating Action Server"
