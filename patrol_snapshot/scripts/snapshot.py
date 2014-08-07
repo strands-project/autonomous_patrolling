@@ -91,7 +91,7 @@ class patrolSnap():
         try:
             msg = rospy.wait_for_message('/head_xtion/rgb/image_color', Image, timeout=1.0)
         except rospy.ROSException :
-            rospy.logwarn("Failed to get scan")
+            rospy.logwarn("Failed to get image_color")
             nod_rec=False
         if nod_rec:
             self.msg_store.insert(msg,meta)
@@ -102,11 +102,22 @@ class patrolSnap():
         try:
             msg = rospy.wait_for_message('/head_xtion/depth/image_rect_meters', Image, timeout=1.0)
         except rospy.ROSException :
-            rospy.logwarn("Failed to get scan")
+            rospy.logwarn("Failed to get image_color")
             nod_rec=False
         if nod_rec:
             self.msg_store.insert(msg,meta)
-      
+
+
+        print '/head_xtion/depth/points'
+        received = True
+        try:
+            msg = rospy.wait_for_message('/head_xtion/depth/points', PointCloud2, timeout=1.0)
+        except rospy.ROSException :
+            rospy.logwarn("Failed to get point cloud")
+            received = False
+        if received :        
+            self.msg_store.insert(msg,meta)
+        
         
         self._result.success = True
         self._as.set_succeeded(self._result)
