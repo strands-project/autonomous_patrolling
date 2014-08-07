@@ -135,12 +135,12 @@ class PatrolCheckpoint(smach.State):
                 
                 ptugoal = scitos_ptu_sweep.msg.PTUSweepGoal()
             
-                ptugoal.max_pan = float(sys.argv[1])
-                ptugoal.max_tilt = float(sys.argv[2])
-                ptugoal.min_pan = float(sys.argv[3])
-                ptugoal.min_tilt = float(sys.argv[4])
-                ptugoal.pan_step = float(sys.argv[5])
-                ptugoal.tilt_step = float(sys.argv[6])
+                ptugoal.max_pan = float(j.args[1])
+                ptugoal.max_tilt = float(j.args[2])
+                ptugoal.min_pan = float(j.args[3])
+                ptugoal.min_tilt = float(j.args[4])
+                ptugoal.pan_step = float(j.args[5])
+                ptugoal.tilt_step = float(j.args[6])
             
                 # Sends the goal to the action server.
                 ptu_client.send_goal(ptugoal)
