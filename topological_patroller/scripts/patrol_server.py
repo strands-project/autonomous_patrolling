@@ -109,7 +109,7 @@ class PatrolCheckpoint(smach.State):
                 bashCommand = "timeout 10 rosbag record %s -l 1 -O ~/storage/%s" %(j.args[0],filename)
                 print bashCommand
                 os.system(bashCommand)
-            if j.name == 'scitos_ptu' :
+            if j.name == 'scitos_ptu' or j.name == 'ptu_sweep' :
                 print "Scitos PTU:"
                 print "Creating Action Server"
                 ptu_client = actionlib.SimpleActionClient('ptu_pan_tilt', scitos_ptu.msg.PanTiltAction)
@@ -131,11 +131,6 @@ class PatrolCheckpoint(smach.State):
                 result_ptu = nav_client.get_result()  # A FibonacciResult
                 #print "result"
                 print result_ptu
-            if j.name == 'ptu_sweep' :
-                sweep = ClientPTUSweep(userdata.task_name, userdata.next_node.waypoint)
-                res = sweep.execute_action(j.args)
-                del sweep
-                print res
         return 'succeeded'
 
 
