@@ -128,23 +128,28 @@ class PatrolCheckpoint(smach.State):
             if j.name == 'scitos_ptu' or j.name == 'ptu_sweep' :
                 print "Scitos PTU:"
                 print "Creating Action Server"
-                ptu_client = actionlib.SimpleActionClient('ptu_pan_tilt', scitos_ptu.msg.PanTiltAction)
+                ptu_client = actionlib.SimpleActionClient('PTUSweep', scitos_ptu_sweep.msg.PTUSweepAction)
                 print "Done"
                 ptu_client.wait_for_server()
-                ptugoal = scitos_ptu.msg.PanTiltGoal()
-                #argums = j.args.split(',') 
-                ptugoal.pan_start=int(j.args[0])
-                ptugoal.pan_step=int(j.args[1])
-                ptugoal.pan_end=int(j.args[2])
-                ptugoal.tilt_start=int(j.args[3])
-                ptugoal.tilt_step=int(j.args[4])
-                ptugoal.tilt_end=int(j.args[5])
+                print "Waiting for client done"
+                
+                ptugoal = scitos_ptu_sweep.msg.PTUSweepGoal()
+            
+                ptugoal.max_pan = float(sys.argv[1])
+                ptugoal.max_tilt = float(sys.argv[2])
+                ptugoal.min_pan = float(sys.argv[3])
+                ptugoal.min_tilt = float(sys.argv[4])
+                ptugoal.pan_step = float(sys.argv[5])
+                ptugoal.tilt_step = float(sys.argv[6])
+            
+                # Sends the goal to the action server.
                 ptu_client.send_goal(ptugoal)
             
                 # Waits for the server to finish performing the action.
                 ptu_client.wait_for_result()
+                
                 # Prints out the result of executing the action
-                result_ptu = nav_client.get_result()  # A FibonacciResult
+                result_ptu = ptu_client.get_result()  # A FibonacciResult
                 #print "result"
                 print result_ptu
         return 'succeeded'
