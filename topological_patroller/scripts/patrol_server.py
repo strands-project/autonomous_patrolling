@@ -104,7 +104,7 @@ class PatrolCheckpoint(smach.State):
                 print 'sleep '+j.args[0]
                 c = int(j.args[0])
                 sleep(c)
-            if j.name == '3Dsnapshot' or j.name == 'ptu_sweep' :
+            if j.name == '3Dsnapshot' or j.name == 'snapshot' :
                 print "snapshot"
                 snap_client = actionlib.SimpleActionClient('patrol_snapshot', patrol_snapshot.msg.PatrolSnapshotAction)
     
