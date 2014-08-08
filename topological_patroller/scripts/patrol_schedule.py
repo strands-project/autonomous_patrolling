@@ -43,7 +43,7 @@ class patrol_schedule():
         
         self.upload_data()
 
-        t = Timer(60.0, self._time_callback)
+        t = Timer(10.0, self._time_callback)
         t.start()
 
         self.the_loop()
@@ -55,8 +55,9 @@ class patrol_schedule():
         is_executing = rospy.get_param('/topological_patroller/execute')
         #runmileage=self._current_mileage-self._starting_mileage
 
-        wait_for_it=datetime.datetime.now()
-        print "%d:%d" %(wait_for_it.minute, wait_for_it.second)
+        wait_for_it= datetime.now()
+        print "%d:%d Pending tasks:" %(wait_for_it.minute, wait_for_it.second)
+        print self.pending
         if is_executing and wait_for_it.minute != self._last_minute_added :
             for i in self.schedule:
                 if wait_for_it.minute in i[1]:
@@ -65,7 +66,7 @@ class patrol_schedule():
 
 
         if not self._killall_timers :
-            t = Timer(1.0, self._time_callback)
+            t = Timer(10.0, self._time_callback)
             t.start()
 
     def the_loop(self):
