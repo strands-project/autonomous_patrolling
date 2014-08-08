@@ -38,7 +38,7 @@ class patrol_schedule():
         self.schedule.append(b)
         self.pending=[]
         
-        if not self.check_for_home(self):
+        if not self.check_for_home():
             self.go_home()
         
         self.upload_data()
@@ -71,9 +71,13 @@ class patrol_schedule():
         
         while not self._killall_timers:
             is_executing = rospy.get_param('/topological_patroller/execute')
-            if is_executing and len(self.pending)>0  :
+            if is_executing and len(self.pending)>0 and self._charger_level > 30 :
                 task_to_do=self.pending.pop(0)
                 self.do_patrol(task_to_do)
+            else :
+                if self._charger_level<=30:
+                    self.go_home()
+                    self.upload_data()
             rospy.sleep(rospy.Duration.from_sec(1))
 
     def do_patrol(self, task):
@@ -191,7 +195,7 @@ class patrol_schedule():
         
     def charger_callback(self, data) :
         self._at_charger=data.charging
-        self._charger_level = battery.lifePercent
+        self._charger_level = data.lifePercent
 
 
     def _on_node_shutdown(self):
