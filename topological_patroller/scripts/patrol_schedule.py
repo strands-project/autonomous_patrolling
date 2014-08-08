@@ -31,7 +31,7 @@ class patrol_schedule():
         
         rospy.set_param('/topological_patroller/execute',True)
         #Here goes the schedule
-        a=['august_3dsweeps',[0]]
+        a=['august3d_sweeps',[0]]
         b=['august_snaps',[10,20,30,40,50]]
         self.schedule=[]
         self.schedule.append(a)
