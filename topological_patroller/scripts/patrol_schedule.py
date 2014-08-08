@@ -56,11 +56,12 @@ class patrol_schedule():
         #runmileage=self._current_mileage-self._starting_mileage
 
         wait_for_it=datetime.datetime.now()
-        #print "%d:%d" %(wait_for_it.minute, wait_for_it.second)
+        print "%d:%d" %(wait_for_it.minute, wait_for_it.second)
         if is_executing and wait_for_it.minute != self._last_minute_added :
             for i in self.schedule:
                 if wait_for_it.minute in i[1]:
                     self.pending.append(i[0])
+                    self._last_minute_added = wait_for_it.minute
 
 
         if not self._killall_timers :
@@ -74,6 +75,7 @@ class patrol_schedule():
             if is_executing and len(self.pending)>0 and self._charger_level > 30 :
                 task_to_do=self.pending.pop(0)
                 self.do_patrol(task_to_do)
+                
             else :
                 if self._charger_level<=30:
                     self.go_home()
