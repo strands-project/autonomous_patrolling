@@ -85,6 +85,7 @@ class patrol_schedule():
                         self.upload_data()
                         rospy.sleep(rospy.Duration.from_sec(30))
                         rospy.loginfo("Battery level too low to do anything")
+                        print 'battery life %d' %self._charger_level
                 else :
                     self._battery_alarm=False
             rospy.sleep(rospy.Duration.from_sec(1))
