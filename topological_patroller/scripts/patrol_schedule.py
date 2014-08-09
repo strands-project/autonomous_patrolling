@@ -24,7 +24,7 @@ class patrol_schedule():
     _at_home=False
     _killall_timers=False
     _last_minute_added=70
-    
+    _battery_alarm=False
     def __init__(self):
         rospy.loginfo("Starting Schedule")
         rospy.on_shutdown(self._on_node_shutdown)
@@ -79,8 +79,14 @@ class patrol_schedule():
                 
             else :
                 if self._charger_level<=30:
-                    self.go_home()
-                    self.upload_data()
+                    if not self._battery_alarm :
+                        self._battery_alarm=True
+                        self.go_home()
+                        self.upload_data()
+                        rospy.sleep(rospy.Duration.from_sec(30))
+                        rospy.loginfo("Battery level too low to do anything")
+                else :
+                    self._battery_alarm=False
             rospy.sleep(rospy.Duration.from_sec(1))
 
     def do_patrol(self, task):
@@ -134,31 +140,55 @@ class patrol_schedule():
 
 
     def go_home(self):
-        rospy.loginfo("Navigating To Charging Station")
-        counter = 0
-        nav_client = actionlib.SimpleActionClient('topological_navigation', topological_navigation.msg.GotoNodeAction)
-        nav_client.wait_for_server()
-        navgoal = topological_navigation.msg.GotoNodeGoal()
-        print "Requesting Navigation to Home"
-        navgoal.target = 'ChargingPoint'
         
-        success = False
-        while success == False and counter < 5 :
-            # Sends the goal to the action server.
-            nav_client.send_goal(navgoal)
-        
-            # Waits for the server to finish performing the action.
-            nav_client.wait_for_result()
-            # Prints out the result of executing the action
-            result = nav_client.get_result()
-            print "navigation result"
-            print result
-            success = result.success
-            counter += 1
+        if not self._at_charger:
+            rospy.loginfo("Navigating To Charging Station")
+            counter = 0
+            nav_client = actionlib.SimpleActionClient('topological_navigation', topological_navigation.msg.GotoNodeAction)
+            nav_client.wait_for_server()
+            navgoal = topological_navigation.msg.GotoNodeGoal()
+           
             
-        if counter < 5 :
-            print "navigation Succeeded"
-        
+            print "Requesting Navigation to LabDesk"
+            navgoal.target = 'LabDesk'
+            
+            success = False
+            while success == False and counter < 5 :
+                # Sends the goal to the action server.
+                nav_client.send_goal(navgoal)
+            
+                # Waits for the server to finish performing the action.
+                nav_client.wait_for_result()
+                # Prints out the result of executing the action
+                result = nav_client.get_result()
+                print "navigation result"
+                print result
+                success = result.success
+                counter += 1
+                
+                
+                
+            print "Requesting Navigation to ChargingPoint"
+            navgoal.target = 'ChargingPoint'
+            
+            success = False
+            while success == False and counter < 5 :
+                # Sends the goal to the action server.
+                nav_client.send_goal(navgoal)
+            
+                # Waits for the server to finish performing the action.
+                nav_client.wait_for_result()
+                # Prints out the result of executing the action
+                result = nav_client.get_result()
+                print "navigation result"
+                print result
+                success = result.success
+                counter += 1
+                
+            if counter < 5 :
+                print "navigation Succeeded"
+            else:
+                success=True
         return success
 
     def check_for_home(self):

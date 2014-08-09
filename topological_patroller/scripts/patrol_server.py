@@ -80,21 +80,30 @@ class PatrolCheckpoint(smach.State):
         navgoal = topological_navigation.msg.GotoNodeGoal()
         print "Requesting Navigation to %s" %targ
         navgoal.target = targ
-    
-        # Sends the goal to the action server.
-        nav_client.send_goal(navgoal)
-    
-        # Waits for the server to finish performing the action.
-        nav_client.wait_for_result()
-        # Prints out the result of executing the action
-        result = nav_client.get_result()  # A FibonacciResult
-        print "navigation result"
-        print result
-        print result.success        
-        if result.success == False :
+        counter=0
+        success=False
+        while not success and counter < 5 :
+            # Sends the goal to the action server.
+            nav_client.send_goal(navgoal)
+        
+            # Waits for the server to finish performing the action.
+            nav_client.wait_for_result()
+            # Prints out the result of executing the action
+            result = nav_client.get_result()  # A FibonacciResult
+            print "navigation result"
+            print result
+            print result.success        
+            if result.success == False :
+                #return 'aborted'
+                counter += 1
+            else :
+                success=True
+                counter=5
+                print "navigation Succeeded"
+        
+        if success == False :
             return 'aborted'
-        else :          
-            print "navigation Succeeded"
+    
         
         for j in userdata.next_node.action :
             print "executing!!!!!"
