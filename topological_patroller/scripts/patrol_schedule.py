@@ -16,6 +16,7 @@ from scitos_msgs.msg import BatteryState
 from std_msgs.msg import Float32
 
 
+
 #from ros_datacentre_msgs.msg import MoveEntriesAction, MoveEntriesGoal, StringList
 #from patrol_snapshot.msg import *
 
@@ -25,6 +26,9 @@ class patrol_schedule():
     _killall_timers=False
     _last_minute_added=70
     _battery_alarm=False
+    _completed_patrols=0
+    _scheduled_patrols=0
+    
     def __init__(self):
         rospy.loginfo("Starting Schedule")
         rospy.on_shutdown(self._on_node_shutdown)
@@ -58,12 +62,17 @@ class patrol_schedule():
         wait_for_it= datetime.now()
         print "%d:%d Pending tasks:" %(wait_for_it.minute, wait_for_it.second)
         print self.pending
+        if self._completed_patrols > 0:
+            print 'last patrol ended:'
+            print self.last_patrol_ended.strftime('%Y-%m-%d_%H-%M')
+        print "completed/Scheduled %d/%d" %(self._completed_patrols, self._scheduled_patrols)    
+        
         if is_executing and wait_for_it.minute != self._last_minute_added :
             for i in self.schedule:
                 if wait_for_it.minute in i[1]:
                     self.pending.append(i[0])
                     self._last_minute_added = wait_for_it.minute
-
+                    self._scheduled_patrols+=1
 
         if not self._killall_timers :
             t = Timer(10.0, self._time_callback)
@@ -76,7 +85,8 @@ class patrol_schedule():
             if is_executing and len(self.pending)>0 and self._charger_level > 30 :
                 task_to_do=self.pending.pop(0)
                 self.do_patrol(task_to_do)
-                
+                self._completed_patrols+=1
+                self.last_patrol_ended= datetime.now()
             else :
                 if self._charger_level<=30:
                     if not self._battery_alarm :
@@ -88,7 +98,7 @@ class patrol_schedule():
                         print 'battery life %d' %self._charger_level
                 else :
                     self._battery_alarm=False
-            rospy.sleep(rospy.Duration.from_sec(1))
+            rospy.sleep(rospy.Duration.from_sec(10))
 
     def do_patrol(self, task):
         self.upload_data()
