@@ -190,6 +190,9 @@ class patrol_schedule():
                 print "navigation Succeeded"
             else:
                 success=True
+        else:
+            success=True
+            
         return success
 
     def check_for_home(self):
