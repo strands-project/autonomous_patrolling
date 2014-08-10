@@ -7,6 +7,7 @@
 
 	<node pkg="topological_patroller" name="patrol_server" type="patrol_server.py" output="screen"/>
 	<node pkg="topological_patroller" name="sweep_save" type="sweep_save.py" output="screen"/>
+	<node pkg="strands_tweets" name="strands_tweets" type="tweet.py" output="screen"/>
 	<node pkg="patrol_snapshot" name="patrol_snapshot" type="snapshot.py" output="screen"/>
 	<node pkg="upload_cloud_data" name="upload_cloud_data" type="upload.py" output="screen"/>
 	<node pkg="topological_patroller" name="patrol_schedule" type="patrol_schedule.py" output="screen"/>

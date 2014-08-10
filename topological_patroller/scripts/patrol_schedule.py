@@ -14,7 +14,7 @@ import topological_patroller.msg
 
 from scitos_msgs.msg import BatteryState
 from std_msgs.msg import Float32
-
+from strands_tweets.srv import *
 
 
 #from ros_datacentre_msgs.msg import MoveEntriesAction, MoveEntriesGoal, StringList
@@ -59,13 +59,18 @@ class patrol_schedule():
         is_executing = rospy.get_param('/topological_patroller/execute')
         #runmileage=self._current_mileage-self._starting_mileage
 
+        info2 = 'no patrols ended yet'
         wait_for_it= datetime.now()
         print "%d:%d Pending tasks:" %(wait_for_it.minute, wait_for_it.second)
         print self.pending
         if self._completed_patrols > 0:
-            print 'last patrol ended:'
-            print self.last_patrol_ended.strftime('%Y-%m-%d_%H-%M')
-        print "completed/Scheduled %d/%d" %(self._completed_patrols, self._scheduled_patrols)    
+        #    print 'last patrol ended:'
+        #    print self.last_patrol_ended.strftime('%Y-%m-%d_%H-%M')
+            info2 = 'last patrol ended: %s' %self.last_patrol_ended.strftime('%Y-%m-%d_%H-%M')
+        #print "completed/Scheduled %d/%d" %(self._completed_patrols, self._scheduled_patrols)    
+        info = "Patrol Runs Completed/Scheduled %d/%d %s" %(self._completed_patrols, self._scheduled_patrols, info2)
+        print info
+        
         
         if is_executing and wait_for_it.minute != self._last_minute_added :
             for i in self.schedule:
@@ -74,9 +79,21 @@ class patrol_schedule():
                     self._last_minute_added = wait_for_it.minute
                     self._scheduled_patrols+=1
 
+        if wait_for_it.minute == 0:
+            self.send_tweet(info)
+
         if not self._killall_timers :
             t = Timer(10.0, self._time_callback)
             t.start()
+
+    def send_tweet(self, info):
+        try:
+            tweet = rospy.ServiceProxy('/strands_tweets/Tweet', Tweet)
+            resp1 = tweet(info,True)
+            return resp1.result
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+
 
     def the_loop(self):
         
