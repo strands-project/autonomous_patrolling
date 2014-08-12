@@ -13,8 +13,8 @@ from waypoint_patroller.logger import PatrollLogger
 from dynamic_reconfigure.server import Server
 from waypoint_patroller.cfg import PatrollerTresholdsConfig
 
-import ros_datacentre.util
-got_pymongo = ros_datacentre.util.check_for_pymongo()
+import mongodb_store.util
+got_pymongo = mongodb_store.util.check_for_pymongo()
 if got_pymongo:
     import pymongo
     
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     rospy.init_node('patroller')
     
     # Check for connection to the datacentre
-    got_mongo = ros_datacentre.util.wait_for_mongo()
+    got_mongo = mongodb_store.util.wait_for_mongo()
     if not got_pymongo:
         sys.exit(1)
     if not got_mongo:
