@@ -12,7 +12,7 @@ from scitos_msgs.msg import BatteryState
 
 from geometry_msgs.msg import Pose
 
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
     
     
 class VeryLowBattery(smach.State, Loggable):

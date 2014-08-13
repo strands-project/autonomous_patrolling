@@ -6,7 +6,7 @@ import sys
 from interactive_markers.interactive_marker_server import *
 from geometry_msgs.msg import Pose
 
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 import csv
 
 

@@ -2,7 +2,7 @@
 Provides utility functions for interpretting logged patrol runs
 """
 import rospy
-import ros_datacentre.util as dc_util
+import mongodb_store.util as dc_util
 
 got_pymongo = dc_util.check_for_pymongo()
 if not got_pymongo:
