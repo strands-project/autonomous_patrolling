@@ -13,8 +13,8 @@ import mongodb_store.util
 from mongodb_store.message_store import MessageStoreProxy
 
 def way_points_file_to_datacentre(filename, dataset_name, map_name):
-    host = rospy.get_param("datacentre_host")
-    port = rospy.get_param("datacentre_port")
+    host = rospy.get_param("mongodb_host")
+    port = rospy.get_param("mongodb_port")
     print host, port
     client = pymongo.MongoClient(host, port)
     db=client.autonomous_patrolling
@@ -67,10 +67,10 @@ class Visualiser(object):
 
 #        way_points_file_to_datacentre(sys.argv[1],"bham_lg_2","bham_lg")
 
-        host = rospy.get_param("datacentre_host")
-        port = rospy.get_param("datacentre_port")
+        host = rospy.get_param("mongodb_host")
+        port = rospy.get_param("mongodb_port")
 
-        self._point_set= rospy.get_param("datacentre_waypoint_set")
+        self._point_set= rospy.get_param("mongodb_waypoint_set")
 
         self._mongo_client = pymongo.MongoClient(host,port)
         db=self._mongo_client.autonomous_patrolling

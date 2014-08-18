@@ -11,8 +11,8 @@ import waypoint_patroller.log_util
 
 class RosInterface(object):
     def __init__(self):
-        self._gen = waypoint_patroller.log_util.StatGenerator(rospy.get_param("datacentre_host", "localhost"),
-                                                              int(rospy.get_param("datacentre_port")) )
+        self._gen = waypoint_patroller.log_util.StatGenerator(rospy.get_param("mongodb_host", "localhost"),
+                                                              int(rospy.get_param("mongodb_port")) )
 
         # set up services
         for s in dir(self):

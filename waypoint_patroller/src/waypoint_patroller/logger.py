@@ -53,9 +53,9 @@ class PatrollLogger(Logger):
         got_datacentre = dc_util.wait_for_mongo()
         if not got_datacentre:
             raise Exception("mongodb_stores does not appear to be running")
-        self._mongo = pymongo.MongoClient(rospy.get_param("datacentre_host",
+        self._mongo = pymongo.MongoClient(rospy.get_param("mongodb_host",
                                                           "localhost"),
-                                          int(rospy.get_param("datacentre_port")))
+                                          int(rospy.get_param("mongodb_port")))
         self._db = self._mongo[name].episodes
         
         self._mileage_sub = rospy.Subscriber('/odom_mileage', Float32,
