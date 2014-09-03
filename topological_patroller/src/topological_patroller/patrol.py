@@ -8,7 +8,7 @@ import smach_ros
 import datetime
 
 from random import shuffle
-import scitos_apps_msgs.msg
+import scitos_docking.msg
 from actionlib import *
 from actionlib.msg import *
 import topological_navigation.msg

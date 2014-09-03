@@ -12,7 +12,7 @@ from topological_patroller.patrol import *
 from topological_patroller.starting_state import *
 from topological_patroller.go_home import *
 from scitos_msgs.msg import BatteryState
-import scitos_apps_msgs.msg
+import scitos_docking.msg
 from actionlib import *
 from actionlib.msg import *
 import topological_navigation.msg
@@ -104,11 +104,11 @@ def main():
                                    smach_ros.SimpleActionState('topological_navigation',topological_navigation.msg.GotoNodeAction, goal=goto_charge_goal),
                                    transitions= {'succeeded':'DOCKING_STATE','aborted':'CHECK_HOME'})
 
-            charging_goal = scitos_apps_msgs.msg.ChargingGoal()
+            charging_goal = scitos_docking.msg.ChargingGoal()
             charging_goal.Command = 'charge'
             charging_goal.Timeout = 1000
             smach.StateMachine.add('DOCKING_STATE', 
-                                   smach_ros.SimpleActionState('/chargingServer', scitos_apps_msgs.msg.ChargingAction, goal=charging_goal), 
+                                   smach_ros.SimpleActionState('/chargingServer', scitos_docking.msg.ChargingAction, goal=charging_goal), 
                                     transitions={'succeeded':'CHECK_HOME','aborted':'CHECK_HOME'})
 
             smach.StateMachine.add('CHECK_HOME', CheckForHome(), transitions={'retry':'GOTO_CHARGING_POINT', 'abort':'aborted', 'succeeded':'succeeded'})
@@ -118,11 +118,11 @@ def main():
                                transitions={'succeeded':'STARTING_STATE','aborted':'aborted','preempted':'aborted'})
                                
 
-        undocking_goal = scitos_apps_msgs.msg.ChargingGoal()
+        undocking_goal = scitos_docking.msg.ChargingGoal()
         undocking_goal.Command = 'undock'
         undocking_goal.Timeout = 1000
         smach.StateMachine.add('UNDOCKING_STATE', 
-                               smach_ros.SimpleActionState('/chargingServer', scitos_apps_msgs.msg.ChargingAction, goal=undocking_goal),
+                               smach_ros.SimpleActionState('/chargingServer', scitos_docking.msg.ChargingAction, goal=undocking_goal),
                                transitions={'succeeded':'PATROL', 'aborted':'GO_HOME'})
 
 
