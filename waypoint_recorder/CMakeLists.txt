@@ -5,14 +5,14 @@ project(waypoint_recorder)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp rospy sensor_msgs std_msgs ap_msgs)
-find_package(scitos_apps_msgs COMPONENTS scitos_apps_msgs)
+find_package(scitos_teleop COMPONENTS scitos_teleop)
 
-if(scitos_apps_msgs_FOUND)
-	message(STATUS "scitos_apps_msgs found: Compiling waypoint_recorder with joystick support")
+if(scitos_teleop_FOUND)
+	message(STATUS "scitos_teleop found: Compiling waypoint_recorder with joystick support")
 	add_definitions(-DWITH_TELEOP)
-else(scitos_apps_msgs_FOUND)
-	message(STATUS "scitos_apps_msgs NOT found: Compiling waypoint_recorder without joystick support")
-endif(scitos_apps_msgs_FOUND)
+else(scitos_teleop_FOUND)
+	message(STATUS "scitos_teleop NOT found: Compiling waypoint_recorder without joystick support")
+endif(scitos_teleop_FOUND)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -63,7 +63,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include
   ${catkin_INCLUDE_DIRS}
-  ${scitos_apps_msgs_INCLUDE_DIRS}
+  ${scitos_teleop_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -77,18 +77,18 @@ include_directories(include
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(waypoint_recorder ap_msgs_gencpp scitos_apps_msgs_gencpp)
-add_dependencies(waypoint_recorder_with_pt ap_msgs_gencpp scitos_apps_msgs_gencpp)
+add_dependencies(waypoint_recorder ap_msgs_gencpp scitos_teleop_gencpp)
+add_dependencies(waypoint_recorder_with_pt ap_msgs_gencpp scitos_teleop_gencpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(waypoint_recorder
    ${catkin_LIBRARIES}
-   ${scitos_apps_msgs_LIBRARIES}
+   ${scitos_teleop_LIBRARIES}
  )
 
  target_link_libraries(waypoint_recorder_with_pt
    ${catkin_LIBRARIES}
-   ${scitos_apps_msgs_LIBRARIES}
+   ${scitos_teleop_LIBRARIES}
  )
 #############
 ## Install ##

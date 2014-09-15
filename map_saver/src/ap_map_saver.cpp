@@ -9,12 +9,12 @@
 #include <string.h>
 
 #if WITH_TELEOP
-	#include "scitos_apps_msgs/action_buttons.h"
+	#include "scitos_teleop/action_buttons.h"
 #endif
 
 
 // #if WITH_TELEOP
-// 	void buttonCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
+// 	void buttonCallback(const scitos_teleop::action_buttons::ConstPtr& msg)
 // 	{
 // 	  if(msg->A) {
 // 		std::string command("rosrun map_server map_saver -f ");
@@ -40,7 +40,7 @@ bool saveMap(std::string file_name){
 
 
 #if WITH_TELEOP
-	void buttonCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
+	void buttonCallback(const scitos_teleop::action_buttons::ConstPtr& msg)
 	{
 	  if(msg->A) {
 		saveMap(map_name);

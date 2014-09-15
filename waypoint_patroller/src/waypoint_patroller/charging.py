@@ -6,8 +6,8 @@ import smach_ros
 from geometry_msgs.msg import Twist
 
 
-from scitos_apps_msgs.srv import Charging
-from scitos_apps_msgs.msg import ChargingAction, ChargingGoal
+from scitos_docking.srv import Charging
+from scitos_docking.msg import ChargingAction, ChargingGoal
 
 
 from monitor_states import BumperMonitor, BatteryMonitor, NavPauseMonitor

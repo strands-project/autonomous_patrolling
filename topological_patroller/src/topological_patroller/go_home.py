@@ -7,7 +7,7 @@ import smach_ros
 import datetime
 
 from scitos_msgs.msg import BatteryState
-import scitos_apps_msgs.msg
+import scitos_docking.msg
 
 
 class CheckForHome(smach.State):
