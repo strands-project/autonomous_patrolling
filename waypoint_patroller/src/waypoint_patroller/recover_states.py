@@ -13,7 +13,7 @@ from geometry_msgs.msg import Twist
 
 import actionlib
 #from actionlib_msgs.msg import *
-from ros_mary_tts.msg import *
+from mary_tts.msg import *
 
 from logger import Loggable
 
