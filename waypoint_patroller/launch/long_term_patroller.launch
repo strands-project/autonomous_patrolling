@@ -4,7 +4,7 @@
     <arg name="randomized" default="true"/>
     <arg name="n_it" default="-1"/>
 
-     <include file="$(find ros_mary_tts)/launch/ros_mary.launch"/>
+     <include file="$(find mary_tts)/launch/ros_mary.launch"/>
      
      
      <node name="nav_monitor" pkg="nav_monitor" type="nav_monitor.py" output="screen"/>
