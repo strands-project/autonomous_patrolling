@@ -56,7 +56,7 @@ if __name__ == '__main__':
     parser.add_option("-d","--datacentre-host",dest="datacentre", default="localhost",
                       help="the machine that the datacentre(mongodb) is on")
 
-    parser.add_option("-p","--datacentre-port",dest="datacentre_port",  type="int", default="62345",
+    parser.add_option("-p","--datacentre-port",dest="mongodb_port",  type="int", default="62345",
                       help="the port that the datacentre(mongodb) is on")
 
     parser.add_option("-e", "--episode", dest="episode_name", default=None,
@@ -67,4 +67,4 @@ if __name__ == '__main__':
 
     (options,args) = parser.parse_args()
 
-    create_stats(options.episode_name, options.datacentre, options.datacentre_port, options.t_minus)
+    create_stats(options.episode_name, options.datacentre, options.mongodb_port, options.t_minus)

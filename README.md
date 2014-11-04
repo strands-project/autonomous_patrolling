@@ -108,9 +108,9 @@ Aunonomously  visits a pre-defined list of points randomly or in sequence. Goes 
      
            $ rosrun rviz rviz
       
-* Launch the ros_datacentre:
+* Launch the mongodb_store:
 
-           $ HOSTNAME=bob roslaunch ros_datacentre datacentre.launch
+           $ HOSTNAME=bob roslaunch mongodb_store datacentre.launch
 
 
     * If you haven't inserted waypoints in your datacentre, you can insert the waypoints from a waypoint log file (as created using the waypoint recorder) into your datacentre:

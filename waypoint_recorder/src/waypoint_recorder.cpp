@@ -13,7 +13,7 @@
 #include <fstream>
 
 #if WITH_TELEOP
-	#include "scitos_apps_msgs/action_buttons.h"
+	#include "scitos_teleop/action_buttons.h"
 #endif
 
 ros::Publisher pub;
@@ -45,7 +45,7 @@ void saveToFile(std::string file_name) {
 }
 
 #if WITH_TELEOP
-	void controlCallback(const scitos_apps_msgs::action_buttons::ConstPtr& msg)
+	void controlCallback(const scitos_teleop::action_buttons::ConstPtr& msg)
 	{
 	  if(msg->A && !save_pose) {
 		  savePoint();

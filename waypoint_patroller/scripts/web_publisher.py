@@ -10,10 +10,10 @@ import datetime
 from dateutil import parser
 import json
 
-def create_sumary_file(datacentre_host, datacentre_port, jsonfile, start_time=None, end_time=None):
+def create_sumary_file(mongodb_host, mongodb_port, jsonfile, start_time=None, end_time=None):
     """ create a json summary. if start_time and end_time are set, then all episodes in that
     window are sumarised, otherwise only the latest"""
-    gen = waypoint_patroller.log_util.StatGenerator(datacentre_host, datacentre_port)
+    gen = waypoint_patroller.log_util.StatGenerator(mongodb_host, mongodb_port)
     if start_time is None:
         summary = gen.get_episode(gen.get_latest_run_name()).get_json_summary()
         with  open(jsonfile, "w") as f:
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_option("-d","--datacentre-host",dest="datacentre", default="localhost",
                       help="the machine that the datacentre(mongodb) is on")
 
-    parser.add_option("-k","--datacentre-port",dest="datacentre_port",  type="int", default="62345",
+    parser.add_option("-k","--datacentre-port",dest="mongodb_port",  type="int", default="62345",
                       help="the port that the datacentre(mongodb) is on")
 
     
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     while True:
         try:
-            create_sumary_file(options.datacentre, options.datacentre_port,options.jsonfile,
+            create_sumary_file(options.datacentre, options.mongodb_port,options.jsonfile,
                                start_time=datetime.datetime.strptime('Nov 25 2013  09:40AM', '%b %d %Y %I:%M%p'))
 
             if options.hostname != None:

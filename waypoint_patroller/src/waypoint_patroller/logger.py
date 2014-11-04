@@ -1,5 +1,5 @@
 import rospy
-import ros_datacentre.util as dc_util
+import mongodb_store.util as dc_util
 
 from std_msgs.msg import Float32
 from scitos_msgs.msg import BatteryState
@@ -43,7 +43,7 @@ class Logger(object):
             raise AttributeError("Logger has no attrribute %s"%name)
 
 """
-Logging class for entering run data into the ros_datacentre.
+Logging class for entering run data into the mongodb_store.
 This class should be created once and each state that wants to log should
 hold a reference to it.
 """
@@ -52,10 +52,10 @@ class PatrollLogger(Logger):
         self._active_episode = False
         got_datacentre = dc_util.wait_for_mongo()
         if not got_datacentre:
-            raise Exception("ros_datacentres does not appear to be running")
-        self._mongo = pymongo.MongoClient(rospy.get_param("datacentre_host",
+            raise Exception("mongodb_stores does not appear to be running")
+        self._mongo = pymongo.MongoClient(rospy.get_param("mongodb_host",
                                                           "localhost"),
-                                          int(rospy.get_param("datacentre_port")))
+                                          int(rospy.get_param("mongodb_port")))
         self._db = self._mongo[name].episodes
         
         self._mileage_sub = rospy.Subscriber('/odom_mileage', Float32,

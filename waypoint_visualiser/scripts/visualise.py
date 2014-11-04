@@ -9,12 +9,12 @@ from geometry_msgs.msg import Pose
 import pymongo
 import csv
 
-import ros_datacentre.util
-from ros_datacentre.message_store import MessageStoreProxy
+import mongodb_store.util
+from mongodb_store.message_store import MessageStoreProxy
 
 def way_points_file_to_datacentre(filename, dataset_name, map_name):
-    host = rospy.get_param("datacentre_host")
-    port = rospy.get_param("datacentre_port")
+    host = rospy.get_param("mongodb_host")
+    port = rospy.get_param("mongodb_port")
     print host, port
     client = pymongo.MongoClient(host, port)
     db=client.autonomous_patrolling
@@ -58,7 +58,7 @@ def way_points_file_to_datacentre(filename, dataset_name, map_name):
         p.orientation.z=point[5]
         p.orientation.w=point[6]
 
-        ros_datacentre.util.store_message(points_db,p,entry)
+        mongodb_store.util.store_message(points_db,p,entry)
 
         
 class Visualiser(object):
@@ -67,10 +67,10 @@ class Visualiser(object):
 
 #        way_points_file_to_datacentre(sys.argv[1],"bham_lg_2","bham_lg")
 
-        host = rospy.get_param("datacentre_host")
-        port = rospy.get_param("datacentre_port")
+        host = rospy.get_param("mongodb_host")
+        port = rospy.get_param("mongodb_port")
 
-        self._point_set= rospy.get_param("datacentre_waypoint_set")
+        self._point_set= rospy.get_param("mongodb_waypoint_set")
 
         self._mongo_client = pymongo.MongoClient(host,port)
         db=self._mongo_client.autonomous_patrolling
@@ -88,7 +88,7 @@ class Visualiser(object):
         self.points = self._get_points(self._point_set)  # []
         for entry in self.points:
             rospy.loginfo("Adding marker")
-            #meta, p = ros_datacentre.util.document_to_msg(entry, TYPE=Pose)
+            #meta, p = mongodb_store.util.document_to_msg(entry, TYPE=Pose)
 #            p=Pose()
 #            p.orientation.x=entry["pose"]["orientation"]["x"]
 #            p.orientation.y=entry["pose"]["orientation"]["y"]

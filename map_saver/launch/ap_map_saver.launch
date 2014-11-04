@@ -1,7 +1,7 @@
 <launch>
 	<!-- declare arg to be passed in -->
     <arg name="machine" default="localhost"/>
-    <arg name="user" default="strands" />
+    <arg name="user" default="" />
 	<arg name="map" default="default_map_name"/> 
 	<arg name="delta" default="0.05"/>
 	<arg name="xmin" default="-30.0"/>
